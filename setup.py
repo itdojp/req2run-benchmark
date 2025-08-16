@@ -21,8 +21,8 @@ with open("requirements.txt", "r") as f:
 setup(
     name="req2run",
     version="1.0.0",
-    author="IT Dojo Japan",
-    author_email="contact@itdojp.com",
+    author="ITDo Inc. Japan",
+    author_email="contact@itdo.jp",
     description="Requirements-to-Running Code Benchmark Framework",
     long_description=long_description,
     long_description_content_type="text/markdown",

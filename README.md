@@ -163,8 +163,8 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) file for 
 
 ### Contact
 
-- Project Lead: IT Dojo Japan
-- Email: contact@itdojp.com
+- Project Lead: ITDo Inc. Japan
+- Email: contact@itdo.jp
 - Issue Tracker: [GitHub Issues](https://github.com/itdojp/req2run-benchmark/issues)
 
 ### Acknowledgments
@@ -332,8 +332,8 @@ print(f"Status: {result.status}")
 
 ### 連絡先
 
-- プロジェクトリーダー: IT Dojo Japan
-- Email: contact@itdojp.com
+- プロジェクトリーダー: ITDo Inc. Japan
+- Email: contact@itdo.jp
 - Issue Tracker: [GitHub Issues](https://github.com/itdojp/req2run-benchmark/issues)
 
 ### 謝辞
