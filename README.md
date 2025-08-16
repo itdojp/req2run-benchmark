@@ -163,7 +163,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) file for 
 
 ### Contact
 
-- Project Lead: ITDo Inc. Japan
+- Project Lead: ITdo Inc. Japan
 - Email: contact@itdo.jp
 - Issue Tracker: [GitHub Issues](https://github.com/itdojp/req2run-benchmark/issues)
 
@@ -332,7 +332,7 @@ print(f"Status: {result.status}")
 
 ### 連絡先
 
-- プロジェクトリーダー: ITDo Inc. Japan
+- プロジェクトリーダー: ITdo Inc. Japan
 - Email: contact@itdo.jp
 - Issue Tracker: [GitHub Issues](https://github.com/itdojp/req2run-benchmark/issues)
 
