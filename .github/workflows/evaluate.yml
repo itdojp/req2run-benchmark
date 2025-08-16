@@ -1,0 +1,309 @@
+name: Evaluate Submission
+
+on:
+  workflow_dispatch:
+    inputs:
+      problem_id:
+        description: 'Problem ID to evaluate'
+        required: true
+        type: choice
+        options:
+          - WEB-001
+          - CRYPTO-001
+          - NET-001
+          - DATA-001
+          - SYS-001
+      submission_url:
+        description: 'URL to submission repository or archive'
+        required: true
+        type: string
+      submission_branch:
+        description: 'Branch name (if repository)'
+        required: false
+        type: string
+        default: 'main'
+  
+  pull_request:
+    paths:
+      - 'submissions/**'
+    types: [opened, synchronize]
+
+env:
+  EVALUATION_TIMEOUT: 3600
+  DOCKER_BUILDKIT: 1
+
+jobs:
+  validate:
+    name: Validate Submission
+    runs-on: ubuntu-latest
+    outputs:
+      problem_id: ${{ steps.detect.outputs.problem_id }}
+      submission_path: ${{ steps.detect.outputs.submission_path }}
+    
+    steps:
+      - name: Checkout benchmark
+        uses: actions/checkout@v4
+        with:
+          path: benchmark
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          cd benchmark
+          pip install -r requirements.txt
+      
+      - name: Detect problem from PR
+        id: detect
+        if: github.event_name == 'pull_request'
+        run: |
+          # Extract problem ID from PR path
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+          PROBLEM_ID=$(echo "$CHANGED_FILES" | grep -oP 'submissions/\K[^/]+' | head -1)
+          echo "problem_id=$PROBLEM_ID" >> $GITHUB_OUTPUT
+          echo "submission_path=submissions/$PROBLEM_ID" >> $GITHUB_OUTPUT
+      
+      - name: Set manual inputs
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "problem_id=${{ github.event.inputs.problem_id }}" >> $GITHUB_OUTPUT
+          echo "submission_path=submission" >> $GITHUB_OUTPUT
+      
+      - name: Download submission
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [[ "${{ github.event.inputs.submission_url }}" == *".git" ]]; then
+            git clone --branch ${{ github.event.inputs.submission_branch }} \
+              ${{ github.event.inputs.submission_url }} submission
+          else
+            curl -L ${{ github.event.inputs.submission_url }} -o submission.tar.gz
+            mkdir submission
+            tar -xzf submission.tar.gz -C submission
+          fi
+      
+      - name: Validate problem definition
+        run: |
+          cd benchmark
+          python -m req2run validate --problem problems/*/${{ steps.detect.outputs.problem_id }}*.yaml
+
+  evaluate:
+    name: Run Evaluation
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [docker, native]
+    
+    steps:
+      - name: Checkout benchmark
+        uses: actions/checkout@v4
+        with:
+          path: benchmark
+      
+      - name: Checkout submission
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          path: submission
+      
+      - name: Download submission
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [[ "${{ github.event.inputs.submission_url }}" == *".git" ]]; then
+            git clone --branch ${{ github.event.inputs.submission_branch }} \
+              ${{ github.event.inputs.submission_url }} submission
+          else
+            curl -L ${{ github.event.inputs.submission_url }} -o submission.tar.gz
+            mkdir submission
+            tar -xzf submission.tar.gz -C submission
+          fi
+      
+      - name: Setup evaluation environment
+        run: |
+          cd benchmark
+          if [ "${{ matrix.environment }}" = "docker" ]; then
+            docker-compose -f infrastructure/docker/docker-compose.yml up -d
+            sleep 10  # Wait for services
+          fi
+      
+      - name: Run evaluation
+        id: evaluate
+        run: |
+          cd benchmark
+          python -m req2run evaluate \
+            --problem ${{ needs.validate.outputs.problem_id }} \
+            --submission ../submission/${{ needs.validate.outputs.submission_path }} \
+            --environment ${{ matrix.environment }} \
+            --output results \
+            --verbose
+      
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: evaluation-results-${{ matrix.environment }}
+          path: benchmark/results/
+      
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const resultPath = 'benchmark/results/*/result.json';
+            const results = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+            
+            const comment = `## Evaluation Results for ${results.problem_id}
+            
+            **Environment:** ${{ matrix.environment }}
+            **Total Score:** ${(results.total_score * 100).toFixed(1)}%
+            **Status:** ${results.status.toUpperCase()}
+            
+            ### Metrics
+            - Functional Coverage: ${(results.metrics.functional_coverage * 100).toFixed(1)}%
+            - Test Pass Rate: ${(results.metrics.test_pass_rate * 100).toFixed(1)}%
+            - Performance Score: ${(results.metrics.performance_score * 100).toFixed(1)}%
+            - Security Score: ${(results.metrics.security_score * 100).toFixed(1)}%
+            - Code Quality: ${(results.metrics.code_quality_score * 100).toFixed(1)}%
+            
+            <details>
+            <summary>Detailed Test Results</summary>
+            
+            | Test Case | Status | Time |
+            |-----------|--------|------|
+            ${results.test_results.map(t => 
+              `| ${t.id} | ${t.status} | ${t.execution_time.toFixed(2)}s |`
+            ).join('\n')}
+            
+            </details>`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  security-scan:
+    name: Security Analysis
+    needs: validate
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout submission
+        uses: actions/checkout@v4
+        with:
+          path: submission
+      
+      - name: Run Trivy security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: 'submission'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+      
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          workdir: submission/
+          config: 'auto'
+
+  performance-test:
+    name: Performance Testing
+    needs: evaluate
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+      - name: Checkout benchmark
+        uses: actions/checkout@v4
+        with:
+          path: benchmark
+      
+      - name: Download evaluation results
+        uses: actions/download-artifact@v3
+        with:
+          name: evaluation-results-docker
+          path: results/
+      
+      - name: Setup K6
+        run: |
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      
+      - name: Run load tests
+        run: |
+          # Run performance tests based on problem type
+          PROBLEM_ID=$(jq -r '.problem_id' results/*/result.json)
+          if [[ $PROBLEM_ID == WEB-* ]]; then
+            k6 run benchmark/tests/performance/web-api-load.js
+          fi
+      
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results
+          path: performance-results/
+
+  report:
+    name: Generate Report
+    needs: [evaluate, security-scan, performance-test]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Checkout benchmark
+        uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Generate comprehensive report
+        run: |
+          python -m req2run report \
+            --results evaluation-results-docker/ \
+            --format html \
+            --output evaluation-report.html
+      
+      - name: Upload final report
+        uses: actions/upload-artifact@v3
+        with:
+          name: final-evaluation-report
+          path: |
+            evaluation-report.html
+            evaluation-results-*/
+      
+      - name: Update leaderboard
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          # Update public leaderboard with new results
+          python scripts/update_leaderboard.py \
+            --results evaluation-results-docker/ \
+            --leaderboard docs/leaderboard.md
+          
+          # Commit updated leaderboard
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/leaderboard.md
+          git commit -m "Update leaderboard with latest evaluation results"
+          git push

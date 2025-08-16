@@ -1,0 +1,219 @@
+problem_id: WEB-001
+category: web_api
+difficulty: intermediate
+title: Task Management API with Rate Limiting
+description: |
+  RESTful APIを実装し、タスク管理機能を提供する。
+  認証、レート制限、データ永続化を含む。
+
+functional_requirements:
+  - id: FR-001
+    description: "POST /tasks: 新規タスク作成（title, description, due_date）"
+    priority: must
+  - id: FR-002
+    description: "GET /tasks: タスク一覧取得（ページネーション対応）"
+    priority: must
+  - id: FR-003
+    description: "GET /tasks/{id}: 特定タスクの取得"
+    priority: must
+  - id: FR-004
+    description: "PUT /tasks/{id}: タスク更新"
+    priority: must
+  - id: FR-005
+    description: "DELETE /tasks/{id}: タスク削除"
+    priority: must
+  - id: FR-006
+    description: "POST /auth/login: JWTトークン発行"
+    priority: must
+  - id: FR-007
+    description: "POST /auth/register: ユーザー登録"
+    priority: must
+  - id: FR-008
+    description: "IPベースのレート制限（100req/min per IP）"
+    priority: must
+
+non_functional_requirements:
+  - type: performance
+    constraint: "95パーセンタイルレスポンス時間 < 200ms"
+    measurement: "負荷テストツールによる測定"
+  - type: security
+    constraint: "SQLインジェクション、XSS対策実装"
+    measurement: "セキュリティスキャナによる検証"
+  - type: scalability
+    constraint: "1000同時接続のサポート"
+    measurement: "並行性テスト"
+
+input_specification:
+  format: "JSON REST API requests"
+  examples:
+    - method: POST
+      endpoint: /tasks
+      headers:
+        Authorization: "Bearer <jwt_token>"
+        Content-Type: "application/json"
+      body:
+        title: "Deploy v2.0"
+        description: "Production deployment for version 2.0"
+        due_date: "2024-12-31T23:59:59Z"
+    - method: GET
+      endpoint: /tasks?page=1&limit=10
+      headers:
+        Authorization: "Bearer <jwt_token>"
+
+output_specification:
+  format: "JSON responses with appropriate HTTP status codes"
+  examples:
+    - status: 201
+      headers:
+        Content-Type: "application/json"
+      body:
+        id: "550e8400-e29b-41d4-a716-446655440000"
+        title: "Deploy v2.0"
+        description: "Production deployment for version 2.0"
+        due_date: "2024-12-31T23:59:59Z"
+        created_at: "2024-01-01T00:00:00Z"
+        updated_at: "2024-01-01T00:00:00Z"
+    - status: 200
+      headers:
+        Content-Type: "application/json"
+        X-Total-Count: "42"
+      body:
+        tasks:
+          - id: "550e8400-e29b-41d4-a716-446655440000"
+            title: "Deploy v2.0"
+            description: "Production deployment for version 2.0"
+            due_date: "2024-12-31T23:59:59Z"
+        pagination:
+          page: 1
+          limit: 10
+          total: 42
+
+test_cases:
+  - id: TC-001
+    description: "正常なタスク作成"
+    input:
+      method: POST
+      endpoint: /tasks
+      headers:
+        Authorization: "Bearer valid_token"
+      body:
+        title: "Test Task"
+        description: "This is a test task"
+    expected_output:
+      status: 201
+      body_contains:
+        title: "Test Task"
+      body_has_fields: ["id", "created_at", "updated_at"]
+  
+  - id: TC-002
+    description: "無効な認証トークンでのアクセス拒否"
+    input:
+      method: GET
+      endpoint: /tasks
+      headers:
+        Authorization: "Bearer invalid_token"
+    expected_output:
+      status: 401
+      body:
+        error: "Unauthorized"
+        message: "Invalid or expired token"
+  
+  - id: TC-003
+    description: "レート制限超過"
+    input:
+      method: GET
+      endpoint: /tasks
+      headers:
+        Authorization: "Bearer valid_token"
+      repeat: 101
+      within_seconds: 60
+    expected_output:
+      status: 429
+      headers_contains:
+        X-RateLimit-Remaining: "0"
+        Retry-After: "*"
+      body:
+        error: "Too Many Requests"
+  
+  - id: TC-004
+    description: "ページネーション動作確認"
+    setup:
+      create_tasks: 25
+    input:
+      method: GET
+      endpoint: /tasks?page=2&limit=10
+      headers:
+        Authorization: "Bearer valid_token"
+    expected_output:
+      status: 200
+      body:
+        tasks_length: 10
+        pagination:
+          page: 2
+          limit: 10
+          total: 25
+  
+  - id: TC-005
+    description: "タスク更新の権限確認"
+    setup:
+      create_task_as_user: "user1"
+      task_id: "test-task-id"
+    input:
+      method: PUT
+      endpoint: /tasks/test-task-id
+      headers:
+        Authorization: "Bearer user2_token"
+      body:
+        title: "Updated Title"
+    expected_output:
+      status: 403
+      body:
+        error: "Forbidden"
+        message: "You don't have permission to modify this task"
+
+deployment_requirements:
+  environment: docker
+  base_image: "node:20-alpine OR python:3.11-slim"
+  dependencies:
+    - "postgresql:15 OR mysql:8.0"
+    - "redis:7"
+  ports:
+    - "3000:3000"
+  environment_variables:
+    - DATABASE_URL
+    - REDIS_URL
+    - JWT_SECRET
+    - PORT
+  healthcheck:
+    endpoint: "/health"
+    interval: 30
+    timeout: 10
+    retries: 3
+
+evaluation_criteria:
+  - metric: "機能要件充足率"
+    weight: 0.35
+    threshold: 1.0
+    measurement: "自動APIテストによる検証"
+  - metric: "テストケース通過率"
+    weight: 0.25
+    threshold: 0.95
+    measurement: "定義済みテストケースの実行"
+  - metric: "性能要件達成率"
+    weight: 0.20
+    threshold: 0.90
+    measurement: "JMeterによる負荷テスト"
+  - metric: "セキュリティスキャン通過"
+    weight: 0.10
+    threshold: 1.0
+    measurement: "OWASP ZAPスキャン"
+  - metric: "コード品質"
+    weight: 0.10
+    threshold: 0.80
+    measurement: "静的解析ツール（ESLint/Pylint）"
+
+metadata:
+  version: "1.0.0"
+  created_at: "2024-01-01"
+  estimated_time: "15 minutes"
+  tags: ["rest-api", "authentication", "rate-limiting", "crud"]

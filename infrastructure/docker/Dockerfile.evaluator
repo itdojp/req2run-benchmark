@@ -1,0 +1,90 @@
+# Req2Run Evaluator Container
+# Multi-stage build for evaluation environment
+
+FROM python:3.11-slim as python-base
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    build-essential \
+    docker.io \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python evaluation framework
+WORKDIR /opt/req2run
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy evaluation framework
+COPY req2run/ ./req2run/
+COPY scripts/ ./scripts/
+
+# Create evaluation user
+RUN useradd -m -s /bin/bash evaluator && \
+    mkdir -p /workspace /results && \
+    chown -R evaluator:evaluator /workspace /results /opt/req2run
+
+USER evaluator
+WORKDIR /workspace
+
+# Entry point for evaluation
+ENTRYPOINT ["python", "-m", "req2run.cli"]
+CMD ["--help"]
+
+---
+
+# Node.js evaluation environment
+FROM node:20-alpine as nodejs-base
+
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    docker \
+    git \
+    build-base
+
+WORKDIR /opt/req2run
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+COPY req2run/ ./req2run/
+COPY scripts/ ./scripts/
+
+RUN adduser -D -s /bin/sh evaluator && \
+    mkdir -p /workspace /results && \
+    chown -R evaluator:evaluator /workspace /results /opt/req2run
+
+USER evaluator
+WORKDIR /workspace
+
+ENTRYPOINT ["python3", "-m", "req2run.cli"]
+
+---
+
+# Go evaluation environment  
+FROM golang:1.21-alpine as go-base
+
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    docker \
+    git \
+    build-base
+
+WORKDIR /opt/req2run
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+COPY req2run/ ./req2run/
+COPY scripts/ ./scripts/
+
+RUN adduser -D -s /bin/sh evaluator && \
+    mkdir -p /workspace /results && \
+    chown -R evaluator:evaluator /workspace /results /opt/req2run
+
+USER evaluator
+WORKDIR /workspace
+
+ENTRYPOINT ["python3", "-m", "req2run.cli"]

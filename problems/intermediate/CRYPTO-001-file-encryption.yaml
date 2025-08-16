@@ -1,0 +1,190 @@
+problem_id: CRYPTO-001
+category: cryptography
+difficulty: intermediate
+title: AES-256-GCM File Encryption Tool
+description: |
+  AES-256-GCMを使用したファイル暗号化/復号化CLIツール。
+  パスワード導出にはArgon2idを使用し、安全なファイル暗号化を実現。
+
+functional_requirements:
+  - id: FR-001
+    description: "encrypt サブコマンド: ファイルをAES-256-GCMで暗号化"
+    priority: must
+  - id: FR-002
+    description: "decrypt サブコマンド: 暗号化ファイルの復号化"
+    priority: must
+  - id: FR-003
+    description: "パスワードからArgon2idでキー導出（salt: 16bytes, iterations: 3, memory: 64MB）"
+    priority: must
+  - id: FR-004
+    description: "暗号化ファイルヘッダーにsalt, nonce, tagを含める"
+    priority: must
+  - id: FR-005
+    description: "大容量ファイル対応（ストリーミング処理、最大10GB）"
+    priority: should
+  - id: FR-006
+    description: "進捗表示（プログレスバー）"
+    priority: nice_to_have
+
+non_functional_requirements:
+  - type: security
+    constraint: "NIST SP 800-38D準拠のGCM実装"
+    measurement: "テストベクトルによる検証"
+  - type: performance
+    constraint: "1GBファイルの暗号化時間 < 10秒（SSD環境）"
+    measurement: "ベンチマークテスト"
+  - type: compatibility
+    constraint: "Linux, macOS, Windows対応"
+    measurement: "クロスプラットフォームテスト"
+
+input_specification:
+  format: "CLI arguments"
+  examples:
+    - command: "cryptool encrypt --input data.txt --output data.enc --password mypass"
+      description: "基本的な暗号化"
+    - command: "cryptool decrypt --input data.enc --output data.txt --password mypass"
+      description: "基本的な復号化"
+    - command: "cryptool encrypt -i sensitive.pdf -o sensitive.enc -p"
+      description: "パスワードプロンプト使用"
+    - command: "cryptool encrypt --input large.dat --output large.enc --password pass --progress"
+      description: "進捗表示付き暗号化"
+
+output_specification:
+  format: "Encrypted file with structured header"
+  header_structure:
+    magic_bytes: 
+      size: 4
+      value: "0x52455132"  # 'REQ2' in hex
+    version:
+      size: 1
+      value: "0x01"
+    salt:
+      size: 16
+      description: "Argon2id salt"
+    nonce:
+      size: 12
+      description: "GCM nonce"
+    tag:
+      size: 16
+      description: "GCM authentication tag"
+    encrypted_data:
+      size: variable
+      description: "AES-256-GCM encrypted content"
+  cli_output:
+    success: "✓ File encrypted successfully: <output_file>"
+    error: "✗ Error: <error_message>"
+
+test_cases:
+  - id: TC-001
+    description: "小さいファイルの暗号化と復号化"
+    setup:
+      create_file: 
+        name: "test.txt"
+        content: "Hello, World! This is a test file."
+    steps:
+      - command: "cryptool encrypt --input test.txt --output test.enc --password TestPass123"
+        expected_exit_code: 0
+        expected_file: "test.enc"
+        file_size_greater_than: 50
+      - command: "cryptool decrypt --input test.enc --output decrypted.txt --password TestPass123"
+        expected_exit_code: 0
+        expected_file: "decrypted.txt"
+      - verify_file_content:
+          file: "decrypted.txt"
+          matches: "test.txt"
+  
+  - id: TC-002
+    description: "不正なパスワードでの復号化失敗"
+    setup:
+      create_encrypted_file: "secret.enc"
+      password: "CorrectPass"
+    input:
+      command: "cryptool decrypt --input secret.enc --output fail.txt --password WrongPass"
+    expected_output:
+      exit_code: 1
+      stderr_contains: "authentication failed"
+      file_not_exists: "fail.txt"
+  
+  - id: TC-003
+    description: "大容量ファイルの処理"
+    setup:
+      create_random_file:
+        name: "large.dat"
+        size_mb: 1024
+    input:
+      command: "cryptool encrypt --input large.dat --output large.enc --password LargeFileTest"
+    expected_output:
+      exit_code: 0
+      execution_time_seconds: "< 10"
+      file_exists: "large.enc"
+      file_size_difference: "< 100"  # bytes overhead
+  
+  - id: TC-004
+    description: "ヘッダー構造の検証"
+    setup:
+      create_file:
+        name: "verify.txt"
+        content: "Verification test"
+    steps:
+      - command: "cryptool encrypt --input verify.txt --output verify.enc --password VerifyPass"
+      - verify_binary:
+          file: "verify.enc"
+          offset: 0
+          bytes: [0x52, 0x45, 0x51, 0x32]  # Magic bytes 'REQ2'
+      - verify_binary:
+          file: "verify.enc"
+          offset: 4
+          bytes: [0x01]  # Version
+  
+  - id: TC-005
+    description: "標準入出力のサポート"
+    input:
+      command: "echo 'Pipeline test' | cryptool encrypt --password PipePass | cryptool decrypt --password PipePass"
+    expected_output:
+      stdout: "Pipeline test"
+      exit_code: 0
+
+deployment_requirements:
+  environment: standalone
+  build_system: "make OR cargo OR go build"
+  dependencies: []
+  binary_output:
+    name: "cryptool"
+    platforms:
+      - linux-amd64
+      - darwin-amd64
+      - windows-amd64
+  installation:
+    method: "single binary"
+    location: "/usr/local/bin OR current directory"
+
+evaluation_criteria:
+  - metric: "暗号化仕様準拠"
+    weight: 0.40
+    threshold: 1.0
+    measurement: "NIST テストベクトル検証"
+  - metric: "テストケース通過率"
+    weight: 0.30
+    threshold: 1.0
+    measurement: "全テストケースの実行"
+  - metric: "性能要件達成"
+    weight: 0.15
+    threshold: 0.90
+    measurement: "ベンチマークテスト"
+  - metric: "エラーハンドリング"
+    weight: 0.10
+    threshold: 0.95
+    measurement: "異常系テストケース"
+  - metric: "コード品質"
+    weight: 0.05
+    threshold: 0.80
+    measurement: "静的解析（セキュアコーディング）"
+
+metadata:
+  version: "1.0.0"
+  created_at: "2024-01-01"
+  estimated_time: "15 minutes"
+  tags: ["cryptography", "aes-gcm", "argon2id", "cli-tool"]
+  references:
+    - "NIST SP 800-38D: GCM Specification"
+    - "RFC 9106: Argon2 Memory-Hard Function"
