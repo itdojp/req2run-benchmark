@@ -11,8 +11,10 @@ import tempfile
 import shutil
 import json
 import argparse
+import ast
+import re
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List, Set
 import time
 
 
@@ -233,6 +235,88 @@ class SandboxRunner:
             if sandbox_dir.exists():
                 shutil.rmtree(sandbox_dir, ignore_errors=True)
     
+    def _check_python_ast(self, file_path: Path) -> List[str]:
+        """
+        Check Python file for suspicious patterns using AST.
+        
+        Args:
+            file_path: Path to Python file
+            
+        Returns:
+            List of warnings
+        """
+        warnings = []
+        try:
+            content = file_path.read_text()
+            tree = ast.parse(content, filename=str(file_path))
+            
+            # Check for dangerous function calls
+            dangerous_calls = {
+                'eval', 'exec', 'compile', '__import__',
+                'getattr', 'setattr', 'delattr'
+            }
+            
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Call):
+                    if isinstance(node.func, ast.Name) and node.func.id in dangerous_calls:
+                        warnings.append(f"Dangerous function call: {node.func.id}")
+                    elif isinstance(node.func, ast.Attribute):
+                        # Check for os.system, subprocess.*, socket.socket
+                        if isinstance(node.func.value, ast.Name):
+                            if node.func.value.id == 'os' and node.func.attr == 'system':
+                                warnings.append("os.system call detected")
+                            elif node.func.value.id == 'subprocess':
+                                warnings.append(f"subprocess.{node.func.attr} call detected")
+                            elif node.func.value.id == 'socket' and node.func.attr == 'socket':
+                                warnings.append("socket.socket call detected")
+                
+                # Check for imports
+                elif isinstance(node, ast.Import):
+                    for alias in node.names:
+                        if alias.name in ['subprocess', 'socket', 'ctypes']:
+                            warnings.append(f"Import of potentially dangerous module: {alias.name}")
+                
+                elif isinstance(node, ast.ImportFrom):
+                    if node.module in ['subprocess', 'socket', 'ctypes']:
+                        warnings.append(f"Import from potentially dangerous module: {node.module}")
+            
+        except SyntaxError:
+            warnings.append("Python syntax error in file")
+        except Exception as e:
+            warnings.append(f"Error parsing Python file: {e}")
+        
+        return warnings
+    
+    def _check_regex_patterns(self, file_path: Path) -> List[str]:
+        """
+        Check file for suspicious patterns using regex.
+        
+        Args:
+            file_path: Path to file
+            
+        Returns:
+            List of warnings
+        """
+        warnings = []
+        suspicious_patterns = [
+            (r'open\s*\(\s*["\']/(etc|proc|sys|dev)', "Attempt to access system directory"),
+            (r'\bsocket\.socket\b', "Socket creation detected"),
+            (r'\b(nc|netcat|telnet|ssh)\b', "Network utility usage"),
+            (r'/bin/(sh|bash|zsh|fish)', "Shell invocation"),
+            (r'\brm\s+-rf\s+/', "Dangerous rm command"),
+            (r':(){ :|:& };:', "Fork bomb pattern"),
+        ]
+        
+        try:
+            content = file_path.read_text()
+            for pattern, description in suspicious_patterns:
+                if re.search(pattern, content, re.IGNORECASE):
+                    warnings.append(description)
+        except Exception:
+            pass
+        
+        return warnings
+    
     def validate_submission(self, submission_path: Path) -> bool:
         """
         Validate submission before execution.
@@ -246,35 +330,37 @@ class SandboxRunner:
         if not submission_path.exists():
             return False
         
-        # Check for suspicious patterns
-        suspicious_patterns = [
-            "__import__",
-            "eval(",
-            "exec(",
-            "compile(",
-            "open('/etc",
-            "open('/proc",
-            "subprocess",
-            "os.system",
-            "socket."
-        ]
-        
         if submission_path.is_file():
             files = [submission_path]
         else:
             files = list(submission_path.rglob("*.py")) + \
                    list(submission_path.rglob("*.js")) + \
-                   list(submission_path.rglob("*.go"))
+                   list(submission_path.rglob("*.go")) + \
+                   list(submission_path.rglob("*.java")) + \
+                   list(submission_path.rglob("*.rs"))
+        
+        total_warnings = []
         
         for file_path in files:
-            try:
-                content = file_path.read_text()
-                for pattern in suspicious_patterns:
-                    if pattern in content:
-                        print(f"Warning: Suspicious pattern '{pattern}' found in {file_path}")
-                        # Don't reject, just warn
-            except Exception:
-                pass
+            file_warnings = []
+            
+            # Use AST parsing for Python files
+            if file_path.suffix == '.py':
+                file_warnings.extend(self._check_python_ast(file_path))
+            
+            # Use regex for all files
+            file_warnings.extend(self._check_regex_patterns(file_path))
+            
+            if file_warnings:
+                print(f"\nWarnings for {file_path.relative_to(submission_path)}:")
+                for warning in file_warnings:
+                    print(f"  - {warning}")
+                total_warnings.extend(file_warnings)
+        
+        # Don't reject submissions, just warn
+        if total_warnings:
+            print(f"\nTotal warnings: {len(total_warnings)}")
+            print("Note: Submission will still be executed in sandbox")
         
         return True
 
