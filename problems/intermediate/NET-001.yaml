@@ -1,0 +1,188 @@
+id: NET-001
+title: "Custom TCP Protocol Implementation"
+difficulty: intermediate
+category: network_protocol
+languages: 
+  - python
+  - go
+  - rust
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The server MUST listen on a configurable TCP port"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The protocol MUST implement a custom message format with header and payload"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-003
+      description: "The server MUST support at least 100 concurrent connections"
+      priority: MUST
+      validation:
+        type: performance_test
+    
+    - id: FR-004
+      description: "The protocol MUST include message types: CONNECT, DISCONNECT, DATA, ACK, ERROR"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-005
+      description: "The server MUST implement connection timeout (30 seconds idle)"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The protocol MUST include message checksums for integrity verification"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-007
+      description: "The server SHOULD support message compression using gzip"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The protocol SHOULD implement rate limiting per client"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The server MAY support TLS encryption"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 50
+      p99_latency_ms: 100
+      throughput_messages_per_second: 1000
+      concurrent_connections: 100
+      cpu_limit: "2000m"
+      memory_limit: "1Gi"
+    
+    security:
+      network_egress: ALLOW  # Server needs to respond
+      secrets_in_code: FORBIDDEN
+      authentication: OPTIONAL
+      encryption: TLS_OPTIONAL
+    
+    quality:
+      max_cyclomatic_complexity: 10
+      min_test_coverage: 80
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - asyncio  # Python
+    - socket  # Python
+    - struct  # Python
+    - net  # Go
+    - tokio  # Rust
+    - async-std  # Rust
+  
+  disallowed_packages:
+    - http
+    - websocket
+    - grpc
+  
+  disallowed_syscalls:
+    - exec
+    - fork
+  
+  resource_limits:
+    max_cpu_cores: 2
+    max_memory_gb: 1
+    max_disk_gb: 1
+    max_network_bandwidth_mbps: 100
+  
+  time_limits:
+    generation_minutes: 30
+    execution_minutes: 5
+
+artifacts:
+  entrypoint: "server"
+  dockerfile: "templates/network-server.dockerfile"
+  healthcheck: "nc -z localhost 8080"
+  config_files:
+    - "server.conf"
+    - "requirements.txt"
+    - "go.mod"
+    - "Cargo.toml"
+
+tests:
+  unit: "tests/net_001_unit.py"
+  integration: "tests/net_001_integration.py"
+  performance: "tests/net_001_performance.py"
+  security: "tests/net_001_security.py"
+  test_data:
+    input_files:
+      - "test_data/protocol_messages.bin"
+      - "test_data/client_simulator.py"
+    expected_outputs:
+      - "test_data/expected_responses.bin"
+
+metrics:
+  weights:
+    functional_coverage: 0.30
+    pass_rate: 0.25
+    performance: 0.20
+    code_quality: 0.15
+    security: 0.10
+  
+  thresholds:
+    min_functional_coverage: 100
+    min_pass_rate: 80
+    min_performance_score: 75
+
+pass_criteria:
+  min_total_score: 0.70
+  mandatory_requirements:
+    - FR-001  # TCP listening
+    - FR-002  # Custom message format
+    - FR-003  # Concurrent connections
+    - FR-004  # Message types
+    - FR-005  # Connection timeout
+    - FR-006  # Message checksums
+  forbidden_violations:
+    - runtime_failure
+    - protocol_violation
+    - data_corruption
+
+metadata:
+  author: "ITdo Inc. Japan"
+  created_date: "2024-12-01"
+  last_modified: "2024-12-01T12:00:00Z"
+  version: "1.0.0"
+  tags:
+    - network
+    - tcp
+    - protocol
+    - server
+    - concurrent
+  references:
+    - title: "TCP/IP Protocol Design"
+      url: "https://www.rfc-editor.org/rfc/rfc793"
+    - title: "Network Programming Guide"
+      url: "https://beej.us/guide/bgnet/"
+  notes: |
+    This problem tests the ability to implement a custom network protocol with:
+    - TCP socket programming
+    - Custom message format design
+    - Concurrent connection handling
+    - Message integrity and validation
+    - Performance optimization
+    - Connection state management
+    - Error handling and recovery
