@@ -1,0 +1,183 @@
+id: WEB-001
+title: "Todo REST API with Authentication"
+difficulty: intermediate
+category: web_api
+languages: 
+  - python
+  - javascript
+  - typescript
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The API MUST implement CRUD operations for /todos endpoint"
+      priority: MUST
+      validation:
+        type: api_test
+        endpoint: /todos
+        expected_response:
+          status: 200
+          content_type: application/json
+    
+    - id: FR-002
+      description: "All responses MUST be in JSON format"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The API MUST implement JWT-based authentication"
+      priority: MUST
+      validation:
+        type: api_test
+        endpoint: /auth/login
+        expected_response:
+          status: 200
+          body:
+            token: string
+    
+    - id: FR-004
+      description: "Todo items MUST have fields: id, title, description, completed, created_at, updated_at"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-005
+      description: "The API SHOULD implement pagination for GET /todos"
+      priority: SHOULD
+      validation:
+        type: api_test
+        endpoint: /todos?page=1&limit=10
+    
+    - id: FR-006
+      description: "The API MAY implement filtering by completion status"
+      priority: MAY
+      validation:
+        type: api_test
+        endpoint: /todos?completed=true
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 120
+      p99_latency_ms: 200
+      throughput_rps: 50
+      cpu_limit: "1000m"
+      memory_limit: "512Mi"
+    
+    security:
+      network_egress: DENY
+      secrets_in_code: FORBIDDEN
+      authentication: REQUIRED
+      encryption: TLS_OPTIONAL
+    
+    quality:
+      max_cyclomatic_complexity: 10
+      min_test_coverage: 80
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - fastapi
+    - uvicorn
+    - pydantic
+    - sqlalchemy
+    - pytest
+    - httpx
+    - python-jose
+    - passlib
+    - python-multipart
+  
+  disallowed_packages:
+    - requests  # Use httpx instead
+    - urllib3   # Use httpx instead
+  
+  disallowed_syscalls:
+    - clone3
+    - mount
+    - setns
+    - unshare
+  
+  resource_limits:
+    max_cpu_cores: 2
+    max_memory_gb: 1
+    max_disk_gb: 5
+    max_network_bandwidth_mbps: 10
+  
+  time_limits:
+    generation_minutes: 30
+    execution_minutes: 5
+
+artifacts:
+  entrypoint: "main:app"
+  dockerfile: "templates/python-fastapi.dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - ".env.example"
+    - "requirements.txt"
+
+tests:
+  unit: "tests/web_001_unit.py"
+  integration: "tests/web_001_integration.py"
+  performance: "tests/web_001_performance.py"
+  security: "tests/web_001_security.py"
+  property: "tests/web_001_property.py"
+  test_data:
+    input_files:
+      - "test_data/todos_sample.json"
+      - "test_data/users_sample.json"
+    expected_outputs:
+      - "test_data/expected_responses.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35
+    pass_rate: 0.25
+    performance: 0.15
+    code_quality: 0.15
+    security: 0.10
+  
+  thresholds:
+    min_functional_coverage: 100  # All MUST requirements
+    min_pass_rate: 80
+    min_performance_score: 70
+
+pass_criteria:
+  min_total_score: 0.70
+  mandatory_requirements:
+    - FR-001  # CRUD operations
+    - FR-002  # JSON responses
+    - FR-003  # JWT authentication
+    - FR-004  # Todo schema
+  forbidden_violations:
+    - critical_security
+    - runtime_failure
+    - sandbox_escape
+
+metadata:
+  author: "ITdo Inc. Japan"
+  created_date: "2024-12-01"
+  last_modified: "2024-12-01T10:00:00Z"
+  version: "1.0.0"
+  tags:
+    - web
+    - api
+    - rest
+    - authentication
+    - jwt
+    - todo
+  references:
+    - title: "REST API Design Best Practices"
+      url: "https://restfulapi.net/"
+    - title: "JWT Authentication"
+      url: "https://jwt.io/introduction"
+    - title: "FastAPI Documentation"
+      url: "https://fastapi.tiangolo.com/"
+  notes: |
+    This problem tests the ability to create a production-ready REST API with:
+    - Proper authentication and authorization
+    - Database persistence (SQLite is acceptable)
+    - Input validation and error handling
+    - Performance optimization
+    - Security best practices
+    - Comprehensive testing

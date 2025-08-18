@@ -1,0 +1,356 @@
+# Req2Run Problem Schema Definition v1.0.0
+# This schema defines the structure for all benchmark problems
+
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "Req2Run Problem Definition"
+type: object
+required:
+  - id
+  - title
+  - difficulty
+  - category
+  - languages
+  - requirements
+  - constraints
+  - tests
+  - metrics
+  - pass_criteria
+
+properties:
+  id:
+    type: string
+    pattern: "^[A-Z]+-[0-9]{3}$"
+    description: "Unique problem identifier (e.g., WEB-001)"
+  
+  title:
+    type: string
+    description: "Human-readable problem title"
+  
+  difficulty:
+    type: string
+    enum: ["basic", "intermediate", "advanced", "expert"]
+    description: "Problem difficulty level"
+  
+  category:
+    type: string
+    enum: 
+      - "web_api"
+      - "cli_tool"
+      - "network_protocol"
+      - "cryptography"
+      - "data_processing"
+      - "system_utility"
+      - "machine_learning"
+      - "database"
+      - "language_processor"
+      - "real_time_communication"
+      - "blockchain"
+      - "orchestration"
+      - "api_gateway"
+      - "runtime_platform"
+      - "service_mesh"
+    description: "Problem category"
+  
+  languages:
+    type: array
+    items:
+      type: string
+      enum: ["python", "javascript", "typescript", "go", "java", "rust"]
+    description: "Allowed implementation languages"
+  
+  requirements:
+    type: object
+    required: ["functional", "non_functional"]
+    properties:
+      functional:
+        type: array
+        items:
+          type: object
+          required: ["id", "description", "priority"]
+          properties:
+            id:
+              type: string
+              pattern: "^FR-[0-9]{3}$"
+            description:
+              type: string
+              description: "Requirement using RFC 2119 keywords (MUST, SHOULD, MAY)"
+            priority:
+              type: string
+              enum: ["MUST", "SHOULD", "MAY"]
+            validation:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: ["api_test", "unit_test", "integration_test", "property_test"]
+                endpoint:
+                  type: string
+                expected_response:
+                  type: object
+      
+      non_functional:
+        type: object
+        properties:
+          performance:
+            type: object
+            properties:
+              p95_latency_ms:
+                type: number
+                minimum: 0
+              p99_latency_ms:
+                type: number
+                minimum: 0
+              throughput_rps:
+                type: number
+                minimum: 0
+              cpu_limit:
+                type: string
+                pattern: "^[0-9]+m?$"
+              memory_limit:
+                type: string
+                pattern: "^[0-9]+[MG]i?$"
+          
+          security:
+            type: object
+            properties:
+              network_egress:
+                type: string
+                enum: ["ALLOW", "DENY"]
+              secrets_in_code:
+                type: string
+                enum: ["FORBIDDEN", "ALLOWED"]
+              authentication:
+                type: string
+                enum: ["REQUIRED", "OPTIONAL", "NONE"]
+              encryption:
+                type: string
+                enum: ["TLS_REQUIRED", "TLS_OPTIONAL", "NONE"]
+          
+          quality:
+            type: object
+            properties:
+              max_cyclomatic_complexity:
+                type: integer
+                minimum: 1
+                maximum: 20
+              min_test_coverage:
+                type: number
+                minimum: 0
+                maximum: 100
+              documentation_required:
+                type: boolean
+              type_hints_required:
+                type: boolean
+  
+  constraints:
+    type: object
+    properties:
+      allowed_packages:
+        type: array
+        items:
+          type: string
+        description: "Whitelist of allowed third-party packages"
+      
+      disallowed_packages:
+        type: array
+        items:
+          type: string
+        description: "Blacklist of forbidden packages"
+      
+      disallowed_syscalls:
+        type: array
+        items:
+          type: string
+        description: "System calls that must not be used"
+      
+      resource_limits:
+        type: object
+        properties:
+          max_cpu_cores:
+            type: integer
+            minimum: 1
+          max_memory_gb:
+            type: number
+            minimum: 0.5
+          max_disk_gb:
+            type: number
+            minimum: 1
+          max_network_bandwidth_mbps:
+            type: number
+            minimum: 0
+      
+      time_limits:
+        type: object
+        properties:
+          generation_minutes:
+            type: integer
+            minimum: 5
+            maximum: 60
+          execution_minutes:
+            type: integer
+            minimum: 1
+            maximum: 30
+  
+  artifacts:
+    type: object
+    properties:
+      entrypoint:
+        type: string
+        description: "Main entry point for the application"
+      
+      dockerfile:
+        type: string
+        description: "Path to Dockerfile template"
+      
+      healthcheck:
+        type: string
+        description: "Health check endpoint or command"
+      
+      config_files:
+        type: array
+        items:
+          type: string
+        description: "Required configuration files"
+  
+  tests:
+    type: object
+    required: ["unit", "integration"]
+    properties:
+      unit:
+        type: string
+        description: "Path to unit test file"
+      
+      integration:
+        type: string
+        description: "Path to integration test file"
+      
+      performance:
+        type: string
+        description: "Path to performance test file"
+      
+      security:
+        type: string
+        description: "Path to security test file"
+      
+      property:
+        type: string
+        description: "Path to property-based test file"
+      
+      test_data:
+        type: object
+        properties:
+          input_files:
+            type: array
+            items:
+              type: string
+          expected_outputs:
+            type: array
+            items:
+              type: string
+  
+  metrics:
+    type: object
+    required: ["weights", "thresholds"]
+    properties:
+      weights:
+        type: object
+        required: ["functional_coverage", "pass_rate", "performance", "code_quality", "security"]
+        properties:
+          functional_coverage:
+            type: number
+            minimum: 0
+            maximum: 1
+          pass_rate:
+            type: number
+            minimum: 0
+            maximum: 1
+          performance:
+            type: number
+            minimum: 0
+            maximum: 1
+          code_quality:
+            type: number
+            minimum: 0
+            maximum: 1
+          security:
+            type: number
+            minimum: 0
+            maximum: 1
+        additionalProperties: false
+      
+      thresholds:
+        type: object
+        properties:
+          min_functional_coverage:
+            type: number
+            minimum: 0
+            maximum: 100
+          min_pass_rate:
+            type: number
+            minimum: 0
+            maximum: 100
+          min_performance_score:
+            type: number
+            minimum: 0
+            maximum: 100
+  
+  pass_criteria:
+    type: object
+    required: ["min_total_score"]
+    properties:
+      min_total_score:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: "Minimum total score to pass (0.0-1.0)"
+      
+      mandatory_requirements:
+        type: array
+        items:
+          type: string
+        description: "List of requirement IDs that must be satisfied"
+      
+      forbidden_violations:
+        type: array
+        items:
+          type: string
+          enum: ["critical_security", "runtime_failure", "sandbox_escape"]
+        description: "Violations that result in automatic failure"
+  
+  metadata:
+    type: object
+    properties:
+      author:
+        type: string
+      
+      created_date:
+        type: string
+        format: date
+      
+      last_modified:
+        type: string
+        format: date-time
+      
+      version:
+        type: string
+        pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+      
+      tags:
+        type: array
+        items:
+          type: string
+      
+      references:
+        type: array
+        items:
+          type: object
+          properties:
+            title:
+              type: string
+            url:
+              type: string
+              format: uri
+      
+      notes:
+        type: string
+        description: "Additional notes or clarifications"

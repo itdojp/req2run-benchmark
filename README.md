@@ -147,6 +147,22 @@ print(f"Score: {result.score}")
 print(f"Status: {result.status}")
 ```
 
+### How Req2Run Differs from Other Benchmarks
+
+Req2Run fills a unique niche in the AI code generation evaluation landscape:
+
+| Benchmark | Focus | Evaluation |
+|-----------|-------|------------|
+| **HumanEval/MBPP** | Function-level short problems | Pass@k metric |
+| **SWE-bench** | Fixing issues in existing codebases | % Resolved |
+| **Req2Run** | Requirements → New implementation → Production metrics | Functional + NFR (Performance/Security/Quality) |
+
+**Key Differentiators:**
+- **End-to-end evaluation**: From requirements specification to running, production-ready code
+- **Non-functional requirements**: Performance, security, and code quality are first-class metrics
+- **Unified environment**: Docker/Kubernetes standardization ensures reproducibility
+- **Practical focus**: Problems represent real-world development tasks
+
 ### Contributing
 
 1. Fork this repository
@@ -315,6 +331,22 @@ result = evaluator.evaluate(
 print(f"Score: {result.score}")
 print(f"Status: {result.status}")
 ```
+
+### 他のベンチマークとの違い
+
+Req2Runは、AIコード生成評価の中で独自のニッチを埋めています：
+
+| ベンチマーク | 焦点 | 評価方法 |
+|------------|------|---------|
+| **HumanEval/MBPP** | 関数レベルの短い問題 | Pass@k メトリック |
+| **SWE-bench** | 既存コードベースの問題修正 | 解決率（%） |
+| **Req2Run** | 要求仕様 → 新規実装 → 本番メトリクス | 機能 + NFR（性能/セキュリティ/品質） |
+
+**主な差別化要因：**
+- **エンドツーエンド評価**：要求仕様から本番環境対応コードまで
+- **非機能要件**：性能、セキュリティ、コード品質を第一級メトリクスとして扱う
+- **統一環境**：Docker/Kubernetes標準化により再現性を保証
+- **実践的焦点**：実際の開発タスクを表現する問題設定
 
 ### 貢献方法
 
