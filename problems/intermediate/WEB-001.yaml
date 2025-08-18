@@ -1,40 +1,51 @@
+# Req2Run Problem: Todo REST API
+# This problem tests the ability to generate a complete REST API with authentication
+# Using RFC 2119 (MUST/SHOULD/MAY) and EARS syntax for requirements
+
 id: WEB-001
-title: "Todo REST API with Authentication"
+title: "Todo REST API with JWT Authentication"
 difficulty: intermediate
 category: web_api
+estimated_time_minutes: 30
 languages: 
   - python
   - javascript
   - typescript
+  - go
 
 requirements:
   functional:
+    # EARS Syntax: <optional preconditions> <optional trigger> the <system name> shall <system response>
     - id: FR-001
-      description: "The API MUST implement CRUD operations for /todos endpoint"
-      priority: MUST
+      description: "WHEN a client sends a valid request, the API SHALL implement CRUD operations for /todos endpoint"
+      priority: MUST  # RFC 2119: Absolute requirement
       validation:
         type: api_test
         endpoint: /todos
+        methods: [GET, POST, PUT, DELETE]
         expected_response:
           status: 200
           content_type: application/json
     
     - id: FR-002
-      description: "All responses MUST be in JSON format"
-      priority: MUST
+      description: "WHERE the API returns a response, the API SHALL format all responses as JSON with Content-Type: application/json"
+      priority: MUST  # RFC 2119: Absolute requirement
       validation:
         type: integration_test
+        check: response_format
     
     - id: FR-003
-      description: "The API MUST implement JWT-based authentication"
-      priority: MUST
+      description: "WHEN a user provides valid credentials to /auth/login, the API SHALL return a valid JWT token"
+      priority: MUST  # RFC 2119: Absolute requirement
       validation:
         type: api_test
         endpoint: /auth/login
+        method: POST
         expected_response:
           status: 200
           body:
-            token: string
+            access_token: string
+            token_type: bearer
     
     - id: FR-004
       description: "Todo items MUST have fields: id, title, description, completed, created_at, updated_at"
@@ -43,32 +54,43 @@ requirements:
         type: unit_test
     
     - id: FR-005
-      description: "The API SHOULD implement pagination for GET /todos"
-      priority: SHOULD
+      description: "WHEN retrieving todos, the API SHOULD implement pagination with page and limit parameters"
+      priority: SHOULD  # RFC 2119: Recommended but not mandatory
       validation:
         type: api_test
         endpoint: /todos?page=1&limit=10
+        expected_fields: [items, total, page, pages]
     
     - id: FR-006
-      description: "The API MAY implement filtering by completion status"
-      priority: MAY
+      description: "IF the implementation chooses, the API MAY implement filtering by completion status"
+      priority: MAY  # RFC 2119: Optional feature
       validation:
         type: api_test
         endpoint: /todos?completed=true
+    
+    - id: FR-007
+      description: "WHILE processing requests, the API SHALL enforce rate limiting of 100 requests per minute per IP"
+      priority: SHOULD  # RFC 2119: Strong recommendation
+      validation:
+        type: performance_test
+        rate_limit: 100
+        window: 60
   
   non_functional:
     performance:
-      p95_latency_ms: 120
-      p99_latency_ms: 200
-      throughput_rps: 50
-      cpu_limit: "1000m"
-      memory_limit: "512Mi"
+      p95_latency_ms: 200  # MUST meet this latency at 95th percentile
+      p99_latency_ms: 500  # SHOULD meet this latency at 99th percentile
+      throughput_rps: 100  # MUST support at least 100 req/sec
+      concurrent_users: 50  # MUST handle 50 concurrent users
+      cpu_limit: "2000m"  # 2 CPU cores max
+      memory_limit: "512Mi"  # 512MB RAM max
     
     security:
-      network_egress: DENY
-      secrets_in_code: FORBIDDEN
-      authentication: REQUIRED
-      encryption: TLS_OPTIONAL
+      network_egress: DENY  # MUST NOT make external network calls
+      secrets_in_code: FORBIDDEN  # MUST NOT hardcode secrets
+      authentication: jwt  # MUST use JWT authentication
+      authorization: true  # MUST implement user-specific access control
+      encryption: tls  # SHOULD support TLS in production
     
     quality:
       max_cyclomatic_complexity: 10
@@ -92,11 +114,11 @@ constraints:
     - requests  # Use httpx instead
     - urllib3   # Use httpx instead
   
-  disallowed_syscalls:
-    - clone3
-    - mount
-    - setns
-    - unshare
+  disallowed_syscalls:  # Enforced by nsjail/firejail sandbox
+    - mount  # MUST NOT mount filesystems
+    - setuid  # MUST NOT change user ID
+    - setgid  # MUST NOT change group ID
+    - chroot  # MUST NOT change root directory
   
   resource_limits:
     max_cpu_cores: 2
@@ -130,12 +152,12 @@ tests:
       - "test_data/expected_responses.json"
 
 metrics:
-  weights:
-    functional_coverage: 0.35
-    pass_rate: 0.25
-    performance: 0.15
-    code_quality: 0.15
-    security: 0.10
+  weights:  # Fixed formula as per metrics.md v1.0.0
+    functional_coverage: 0.35  # Coverage of MUST requirements
+    test_pass_rate: 0.25  # Overall test success rate
+    performance: 0.15  # Latency, throughput, resource usage
+    code_quality: 0.15  # Complexity, coverage, style
+    security: 0.10  # Static analysis + runtime compliance
   
   thresholds:
     min_functional_coverage: 100  # All MUST requirements
@@ -154,11 +176,21 @@ pass_criteria:
     - runtime_failure
     - sandbox_escape
 
+# Reference implementation available
+reference_solution:
+  available: true
+  path: "baselines/WEB-001/"
+  expected_score: 0.85  # Reference should achieve 85%
+  performance_baseline:
+    p95_latency_ms: 120
+    throughput_rps: 150
+    memory_mb: 256
+
 metadata:
   author: "ITdo Inc. Japan"
-  created_date: "2024-12-01"
-  last_modified: "2024-12-01T10:00:00Z"
-  version: "1.0.0"
+  created_date: "2024-01-15"
+  last_modified: "2024-01-15T10:00:00Z"
+  version: "1.1.0"  # Updated with RFC 2119 and EARS
   tags:
     - web
     - api

@@ -18,325 +18,347 @@ logger = logging.getLogger(__name__)
 
 class Reporter:
     """Generate evaluation reports in various formats"""
-    
+
     def __init__(self, template_dir: Optional[Path] = None):
         """
         Initialize reporter with template directory
-        
+
         Args:
             template_dir: Directory containing report templates
         """
         if template_dir is None:
             template_dir = Path(__file__).parent / "templates"
-        
+
         self.template_dir = template_dir
         self._ensure_templates()
-        
+
         # Initialize Jinja2 environment
         self.env = Environment(
             loader=FileSystemLoader(str(self.template_dir)),
-            autoescape=select_autoescape(['html', 'xml'])
+            autoescape=select_autoescape(["html", "xml"]),
         )
-        
+
         # Register custom filters
-        self.env.filters['percentage'] = lambda x: f"{x*100:.1f}%"
-        self.env.filters['round'] = lambda x, n=2: round(x, n)
-        self.env.filters['timestamp'] = lambda x: datetime.fromisoformat(x).strftime('%Y-%m-%d %H:%M:%S')
-    
-    def generate_html_report(self, results: List[Dict[str, Any]], output_path: str) -> None:
+        self.env.filters["percentage"] = lambda x: f"{x*100:.1f}%"
+        self.env.filters["round"] = lambda x, n=2: round(x, n)
+        self.env.filters["timestamp"] = lambda x: datetime.fromisoformat(x).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+
+    def generate_html_report(
+        self, results: List[Dict[str, Any]], output_path: str
+    ) -> None:
         """
         Generate HTML report
-        
+
         Args:
             results: List of evaluation results
             output_path: Path to save HTML report
         """
         # Prepare data
         report_data = self._prepare_report_data(results)
-        
+
         # Generate charts
         charts = self._generate_charts(report_data)
-        
+
         # Render template
-        template = self.env.get_template('report.html')
+        template = self.env.get_template("report.html")
         html_content = template.render(
             title="Req2Run Evaluation Report",
             timestamp=datetime.now().isoformat(),
             results=results,
-            summary=report_data['summary'],
+            summary=report_data["summary"],
             charts=charts,
-            problems=report_data['problems']
+            problems=report_data["problems"],
         )
-        
+
         # Save report
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(html_content)
-        
+
         logger.info(f"HTML report generated: {output_path}")
-    
-    def generate_markdown_report(self, results: List[Dict[str, Any]], output_path: str) -> None:
+
+    def generate_markdown_report(
+        self, results: List[Dict[str, Any]], output_path: str
+    ) -> None:
         """
         Generate Markdown report
-        
+
         Args:
             results: List of evaluation results
             output_path: Path to save Markdown report
         """
         # Prepare data
         report_data = self._prepare_report_data(results)
-        
+
         # Render template
-        template = self.env.get_template('report.md')
+        template = self.env.get_template("report.md")
         md_content = template.render(
             title="Req2Run Evaluation Report",
             timestamp=datetime.now().isoformat(),
             results=results,
-            summary=report_data['summary'],
-            problems=report_data['problems']
+            summary=report_data["summary"],
+            problems=report_data["problems"],
         )
-        
+
         # Save report
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(md_content)
-        
+
         logger.info(f"Markdown report generated: {output_path}")
-    
-    def generate_json_report(self, results: List[Dict[str, Any]], output_path: str) -> None:
+
+    def generate_json_report(
+        self, results: List[Dict[str, Any]], output_path: str
+    ) -> None:
         """
         Generate JSON report
-        
+
         Args:
             results: List of evaluation results
             output_path: Path to save JSON report
         """
         # Prepare data
         report_data = self._prepare_report_data(results)
-        
+
         # Create comprehensive JSON report
         json_report = {
-            'metadata': {
-                'version': '1.0.0',
-                'generated_at': datetime.now().isoformat(),
-                'total_problems': len(results)
+            "metadata": {
+                "version": "1.0.0",
+                "generated_at": datetime.now().isoformat(),
+                "total_problems": len(results),
             },
-            'summary': report_data['summary'],
-            'problems': report_data['problems'],
-            'detailed_results': results
+            "summary": report_data["summary"],
+            "problems": report_data["problems"],
+            "detailed_results": results,
         }
-        
+
         # Save report
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(json_report, f, indent=2)
-        
+
         logger.info(f"JSON report generated: {output_path}")
-    
+
     def generate_leaderboard(self, results: List[Dict[str, Any]]) -> str:
         """
         Generate leaderboard markdown
-        
+
         Args:
             results: List of evaluation results
-            
+
         Returns:
             Leaderboard markdown string
         """
         # Sort results by total score
-        sorted_results = sorted(results, key=lambda x: x.get('total_score', 0), reverse=True)
-        
+        sorted_results = sorted(
+            results, key=lambda x: x.get("total_score", 0), reverse=True
+        )
+
         leaderboard = "# Req2Run Leaderboard\n\n"
         leaderboard += f"*Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n"
         leaderboard += "| Rank | Submission | Problem | Score | Status | Time |\n"
         leaderboard += "|------|------------|---------|-------|--------|------|\n"
-        
+
         for i, result in enumerate(sorted_results, 1):
-            submission_id = result.get('submission_id', 'Unknown')
-            problem_id = result.get('problem_id', 'Unknown')
-            score = result.get('total_score', 0) * 100
-            status = result.get('status', 'Unknown').upper()
-            exec_time = result.get('execution_time', 0)
-            
+            submission_id = result.get("submission_id", "Unknown")
+            problem_id = result.get("problem_id", "Unknown")
+            score = result.get("total_score", 0) * 100
+            status = result.get("status", "Unknown").upper()
+            exec_time = result.get("execution_time", 0)
+
             status_emoji = "✅" if status == "PASSED" else "❌"
-            
+
             leaderboard += f"| {i} | {submission_id} | {problem_id} | {score:.1f}% | {status_emoji} {status} | {exec_time:.1f}s |\n"
-        
+
         # Add statistics
         leaderboard += "\n## Statistics\n\n"
         total = len(results)
-        passed = sum(1 for r in results if r.get('status') == 'passed')
-        avg_score = sum(r.get('total_score', 0) for r in results) / total if total > 0 else 0
-        
+        passed = sum(1 for r in results if r.get("status") == "passed")
+        avg_score = (
+            sum(r.get("total_score", 0) for r in results) / total if total > 0 else 0
+        )
+
         leaderboard += f"- **Total Submissions**: {total}\n"
         leaderboard += f"- **Pass Rate**: {passed}/{total} ({passed/total*100:.1f}%)\n"
         leaderboard += f"- **Average Score**: {avg_score*100:.1f}%\n"
-        
+
         return leaderboard
-    
+
     def _prepare_report_data(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Prepare data for report generation"""
         if not results:
             return {
-                'summary': {
-                    'total_problems': 0,
-                    'passed': 0,
-                    'failed': 0,
-                    'average_score': 0,
-                    'pass_rate': 0
+                "summary": {
+                    "total_problems": 0,
+                    "passed": 0,
+                    "failed": 0,
+                    "average_score": 0,
+                    "pass_rate": 0,
                 },
-                'problems': []
+                "problems": [],
             }
-        
+
         # Calculate summary statistics
         total = len(results)
-        passed = sum(1 for r in results if r.get('status') == 'passed')
+        passed = sum(1 for r in results if r.get("status") == "passed")
         failed = total - passed
-        avg_score = sum(r.get('total_score', 0) for r in results) / total
-        
+        avg_score = sum(r.get("total_score", 0) for r in results) / total
+
         # Group by problem
         problems = {}
         for result in results:
-            problem_id = result.get('problem_id', 'Unknown')
+            problem_id = result.get("problem_id", "Unknown")
             if problem_id not in problems:
                 problems[problem_id] = {
-                    'id': problem_id,
-                    'submissions': [],
-                    'best_score': 0,
-                    'avg_score': 0,
-                    'pass_rate': 0
+                    "id": problem_id,
+                    "submissions": [],
+                    "best_score": 0,
+                    "avg_score": 0,
+                    "pass_rate": 0,
                 }
-            
-            problems[problem_id]['submissions'].append(result)
-            problems[problem_id]['best_score'] = max(
-                problems[problem_id]['best_score'],
-                result.get('total_score', 0)
+
+            problems[problem_id]["submissions"].append(result)
+            problems[problem_id]["best_score"] = max(
+                problems[problem_id]["best_score"], result.get("total_score", 0)
             )
-        
+
         # Calculate problem statistics
         for problem_data in problems.values():
-            submissions = problem_data['submissions']
-            problem_data['avg_score'] = sum(s.get('total_score', 0) for s in submissions) / len(submissions)
-            problem_data['pass_rate'] = sum(1 for s in submissions if s.get('status') == 'passed') / len(submissions)
-        
+            submissions = problem_data["submissions"]
+            problem_data["avg_score"] = sum(
+                s.get("total_score", 0) for s in submissions
+            ) / len(submissions)
+            problem_data["pass_rate"] = sum(
+                1 for s in submissions if s.get("status") == "passed"
+            ) / len(submissions)
+
         return {
-            'summary': {
-                'total_problems': total,
-                'passed': passed,
-                'failed': failed,
-                'average_score': avg_score,
-                'pass_rate': passed / total if total > 0 else 0
+            "summary": {
+                "total_problems": total,
+                "passed": passed,
+                "failed": failed,
+                "average_score": avg_score,
+                "pass_rate": passed / total if total > 0 else 0,
             },
-            'problems': list(problems.values())
+            "problems": list(problems.values()),
         }
-    
+
     def _generate_charts(self, report_data: Dict[str, Any]) -> Dict[str, str]:
         """Generate charts for report"""
         charts = {}
-        
+
         # Generate pass/fail pie chart
-        charts['pass_fail_chart'] = self._create_pie_chart(
-            [report_data['summary']['passed'], report_data['summary']['failed']],
-            ['Passed', 'Failed'],
-            ['#28a745', '#dc3545'],
-            'Pass/Fail Distribution'
+        charts["pass_fail_chart"] = self._create_pie_chart(
+            [report_data["summary"]["passed"], report_data["summary"]["failed"]],
+            ["Passed", "Failed"],
+            ["#28a745", "#dc3545"],
+            "Pass/Fail Distribution",
         )
-        
+
         # Generate score distribution histogram
-        if report_data['problems']:
+        if report_data["problems"]:
             scores = []
-            for problem in report_data['problems']:
-                scores.extend([s.get('total_score', 0) * 100 for s in problem['submissions']])
-            
-            if scores:
-                charts['score_distribution'] = self._create_histogram(
-                    scores,
-                    'Score (%)',
-                    'Frequency',
-                    'Score Distribution'
+            for problem in report_data["problems"]:
+                scores.extend(
+                    [s.get("total_score", 0) * 100 for s in problem["submissions"]]
                 )
-        
+
+            if scores:
+                charts["score_distribution"] = self._create_histogram(
+                    scores, "Score (%)", "Frequency", "Score Distribution"
+                )
+
         # Generate problem comparison bar chart
-        if len(report_data['problems']) > 1:
-            problem_ids = [p['id'] for p in report_data['problems']]
-            avg_scores = [p['avg_score'] * 100 for p in report_data['problems']]
-            
-            charts['problem_comparison'] = self._create_bar_chart(
+        if len(report_data["problems"]) > 1:
+            problem_ids = [p["id"] for p in report_data["problems"]]
+            avg_scores = [p["avg_score"] * 100 for p in report_data["problems"]]
+
+            charts["problem_comparison"] = self._create_bar_chart(
                 problem_ids,
                 avg_scores,
-                'Problem ID',
-                'Average Score (%)',
-                'Problem Comparison'
+                "Problem ID",
+                "Average Score (%)",
+                "Problem Comparison",
             )
-        
+
         return charts
-    
-    def _create_pie_chart(self, values: List[float], labels: List[str], 
-                         colors: List[str], title: str) -> str:
+
+    def _create_pie_chart(
+        self, values: List[float], labels: List[str], colors: List[str], title: str
+    ) -> str:
         """Create pie chart and return as base64 encoded image"""
         fig, ax = plt.subplots(figsize=(8, 6))
-        ax.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+        ax.pie(values, labels=labels, colors=colors, autopct="%1.1f%%", startangle=90)
         ax.set_title(title)
-        
+
         # Convert to base64
         buffer = BytesIO()
-        plt.savefig(buffer, format='png', bbox_inches='tight')
+        plt.savefig(buffer, format="png", bbox_inches="tight")
         buffer.seek(0)
         image_base64 = base64.b64encode(buffer.read()).decode()
         plt.close()
-        
+
         return f"data:image/png;base64,{image_base64}"
-    
-    def _create_histogram(self, data: List[float], xlabel: str, ylabel: str, title: str) -> str:
+
+    def _create_histogram(
+        self, data: List[float], xlabel: str, ylabel: str, title: str
+    ) -> str:
         """Create histogram and return as base64 encoded image"""
         fig, ax = plt.subplots(figsize=(10, 6))
-        ax.hist(data, bins=20, color='#007bff', edgecolor='black', alpha=0.7)
+        ax.hist(data, bins=20, color="#007bff", edgecolor="black", alpha=0.7)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.set_title(title)
         ax.grid(True, alpha=0.3)
-        
+
         # Convert to base64
         buffer = BytesIO()
-        plt.savefig(buffer, format='png', bbox_inches='tight')
+        plt.savefig(buffer, format="png", bbox_inches="tight")
         buffer.seek(0)
         image_base64 = base64.b64encode(buffer.read()).decode()
         plt.close()
-        
+
         return f"data:image/png;base64,{image_base64}"
-    
-    def _create_bar_chart(self, x: List[str], y: List[float], xlabel: str, 
-                         ylabel: str, title: str) -> str:
+
+    def _create_bar_chart(
+        self, x: List[str], y: List[float], xlabel: str, ylabel: str, title: str
+    ) -> str:
         """Create bar chart and return as base64 encoded image"""
         fig, ax = plt.subplots(figsize=(12, 6))
-        bars = ax.bar(x, y, color='#28a745', edgecolor='black')
-        
+        bars = ax.bar(x, y, color="#28a745", edgecolor="black")
+
         # Add value labels on bars
         for bar in bars:
             height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2., height,
-                   f'{height:.1f}',
-                   ha='center', va='bottom')
-        
+            ax.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                height,
+                f"{height:.1f}",
+                ha="center",
+                va="bottom",
+            )
+
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.set_title(title)
-        ax.grid(True, alpha=0.3, axis='y')
-        
+        ax.grid(True, alpha=0.3, axis="y")
+
         # Rotate x labels if needed
         if len(x) > 5:
-            plt.xticks(rotation=45, ha='right')
-        
+            plt.xticks(rotation=45, ha="right")
+
         # Convert to base64
         buffer = BytesIO()
-        plt.savefig(buffer, format='png', bbox_inches='tight')
+        plt.savefig(buffer, format="png", bbox_inches="tight")
         buffer.seek(0)
         image_base64 = base64.b64encode(buffer.read()).decode()
         plt.close()
-        
+
         return f"data:image/png;base64,{image_base64}"
-    
+
     def _ensure_templates(self):
         """Ensure report templates exist"""
         self.template_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Create default HTML template if not exists
         html_template_path = self.template_dir / "report.html"
         if not html_template_path.exists():
@@ -612,9 +634,9 @@ class Reporter:
     </footer>
 </body>
 </html>"""
-            with open(html_template_path, 'w', encoding='utf-8') as f:
+            with open(html_template_path, "w", encoding="utf-8") as f:
                 f.write(html_template)
-        
+
         # Create default Markdown template if not exists
         md_template_path = self.template_dir / "report.md"
         if not md_template_path.exists():
@@ -653,5 +675,5 @@ class Reporter:
 ---
 
 *Report generated by Req2Run Benchmark Framework v1.0.0*"""
-            with open(md_template_path, 'w', encoding='utf-8') as f:
+            with open(md_template_path, "w", encoding="utf-8") as f:
                 f.write(md_template)
