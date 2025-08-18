@@ -1,0 +1,364 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+  GO_VERSION: '1.21'
+
+jobs:
+  # Linting and code quality checks
+  lint:
+    name: Lint and Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black mypy pylint bandit safety
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      
+      - name: Run Black formatter check
+        run: black --check req2run/
+      
+      - name: Run Flake8 linter
+        run: flake8 req2run/ --config=.flake8
+      
+      - name: Run MyPy type checker
+        run: mypy req2run/ --ignore-missing-imports
+      
+      - name: Run Bandit security linter
+        run: bandit -r req2run/ -f json -o bandit-report.json
+      
+      - name: Check for security vulnerabilities
+        run: safety check --json
+      
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+
+  # Unit tests
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements*.txt') }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pytest-asyncio hypothesis
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      
+      - name: Run unit tests with coverage
+        run: |
+          pytest tests/unit/ \
+            --cov=req2run \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term \
+            -v
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-${{ matrix.python-version }}
+      
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-reports-${{ matrix.python-version }}
+          path: htmlcov/
+
+  # Integration tests
+  test-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io docker-compose
+      
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+      
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+        run: |
+          pytest tests/integration/ -v --tb=short
+
+  # Docker build test
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build evaluation runner image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: req2run:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Test Docker image
+        run: |
+          docker run --rm req2run:test --version
+          docker run --rm req2run:test evaluate --help
+
+  # Benchmark problem validation
+  validate-problems:
+    name: Validate Benchmark Problems
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml jsonschema
+      
+      - name: Validate problem YAML files
+        run: |
+          python scripts/validate_problems.py problems/
+      
+      - name: Check problem consistency
+        run: |
+          python scripts/check_problem_consistency.py
+
+  # Baseline implementation tests
+  test-baselines:
+    name: Test Baseline Implementations
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        problem: ['WEB-001']  # Add more as baselines are created
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install baseline dependencies
+        run: |
+          cd baselines/${{ matrix.problem }}
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+      
+      - name: Run baseline tests
+        run: |
+          cd baselines/${{ matrix.problem }}
+          if [ -d tests ]; then
+            pytest tests/ -v
+          fi
+      
+      - name: Build baseline Docker image
+        run: |
+          cd baselines/${{ matrix.problem }}
+          if [ -f Dockerfile ]; then
+            docker build -t baseline-${{ matrix.problem }}:test .
+          fi
+
+  # Security sandbox test
+  test-sandbox:
+    name: Test Security Sandbox
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install firejail
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y firejail
+      
+      - name: Test sandbox runner
+        run: |
+          cd infrastructure/security
+          python sandbox-runner.py "echo 'Hello, Sandbox!'" /tmp --problem test --backend firejail
+      
+      - name: Test resource limits
+        run: |
+          cd infrastructure/security
+          # Test memory limit
+          python sandbox-runner.py "python -c 'a = [0] * (10**8)'" /tmp --memory 100 --backend firejail || true
+          # Test timeout
+          python sandbox-runner.py "sleep 10" /tmp --timeout 2 --backend firejail || true
+
+  # Documentation build
+  docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install documentation dependencies
+        run: |
+          pip install mkdocs mkdocs-material mkdocs-mermaid2-plugin
+      
+      - name: Build documentation
+        run: |
+          mkdocs build --strict
+      
+      - name: Upload documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation
+          path: site/
+
+  # Performance benchmarks
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest-benchmark
+      
+      - name: Run performance benchmarks
+        run: |
+          pytest tests/benchmarks/ --benchmark-only --benchmark-json=benchmark.json
+      
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'pytest'
+          output-file-path: benchmark.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+
+  # Release preparation
+  prepare-release:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint, test-unit, test-integration, docker-build, validate-problems]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check version
+        id: version
+        run: |
+          VERSION=$(python -c "import req2run; print(req2run.__version__)")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Create release notes
+        run: |
+          python scripts/generate_release_notes.py ${{ steps.version.outputs.version }} > RELEASE_NOTES.md
+      
+      - name: Upload release notes
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-notes
+          path: RELEASE_NOTES.md
