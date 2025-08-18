@@ -149,19 +149,39 @@ print(f"Status: {result.status}")
 
 ### How Req2Run Differs from Other Benchmarks
 
-Req2Run fills a unique niche in the AI code generation evaluation landscape:
+> **Req2Run** evaluates *requirements-to-running-code* with **functional + non-functional (performance/security/quality)** metrics in a **unified containerized environment**, complementing function-level benchmarks (HumanEval/MBPP) and code modification benchmarks (SWE-bench).
 
-| Benchmark | Focus | Evaluation |
-|-----------|-------|------------|
-| **HumanEval/MBPP** | Function-level short problems | Pass@k metric |
-| **SWE-bench** | Fixing issues in existing codebases | % Resolved |
-| **Req2Run** | Requirements → New implementation → Production metrics | Functional + NFR (Performance/Security/Quality) |
+#### Detailed Comparison
 
-**Key Differentiators:**
-- **End-to-end evaluation**: From requirements specification to running, production-ready code
-- **Non-functional requirements**: Performance, security, and code quality are first-class metrics
-- **Unified environment**: Docker/Kubernetes standardization ensures reproducibility
-- **Practical focus**: Problems represent real-world development tasks
+| Benchmark | Focus | Primary Metric | Req2Run Distinction |
+|-----------|-------|----------------|--------------------|
+| **HumanEval/MBPP** | Function-level coding | Pass@k | Full application + NFR evaluation |
+| **SWE-bench** | Issue resolution in repos | %Resolved | New implementation from requirements |
+| **EvalPlus** | Test robustness | Enhanced Pass@k | Production deployment readiness |
+| **MultiPL-E** | Multi-language | Cross-language Pass@k | Container-based deployment |
+| **ArchCode** | Design quality | NFR compliance | Comprehensive NFR scoring |
+| **HumanEval-V** | Visual programming | Pass@k with images | Text-based requirements only |
+
+#### Key Differentiators
+
+1. **Requirements-First Approach**: Uses RFC 2119 (MUST/SHOULD/MAY) and EARS syntax for precise requirement specification
+2. **Production Readiness**: Evaluates not just correctness but deployment readiness with Docker/Kubernetes
+3. **Comprehensive NFR Evaluation**: 
+   - Performance: P95/P99 latency, throughput, resource usage
+   - Security: Static analysis (Bandit/Semgrep) + runtime sandboxing (nsjail/firejail)
+   - Quality: Complexity, coverage, maintainability, documentation
+4. **Cost Efficiency Metrics**: Score-per-dollar and score-per-token calculations
+5. **Test Augmentation**: Following EvalPlus methodology with property-based and boundary testing
+6. **Deterministic Evaluation**: Fixed seeds, versioned metrics, reproducible scoring
+
+#### When to Use Req2Run
+
+- ✅ Evaluating end-to-end implementation capability from requirements
+- ✅ Assessing production readiness of generated code
+- ✅ Measuring non-functional requirements compliance
+- ✅ Benchmarking cost-efficiency of AI systems
+- ❌ Quick function-level testing (use HumanEval/MBPP)
+- ❌ Bug fixing in existing code (use SWE-bench)
 
 ### Contributing
 

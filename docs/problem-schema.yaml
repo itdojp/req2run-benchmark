@@ -1,0 +1,165 @@
+# Req2Run Problem Schema Definition
+# Version: 1.0.0
+# This schema defines the structure for all Req2Run benchmark problems
+
+# Problem metadata
+id: string  # Unique identifier (e.g., "WEB-001")
+title: string  # Human-readable title
+category: enum  # [web_api, cli_tool, network_protocol, cryptography, data_processing, system_utility]
+difficulty: enum  # [basic, intermediate, advanced, expert]
+estimated_time_minutes: integer  # Expected completion time for AI systems
+languages: array  # Supported programming languages
+
+# Requirements specification (RFC 2119 compliant)
+requirements:
+  functional:
+    # Requirements using RFC 2119 keywords (MUST, SHOULD, MAY)
+    - requirement: string  # e.g., "API MUST implement CRUD operations for /todos endpoint"
+      priority: enum  # [MUST, SHOULD, MAY]
+      verification:
+        type: enum  # [api_test, unit_test, integration_test, manual]
+        test_id: string  # Reference to specific test
+    
+  non_functional:
+    performance:
+      p95_latency_ms: number  # 95th percentile latency requirement
+      p99_latency_ms: number  # 99th percentile latency (optional)
+      throughput_rps: number  # Minimum requests per second
+      concurrent_users: integer  # Number of concurrent users to support
+    
+    reliability:
+      availability_percent: number  # e.g., 99.9
+      error_rate_percent: number  # Maximum acceptable error rate
+      recovery_time_seconds: number  # Maximum recovery time from failure
+    
+    security:
+      authentication: enum  # [none, basic, oauth2, jwt, api_key]
+      authorization: boolean  # Whether authorization is required
+      encryption: enum  # [none, tls, e2e]
+      network_isolation: boolean  # Whether network egress is allowed
+      secrets_management: string  # How secrets should be handled
+    
+    scalability:
+      horizontal_scaling: boolean  # Must support horizontal scaling
+      stateless: boolean  # Must be stateless
+      max_memory_mb: integer  # Maximum memory usage
+      max_cpu_cores: number  # Maximum CPU cores
+
+# Implementation constraints
+constraints:
+  allowed_packages:  # Whitelist of allowed dependencies
+    python: [string]
+    nodejs: [string]
+    go: [string]
+  
+  disallowed_packages:  # Blacklist of forbidden dependencies
+    - string
+  
+  disallowed_syscalls:  # System calls that must not be used
+    - string  # e.g., "mount", "setuid"
+  
+  resource_limits:
+    build_time_seconds: integer  # Maximum build time
+    build_memory_mb: integer  # Maximum memory during build
+    runtime_memory_mb: integer  # Maximum runtime memory
+    runtime_cpu_cores: number  # Maximum CPU cores at runtime
+    disk_space_mb: integer  # Maximum disk usage
+
+# Deployment configuration
+deployment:
+  type: enum  # [docker, kubernetes, local]
+  entrypoint: string  # Main application entry point
+  healthcheck:
+    endpoint: string  # Health check endpoint
+    interval_seconds: integer
+    timeout_seconds: integer
+    retries: integer
+  
+  environment_variables:
+    - name: string
+      description: string
+      required: boolean
+      default: string
+  
+  ports:
+    - port: integer
+      protocol: enum  # [tcp, udp]
+      description: string
+
+# Test specifications
+tests:
+  unit:
+    path: string  # Path to unit test file
+    framework: string  # Testing framework to use
+    timeout_seconds: integer
+  
+  integration:
+    path: string
+    framework: string
+    timeout_seconds: integer
+  
+  property:
+    path: string  # Property-based tests
+    framework: string  # e.g., "hypothesis", "quickcheck"
+    timeout_seconds: integer
+  
+  performance:
+    tool: enum  # [locust, ab, wrk, custom]
+    config_path: string
+    duration_seconds: integer
+    warmup_seconds: integer
+
+# Evaluation metrics and weights
+metrics:
+  weights:
+    functional_coverage: number  # Default: 0.35
+    test_pass_rate: number  # Default: 0.25
+    performance: number  # Default: 0.15
+    code_quality: number  # Default: 0.15
+    security: number  # Default: 0.10
+  
+  pass_criteria:
+    min_total_score: number  # Minimum score to pass (0.0-1.0)
+    mandatory_requirements: array  # Requirements that MUST pass
+  
+  quality_thresholds:
+    max_complexity: integer  # Maximum cyclomatic complexity
+    min_coverage_percent: number  # Minimum test coverage
+    max_duplication_percent: number  # Maximum code duplication
+
+# Artifacts and deliverables
+artifacts:
+  required:
+    - type: enum  # [source_code, dockerfile, documentation, tests]
+      path: string
+      description: string
+  
+  optional:
+    - type: string
+      path: string
+      description: string
+
+# Reference solution (for validation)
+reference_solution:
+  available: boolean
+  path: string  # Path to reference implementation
+  expected_score: number  # Expected score for reference
+  performance_baseline:
+    p95_latency_ms: number
+    throughput_rps: number
+    memory_mb: integer
+
+# Example data and fixtures
+fixtures:
+  seed_data: string  # Path to seed data file
+  test_data: string  # Path to test data
+  expected_outputs: string  # Path to expected output samples
+
+# Metadata
+metadata:
+  author: string
+  created_date: date
+  last_modified: date
+  version: string
+  tags: [string]
+  references: [string]  # Links to relevant documentation
