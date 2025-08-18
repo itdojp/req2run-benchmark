@@ -1,0 +1,171 @@
+id: CLI-001
+title: "File Processing CLI Tool"
+difficulty: basic
+category: cli_tool
+languages: 
+  - python
+  - javascript
+  - go
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The tool MUST accept command-line arguments for input file path and output file path"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The tool MUST support CSV, JSON, and TXT file formats"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-003
+      description: "The tool MUST provide conversion between supported formats (CSV to JSON, JSON to CSV, etc.)"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The tool MUST validate input file existence and readability"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-005
+      description: "The tool SHOULD provide a --verbose flag for detailed output"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The tool SHOULD support batch processing of multiple files"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The tool MAY provide progress bars for large file processing"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 500
+      p99_latency_ms: 1000
+      throughput_files_per_minute: 100
+      cpu_limit: "500m"
+      memory_limit: "256Mi"
+    
+    security:
+      network_egress: DENY
+      secrets_in_code: FORBIDDEN
+      authentication: NONE
+      encryption: NONE
+    
+    quality:
+      max_cyclomatic_complexity: 8
+      min_test_coverage: 85
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - click  # Python
+    - argparse  # Python
+    - pandas  # Python
+    - commander  # JavaScript
+    - yargs  # JavaScript
+    - cobra  # Go
+    - viper  # Go
+  
+  disallowed_packages:
+    - requests
+    - urllib
+    - http
+  
+  disallowed_syscalls:
+    - network
+    - exec
+    - fork
+  
+  resource_limits:
+    max_cpu_cores: 1
+    max_memory_gb: 0.5
+    max_disk_gb: 2
+    max_network_bandwidth_mbps: 0
+  
+  time_limits:
+    generation_minutes: 15
+    execution_minutes: 2
+
+artifacts:
+  entrypoint: "cli"
+  dockerfile: "templates/cli-tool.dockerfile"
+  healthcheck: "--version"
+  config_files:
+    - "requirements.txt"
+    - "package.json"
+    - "go.mod"
+
+tests:
+  unit: "tests/cli_001_unit.py"
+  integration: "tests/cli_001_integration.py"
+  performance: "tests/cli_001_performance.py"
+  test_data:
+    input_files:
+      - "test_data/sample.csv"
+      - "test_data/sample.json"
+      - "test_data/sample.txt"
+      - "test_data/large_file.csv"
+    expected_outputs:
+      - "test_data/expected_conversions/"
+
+metrics:
+  weights:
+    functional_coverage: 0.40
+    pass_rate: 0.30
+    performance: 0.10
+    code_quality: 0.15
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 100
+    min_pass_rate: 85
+    min_performance_score: 60
+
+pass_criteria:
+  min_total_score: 0.70
+  mandatory_requirements:
+    - FR-001  # Command-line arguments
+    - FR-002  # File format support
+    - FR-003  # Format conversion
+    - FR-004  # Input validation
+  forbidden_violations:
+    - runtime_failure
+    - network_access
+
+metadata:
+  author: "ITdo Inc. Japan"
+  created_date: "2024-12-01"
+  last_modified: "2024-12-01T12:00:00Z"
+  version: "1.0.0"
+  tags:
+    - cli
+    - file-processing
+    - conversion
+    - batch
+  references:
+    - title: "Building Command Line Tools"
+      url: "https://click.palletsprojects.com/"
+    - title: "CSV and JSON Processing"
+      url: "https://pandas.pydata.org/"
+  notes: |
+    This problem tests the ability to create a command-line tool with:
+    - Proper argument parsing and validation
+    - File format detection and conversion
+    - Error handling and user feedback
+    - Batch processing capabilities
+    - Performance optimization for large files
