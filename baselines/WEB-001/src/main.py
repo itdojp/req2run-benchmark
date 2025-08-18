@@ -1,9 +1,10 @@
 """Main FastAPI application."""
 
 from fastapi import FastAPI, Depends, HTTPException, status, Query
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import math
 
@@ -28,7 +29,7 @@ async def health_check():
     """Health check endpoint."""
     return schemas.HealthCheck(
         status="healthy",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         version=settings.app_version
     )
 
@@ -192,9 +193,6 @@ async def rate_limit_middleware(request, call_next):
     
     response = await call_next(request)
     return response
-
-
-from fastapi.responses import JSONResponse
 
 
 if __name__ == "__main__":
