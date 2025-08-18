@@ -1,0 +1,43 @@
+"""Application configuration."""
+
+from pydantic_settings import BaseSettings
+from pydantic import Field
+from typing import Optional
+import os
+import secrets
+
+
+class Settings(BaseSettings):
+    """Application settings."""
+    
+    # Application
+    app_name: str = "Todo REST API"
+    app_version: str = "1.0.0"
+    debug: bool = False
+    
+    # Database
+    database_url: str = "sqlite:///./todos.db"
+    
+    # Authentication
+    secret_key: str = Field(
+        default_factory=lambda: os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
+    )
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+    
+    # API Settings
+    api_prefix: str = "/api/v1"
+    max_page_size: int = 100
+    default_page_size: int = 10
+    
+    # Rate Limiting
+    rate_limit_enabled: bool = True
+    rate_limit_requests: int = 100
+    rate_limit_period: int = 60  # seconds
+    
+    class Config:
+        env_file = ".env"
+        case_sensitive = False
+
+
+settings = Settings()
