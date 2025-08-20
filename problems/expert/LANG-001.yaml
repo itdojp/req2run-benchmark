@@ -1,0 +1,253 @@
+# Req2Run Problem: SQL-like Query Language Interpreter
+# Expert-level database query language implementation with parser, query planner, and execution engine
+
+id: LANG-001
+title: "SQL-like Query Language Interpreter"
+difficulty: expert
+category: language_processor
+estimated_time_minutes: 60
+languages: 
+  - python
+  - javascript
+  - typescript
+  - go
+  - java
+  - rust
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST implement SELECT, FROM, WHERE, JOIN, GROUP BY, ORDER BY clauses for SQL query processing"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: sql_clauses_support
+    
+    - id: FR-002
+      description: "The system MUST support aggregate functions: COUNT, SUM, AVG, MIN, MAX"
+      priority: MUST
+      validation:
+        type: unit_test
+        check: aggregate_functions
+    
+    - id: FR-003
+      description: "The system MUST implement B+Tree indexing structure for high-speed data retrieval"
+      priority: MUST
+      validation:
+        type: performance_test
+        check: index_performance
+    
+    - id: FR-004
+      description: "The system MUST provide query execution plan optimization and EXPLAIN output functionality"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: query_optimization
+    
+    - id: FR-005
+      description: "The system MUST support loading tables from CSV files into the database"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: csv_loading
+    
+    - id: FR-006
+      description: "The system SHOULD implement transaction support with ACID properties (BEGIN, COMMIT, ROLLBACK)"
+      priority: SHOULD
+      validation:
+        type: integration_test
+        check: transaction_acid
+    
+    - id: FR-007
+      description: "The system MUST implement a parser for SQL-like query syntax with proper error handling"
+      priority: MUST
+      validation:
+        type: unit_test
+        check: parser_functionality
+    
+    - id: FR-008
+      description: "The system MUST support data types: INTEGER, TEXT, REAL, and handle NULL values"
+      priority: MUST
+      validation:
+        type: unit_test
+        check: data_types
+    
+    - id: FR-009
+      description: "The system MUST implement proper memory management for large datasets"
+      priority: MUST
+      validation:
+        type: performance_test
+        check: memory_management
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 100  # MUST complete indexed scans within 100ms for 1M rows
+      p99_latency_ms: 200
+      throughput_rps: 1000  # MUST handle 1000 queries per second
+      concurrent_users: 100
+      cpu_limit: "4000m"  # 4 CPU cores max
+      memory_limit: "1Gi"  # 1GB RAM limit
+    
+    security:
+      network_egress: DENY
+      secrets_in_code: FORBIDDEN
+      authentication: NONE  # Standalone database engine
+      authorization: false
+      encryption: NONE
+    
+    quality:
+      max_cyclomatic_complexity: 15  # Complex query processing logic allowed
+      min_test_coverage: 85
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    # Python packages
+    - pytest
+    - pytest-benchmark
+    - click
+    - typing-extensions
+    - dataclasses
+    - enum34
+    
+    # JavaScript/TypeScript packages
+    - "@types/node"
+    - "jest"
+    - "typescript"
+    - "commander"
+    
+    # Go packages (standard library preferred)
+    - standard_library_only
+    
+    # Java packages
+    - junit
+    - maven-surefire-plugin
+    
+    # Rust packages
+    - tokio
+    - serde
+    - clap
+    - criterion
+  
+  disallowed_packages:
+    - sqlite3  # Must implement own database engine
+    - mysql-connector
+    - psycopg2
+    - mongodb
+    - redis
+    - any_existing_database
+  
+  disallowed_syscalls:
+    - mount
+    - setuid
+    - setgid
+    - chroot
+    - ptrace
+  
+  resource_limits:
+    max_cpu_cores: 4
+    max_memory_gb: 1
+    max_disk_gb: 10  # Need space for data files
+    max_network_bandwidth_mbps: 0  # No network access required
+  
+  time_limits:
+    generation_minutes: 60  # Expert-level complexity
+    execution_minutes: 10
+
+artifacts:
+  entrypoint: "main"
+  dockerfile: "templates/database-engine.dockerfile"
+  healthcheck: "SELECT 1"
+  config_files:
+    - "config.yaml"
+    - "schema.sql"
+
+tests:
+  unit: "tests/lang_001_unit.py"
+  integration: "tests/lang_001_integration.py"
+  performance: "tests/lang_001_performance.py"
+  security: "tests/lang_001_security.py"
+  property: "tests/lang_001_property.py"
+  test_data:
+    input_files:
+      - "test_data/customers.csv"
+      - "test_data/orders.csv"
+      - "test_data/products.csv"
+      - "test_data/large_dataset_1m.csv"
+    expected_outputs:
+      - "test_data/expected_query_results.json"
+      - "test_data/expected_execution_plans.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.40  # Critical for database correctness
+    test_pass_rate: 0.25
+    performance: 0.20  # High-performance indexing is key
+    code_quality: 0.10
+    security: 0.05  # Less critical for standalone DB engine
+  
+  thresholds:
+    min_functional_coverage: 100  # All MUST requirements
+    min_pass_rate: 85
+    min_performance_score: 90  # High performance threshold
+
+pass_criteria:
+  min_total_score: 0.80  # High bar for expert-level problem
+  mandatory_requirements:
+    - FR-001  # SQL clause support
+    - FR-002  # Aggregate functions
+    - FR-003  # B+Tree indexing
+    - FR-004  # Query optimization
+    - FR-005  # CSV loading
+    - FR-007  # Parser functionality
+    - FR-008  # Data types
+    - FR-009  # Memory management
+  forbidden_violations:
+    - runtime_failure
+    - sandbox_escape
+
+reference_solution:
+  available: true
+  path: "baselines/LANG-001/"
+  expected_score: 0.85
+  performance_baseline:
+    p95_latency_ms: 50  # Reference should be faster than threshold
+    throughput_rps: 1500
+    memory_mb: 512
+
+metadata:
+  author: "ITdo Inc. Japan"
+  created_date: "2024-08-20"
+  last_modified: "2024-08-20T10:00:00Z"
+  version: "1.0.0"
+  tags:
+    - sql
+    - database
+    - parser
+    - query-engine
+    - indexing
+    - b-tree
+    - expert
+    - language-processor
+  references:
+    - title: "SQL-92 Standard"
+      url: "https://www.iso.org/standard/16663.html"
+    - title: "B+Tree Data Structure"
+      url: "https://en.wikipedia.org/wiki/B%2B_tree"
+    - title: "Query Optimization Techniques"
+      url: "https://15445.courses.cs.cmu.edu/fall2022/notes/13-queryoptimization.pdf"
+    - title: "Database System Implementation"
+      url: "https://cs186berkeley.net/"
+  notes: |
+    This expert-level problem tests the ability to implement a complete database query engine from scratch, including:
+    - SQL parser with lexical analysis and syntax analysis
+    - Query planner with cost-based optimization
+    - B+Tree indexing for efficient data access
+    - Execution engine with support for joins, aggregations, and sorting
+    - Transaction management with ACID properties
+    - Memory-efficient processing of large datasets
+    
+    The implementation must achieve high performance (indexed scans on 1M rows in <100ms) while maintaining 
+    ANSI SQL-92 compatibility for basic operations. This problem requires deep understanding of database 
+    internals and algorithms.
