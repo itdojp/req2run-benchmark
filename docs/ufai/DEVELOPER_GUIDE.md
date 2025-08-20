@@ -70,6 +70,7 @@ Before creating an adapter, analyze your framework's characteristics:
 
 ```python
 # framework_analyzer.py
+import os
 import subprocess
 import json
 
@@ -111,6 +112,7 @@ Create a custom adapter class that interfaces with UFAI:
 ```python
 # custom_adapter.py
 from typing import Dict, Any, Optional
+import os
 import subprocess
 import json
 import time
@@ -432,6 +434,7 @@ class ConfigProcessor:
 # custom_metrics.py
 from abc import ABC, abstractmethod
 from typing import Dict, Any
+import os
 import subprocess
 import json
 
@@ -939,6 +942,8 @@ Enable debug mode for detailed output:
 
 ```python
 # bench_debug.py
+import os
+import json
 import logging
 import sys
 
