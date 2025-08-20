@@ -1,0 +1,206 @@
+id: GQL-001
+title: "GraphQL Federation Gateway"
+difficulty: advanced
+category: api_gateway
+languages:
+  - typescript
+  - javascript
+  - python
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The gateway MUST implement GraphQL schema stitching across multiple services"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The gateway MUST support federated authentication and authorization"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The gateway MUST implement query planning and optimization"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-004
+      description: "The gateway MUST provide response caching with invalidation"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-005
+      description: "The gateway MUST handle partial failures gracefully"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The gateway MUST support real-time subscriptions via WebSockets"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The gateway MUST implement rate limiting per client"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The gateway MUST provide introspection and schema validation"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-009
+      description: "The gateway SHOULD support batched queries"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The gateway SHOULD implement distributed tracing"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-011
+      description: "The gateway MAY support custom directives and resolvers"
+      priority: MAY
+      validation:
+        type: unit_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 50
+      p99_latency_ms: 200
+      throughput_rps: 5000
+      cpu_limit: "2000m"
+      memory_limit: "2Gi"
+      query_complexity_limit: 1000
+      max_query_depth: 10
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_REQUIRED"
+      query_whitelisting: "OPTIONAL"
+      introspection_disabled_in_prod: true
+    
+    quality:
+      max_cyclomatic_complexity: 12
+      min_test_coverage: 80
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "apollo-server"
+    - "graphql"
+    - "graphql-tools"
+    - "dataloader"
+    - "express"
+    - "fastify"
+    - "redis"
+    - "ioredis"
+    - "jsonwebtoken"
+    - "opentelemetry"
+  
+  disallowed_packages:
+    - "graphql-yoga"
+    - "prisma"
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 4
+    max_memory_gb: 4
+    max_disk_gb: 10
+    max_network_bandwidth_mbps: 100
+  
+  time_limits:
+    generation_minutes: 45
+    execution_minutes: 20
+
+artifacts:
+  entrypoint: "src/index.ts"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/gateway.yaml"
+    - "config/services.yaml"
+    - "config/schema.graphql"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  security: "tests/security/"
+  property: "tests/property/"
+  test_data:
+    input_files:
+      - "test_data/queries.graphql"
+      - "test_data/mutations.graphql"
+      - "test_data/subscriptions.graphql"
+    expected_outputs:
+      - "test_data/expected/responses.json"
+      - "test_data/expected/errors.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35
+    pass_rate: 0.30
+    performance: 0.20
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 85
+    min_pass_rate: 90
+    min_performance_score: 80
+
+pass_criteria:
+  min_total_score: 0.80
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "sandbox_escape"
+    - "data_leak"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-20"
+  last_modified: "2024-01-20T10:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "graphql"
+    - "federation"
+    - "api-gateway"
+    - "microservices"
+    - "schema-stitching"
+  references:
+    - title: "Apollo Federation Specification"
+      url: "https://www.apollographql.com/docs/federation/federation-spec/"
+    - title: "GraphQL Specification"
+      url: "https://spec.graphql.org/"
+    - title: "DataLoader Pattern"
+      url: "https://github.com/graphql/dataloader"
+  notes: |
+    This problem tests the ability to implement a production-grade GraphQL federation gateway
+    that can stitch schemas from multiple services, handle authentication, caching, and
+    provide high performance with proper error handling.
