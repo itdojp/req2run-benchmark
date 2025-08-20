@@ -14,8 +14,9 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy requirements
+# Copy requirements and documentation
 COPY requirements.txt .
+COPY README.md .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the benchmark framework
