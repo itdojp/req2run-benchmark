@@ -1,0 +1,211 @@
+id: DB-001
+title: "In-Memory Database Engine"
+difficulty: expert
+category: database
+languages:
+  - rust
+  - go
+  - cpp
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The database MUST implement B+Tree indexes for fast key lookups"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-002
+      description: "The database MUST support ACID transactions with MVCC"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The database MUST provide SQL query interface with SELECT, INSERT, UPDATE, DELETE"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The database MUST support concurrent read/write operations with row-level locking"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-005
+      description: "The database MUST implement WAL (Write-Ahead Logging) for durability"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The database MUST support secondary indexes on multiple columns"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-007
+      description: "The database MUST provide point-in-time recovery capabilities"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The database MUST support prepared statements and query caching"
+      priority: MUST
+      validation:
+        type: performance_test
+    
+    - id: FR-009
+      description: "The database SHOULD support table partitioning for large datasets"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The database SHOULD implement query optimization with cost-based planning"
+      priority: SHOULD
+      validation:
+        type: unit_test
+    
+    - id: FR-011
+      description: "The database MAY support distributed transactions across shards"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 10
+      p99_latency_ms: 50
+      throughput_rps: 100000
+      cpu_limit: "4000m"
+      memory_limit: "16Gi"
+      point_query_latency_us: 100
+      range_scan_rate_rows_per_sec: 1000000
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_OPTIONAL"
+      access_control: "RBAC"
+      audit_logging: "REQUIRED"
+    
+    quality:
+      max_cyclomatic_complexity: 15
+      min_test_coverage: 90
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "rocksdb"
+    - "leveldb"
+    - "lmdb"
+    - "sled"
+    - "tokio"
+    - "async-std"
+    - "crossbeam"
+    - "parking_lot"
+    - "bytes"
+    - "bincode"
+  
+  disallowed_packages:
+    - "sqlite"
+    - "postgres"
+    - "mysql"
+    - "mongodb"
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 8
+    max_memory_gb: 16
+    max_disk_gb: 100
+    max_network_bandwidth_mbps: 1000
+  
+  time_limits:
+    generation_minutes: 60
+    execution_minutes: 30
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/database.yaml"
+    - "config/storage.yaml"
+    - "config/replication.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  security: "tests/security/"
+  property: "tests/property/"
+  test_data:
+    input_files:
+      - "test_data/tpcc_schema.sql"
+      - "test_data/tpcc_data.sql"
+      - "test_data/queries.sql"
+    expected_outputs:
+      - "test_data/expected/query_results.json"
+      - "test_data/expected/transaction_logs.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.30
+    pass_rate: 0.25
+    performance: 0.25
+    code_quality: 0.10
+    security: 0.10
+  
+  thresholds:
+    min_functional_coverage: 95
+    min_pass_rate: 98
+    min_performance_score: 90
+
+pass_criteria:
+  min_total_score: 0.90
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "sandbox_escape"
+    - "data_corruption"
+    - "transaction_inconsistency"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-20"
+  last_modified: "2024-01-20T10:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "database"
+    - "in-memory"
+    - "transactions"
+    - "mvcc"
+    - "sql"
+    - "distributed-systems"
+  references:
+    - title: "Architecture of a Database System"
+      url: "https://dsf.berkeley.edu/papers/fntdb07-architecture.pdf"
+    - title: "MVCC Implementation"
+      url: "https://www.postgresql.org/docs/current/mvcc.html"
+    - title: "B+Tree Index Structure"
+      url: "https://en.wikipedia.org/wiki/B%2B_tree"
+  notes: |
+    This problem tests the ability to implement a production-grade in-memory database
+    with full ACID compliance, high performance, and advanced features like MVCC,
+    query optimization, and distributed transaction support.
