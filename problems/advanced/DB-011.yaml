@@ -1,0 +1,195 @@
+id: DB-011
+title: "Event Sourcing with CQRS and Projections"
+difficulty: advanced
+category: database
+languages:
+  - python
+  - go
+  - java
+  - typescript
+  - rust
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST store all state changes as immutable events"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The system MUST implement separate read and write models (CQRS)"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The system MUST rebuild state from events (event replay)"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The system MUST maintain multiple projections from events"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-005
+      description: "The system MUST implement event versioning and migration"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-006
+      description: "The system MUST guarantee event ordering within aggregates"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The system MUST implement snapshot optimization"
+      priority: MUST
+      validation:
+        type: performance_test
+    
+    - id: FR-008
+      description: "The system MUST support temporal queries"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The system SHOULD implement saga orchestration"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The system MAY support event stream branching"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 100
+      p99_latency_ms: 500
+      throughput_rps: 5000
+      cpu_limit: "4000m"
+      memory_limit: "4Gi"
+      event_replay_speed: 100000
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_OPTIONAL"
+      event_tampering: "FORBIDDEN"
+    
+    quality:
+      max_cyclomatic_complexity: 15
+      min_test_coverage: 85
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "eventstore"
+    - "axon"
+    - "eventuate"
+    - "kafka"
+    - "pulsar"
+    - "nats"
+    - "redis-streams"
+    - "cassandra"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 8
+    max_memory_gb: 8
+    max_disk_gb: 100
+    max_network_bandwidth_mbps: 500
+  
+  time_limits:
+    generation_minutes: 45
+    execution_minutes: 25
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/event_store.yaml"
+    - "config/projections.yaml"
+    - "config/cqrs.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  test_data:
+    input_files:
+      - "test_data/events.json"
+      - "test_data/commands.json"
+      - "test_data/queries.json"
+    expected_outputs:
+      - "test_data/expected/projections.json"
+      - "test_data/expected/read_models.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35
+    pass_rate: 0.25
+    performance: 0.25
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 90
+    min_pass_rate: 95
+    min_performance_score: 85
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "event_loss"
+    - "projection_inconsistency"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T11:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "event-sourcing"
+    - "cqrs"
+    - "projections"
+    - "event-driven"
+    - "ddd"
+    - "saga"
+  references:
+    - title: "Event Sourcing"
+      url: "https://martinfowler.com/eaaDev/EventSourcing.html"
+    - title: "CQRS Pattern"
+      url: "https://martinfowler.com/bliki/CQRS.html"
+    - title: "Domain-Driven Design"
+      url: "https://www.domainlanguage.com/ddd/"
+  notes: |
+    This problem tests the ability to implement event sourcing with CQRS,
+    including projections, event replay, and temporal queries.

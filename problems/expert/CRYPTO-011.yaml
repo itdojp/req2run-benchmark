@@ -1,0 +1,195 @@
+id: CRYPTO-011
+title: "Homomorphic Encryption for Privacy-Preserving Computation"
+difficulty: expert
+category: cryptography
+languages:
+  - rust
+  - go
+  - python
+  - java
+  - cpp
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST implement partially homomorphic encryption (PHE)"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The system MUST support addition operations on encrypted data"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-003
+      description: "The system MUST support multiplication operations on encrypted data"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-004
+      description: "The system MUST implement key generation and management"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-005
+      description: "The system MUST prevent ciphertext overflow"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-006
+      description: "The system MUST implement noise management for operations"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The system MUST support batch operations for efficiency"
+      priority: MUST
+      validation:
+        type: performance_test
+    
+    - id: FR-008
+      description: "The system MUST implement bootstrapping for FHE"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The system SHOULD support comparison operations"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The system MAY implement CKKS scheme for approximate arithmetic"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 1000
+      p99_latency_ms: 5000
+      throughput_rps: 100
+      cpu_limit: "8000m"
+      memory_limit: "16Gi"
+      encryption_time_ms: 100
+      operation_time_ms: 500
+    
+    security:
+      network_egress: "DENY"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_REQUIRED"
+      security_parameter: 128
+    
+    quality:
+      max_cyclomatic_complexity: 20
+      min_test_coverage: 85
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "seal"
+    - "helib"
+    - "tfhe"
+    - "concrete"
+    - "paillier"
+    - "lattigo"
+    - "openfhe"
+    - "gmp"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 16
+    max_memory_gb: 32
+    max_disk_gb: 50
+    max_network_bandwidth_mbps: 100
+  
+  time_limits:
+    generation_minutes: 60
+    execution_minutes: 45
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/homomorphic.yaml"
+    - "config/parameters.yaml"
+    - "config/schemes.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  test_data:
+    input_files:
+      - "test_data/plaintexts.bin"
+      - "test_data/operations.json"
+    expected_outputs:
+      - "test_data/expected/ciphertexts.bin"
+      - "test_data/expected/results.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.30
+    pass_rate: 0.25
+    performance: 0.25
+    code_quality: 0.10
+    security: 0.10
+  
+  thresholds:
+    min_functional_coverage: 90
+    min_pass_rate: 95
+    min_performance_score: 70
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "plaintext_leak"
+    - "incorrect_computation"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T11:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "homomorphic-encryption"
+    - "fhe"
+    - "privacy"
+    - "cryptography"
+    - "secure-computation"
+    - "lattice"
+  references:
+    - title: "Homomorphic Encryption"
+      url: "https://en.wikipedia.org/wiki/Homomorphic_encryption"
+    - title: "Microsoft SEAL"
+      url: "https://github.com/microsoft/SEAL"
+    - title: "FHE.org"
+      url: "https://fhe.org/"
+  notes: |
+    This problem tests the ability to implement homomorphic encryption
+    for privacy-preserving computation with proper noise management.

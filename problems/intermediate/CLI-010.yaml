@@ -1,0 +1,189 @@
+id: CLI-010
+title: "Interactive TUI Dashboard with Real-Time Updates"
+difficulty: intermediate
+category: cli_tool
+languages:
+  - python
+  - go
+  - rust
+  - javascript
+  - java
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The TUI MUST display multiple widgets with real-time data"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The TUI MUST support keyboard navigation between widgets"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The TUI MUST implement responsive layout for terminal resize"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The TUI MUST support mouse interactions"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-005
+      description: "The TUI MUST provide charts and graphs visualization"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-006
+      description: "The TUI MUST implement scrollable logs widget"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The TUI MUST support theme customization"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-008
+      description: "The TUI MUST provide command palette with fuzzy search"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The TUI SHOULD support data export functionality"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The TUI MAY support plugin system"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 50
+      p99_latency_ms: 100
+      throughput_rps: 60
+      cpu_limit: "500m"
+      memory_limit: "256Mi"
+      refresh_rate_fps: 30
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "OPTIONAL"
+      encryption: "TLS_OPTIONAL"
+    
+    quality:
+      max_cyclomatic_complexity: 10
+      min_test_coverage: 80
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "blessed"
+    - "rich"
+    - "textual"
+    - "tui-rs"
+    - "termui"
+    - "tcell"
+    - "bubbletea"
+    - "ink"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 2
+    max_memory_gb: 1
+    max_disk_gb: 10
+    max_network_bandwidth_mbps: 100
+  
+  time_limits:
+    generation_minutes: 25
+    execution_minutes: 15
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/dashboard.yaml"
+    - "config/widgets.yaml"
+    - "config/themes.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  test_data:
+    input_files:
+      - "test_data/metrics.json"
+      - "test_data/events.json"
+    expected_outputs:
+      - "test_data/expected/screenshots.txt"
+      - "test_data/expected/interactions.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.40
+    pass_rate: 0.30
+    performance: 0.15
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 85
+    min_pass_rate: 90
+    min_performance_score: 80
+
+pass_criteria:
+  min_total_score: 0.75
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "ui_freeze"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T11:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "tui"
+    - "dashboard"
+    - "cli"
+    - "terminal"
+    - "real-time"
+    - "interactive"
+  references:
+    - title: "TUI Design Patterns"
+      url: "https://github.com/fdehau/tui-rs"
+    - title: "Terminal UI Best Practices"
+      url: "https://github.com/charmbracelet/bubbletea"
+  notes: |
+    This problem tests the ability to implement an interactive terminal UI
+    dashboard with real-time updates, responsive layout, and rich interactions.

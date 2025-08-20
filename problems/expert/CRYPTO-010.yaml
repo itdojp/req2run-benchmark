@@ -1,0 +1,195 @@
+id: CRYPTO-010
+title: "Zero-Knowledge Proof Authentication System"
+difficulty: expert
+category: cryptography
+languages:
+  - rust
+  - go
+  - python
+  - java
+  - typescript
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST implement Schnorr identification protocol"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The system MUST generate and verify zero-knowledge proofs"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The system MUST ensure no information leakage about the secret"
+      priority: MUST
+      validation:
+        type: security_test
+    
+    - id: FR-004
+      description: "The system MUST implement commitment schemes"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-005
+      description: "The system MUST support multiple challenge-response rounds"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The system MUST prevent replay attacks"
+      priority: MUST
+      validation:
+        type: security_test
+    
+    - id: FR-007
+      description: "The system MUST implement proper random number generation"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-008
+      description: "The system MUST support threshold authentication"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The system SHOULD implement zk-SNARKs"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The system MAY support range proofs"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 100
+      p99_latency_ms: 500
+      throughput_rps: 1000
+      cpu_limit: "4000m"
+      memory_limit: "4Gi"
+      proof_generation_ms: 50
+      proof_verification_ms: 10
+    
+    security:
+      network_egress: "DENY"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_REQUIRED"
+      cryptographic_strength: 256
+    
+    quality:
+      max_cyclomatic_complexity: 15
+      min_test_coverage: 90
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "libsodium"
+    - "openssl"
+    - "bulletproofs"
+    - "bellman"
+    - "arkworks"
+    - "curve25519"
+    - "secp256k1"
+    - "bn254"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 8
+    max_memory_gb: 8
+    max_disk_gb: 10
+    max_network_bandwidth_mbps: 100
+  
+  time_limits:
+    generation_minutes: 60
+    execution_minutes: 30
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/crypto.yaml"
+    - "config/zkp.yaml"
+    - "config/parameters.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  security: "tests/security/"
+  test_data:
+    input_files:
+      - "test_data/challenges.json"
+      - "test_data/commitments.bin"
+    expected_outputs:
+      - "test_data/expected/proofs.json"
+      - "test_data/expected/verifications.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.30
+    pass_rate: 0.25
+    performance: 0.20
+    code_quality: 0.10
+    security: 0.15
+  
+  thresholds:
+    min_functional_coverage: 95
+    min_pass_rate: 98
+    min_performance_score: 85
+
+pass_criteria:
+  min_total_score: 0.90
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "information_leakage"
+    - "weak_randomness"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T11:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "zero-knowledge"
+    - "zkp"
+    - "cryptography"
+    - "authentication"
+    - "schnorr"
+    - "privacy"
+  references:
+    - title: "Zero Knowledge Proofs"
+      url: "https://en.wikipedia.org/wiki/Zero-knowledge_proof"
+    - title: "Schnorr Identification"
+      url: "https://en.wikipedia.org/wiki/Schnorr_signature"
+    - title: "zk-SNARKs"
+      url: "https://z.cash/technology/zksnarks/"
+  notes: |
+    This problem tests the ability to implement zero-knowledge proof
+    authentication with proper cryptographic primitives and security measures.

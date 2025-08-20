@@ -1,0 +1,196 @@
+id: DATA-010
+title: "Real-Time Stream Processing with Windowing and State"
+difficulty: advanced
+category: data_processing
+languages:
+  - python
+  - java
+  - go
+  - scala
+  - rust
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST process streaming data in real-time"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The system MUST implement tumbling, sliding, and session windows"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The system MUST maintain stateful computations with fault tolerance"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The system MUST handle late-arriving data with watermarks"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-005
+      description: "The system MUST support exactly-once processing semantics"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The system MUST implement backpressure handling"
+      priority: MUST
+      validation:
+        type: performance_test
+    
+    - id: FR-007
+      description: "The system MUST support stream joins and aggregations"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The system MUST provide checkpointing for recovery"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The system SHOULD support custom window functions"
+      priority: SHOULD
+      validation:
+        type: unit_test
+    
+    - id: FR-010
+      description: "The system MAY support machine learning model inference"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 100
+      p99_latency_ms: 500
+      throughput_rps: 100000
+      cpu_limit: "4000m"
+      memory_limit: "8Gi"
+      max_window_size_minutes: 60
+      checkpoint_interval_seconds: 60
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "OPTIONAL"
+      encryption: "TLS_OPTIONAL"
+      data_privacy: "REQUIRED"
+    
+    quality:
+      max_cyclomatic_complexity: 15
+      min_test_coverage: 80
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "kafka"
+    - "flink"
+    - "spark-streaming"
+    - "pulsar"
+    - "storm"
+    - "samza"
+    - "beam"
+    - "redis-streams"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 8
+    max_memory_gb: 16
+    max_disk_gb: 100
+    max_network_bandwidth_mbps: 1000
+  
+  time_limits:
+    generation_minutes: 45
+    execution_minutes: 30
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/streaming.yaml"
+    - "config/windows.yaml"
+    - "config/checkpoints.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  test_data:
+    input_files:
+      - "test_data/stream_events.json"
+      - "test_data/late_events.json"
+      - "test_data/window_definitions.yaml"
+    expected_outputs:
+      - "test_data/expected/aggregations.json"
+      - "test_data/expected/window_results.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.30
+    pass_rate: 0.25
+    performance: 0.30
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 90
+    min_pass_rate: 95
+    min_performance_score: 90
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "data_loss"
+    - "duplicate_processing"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T11:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "stream-processing"
+    - "windowing"
+    - "stateful"
+    - "real-time"
+    - "kafka"
+    - "exactly-once"
+  references:
+    - title: "Stream Processing"
+      url: "https://www.oreilly.com/library/view/streaming-systems/9781491983867/"
+    - title: "Windowing Concepts"
+      url: "https://ci.apache.org/projects/flink/flink-docs-stable/dev/stream/operators/windows.html"
+    - title: "Exactly Once Semantics"
+      url: "https://kafka.apache.org/documentation/#semantics"
+  notes: |
+    This problem tests the ability to implement sophisticated stream processing
+    with various window types, state management, and exactly-once semantics.
