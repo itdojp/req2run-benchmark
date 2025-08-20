@@ -1,0 +1,201 @@
+id: TS-001
+title: "Time-Series Database"
+difficulty: advanced
+category: database
+languages:
+  - rust
+  - go
+  - cpp
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The database MUST efficiently store and query time-series data points"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The database MUST support data compression with configurable algorithms"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-003
+      description: "The database MUST implement downsampling and retention policies"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The database MUST support continuous aggregations (rollups)"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-005
+      description: "The database MUST provide SQL-like query language for time-series"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The database MUST handle out-of-order data insertion"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The database MUST support multiple data types (float, int, bool, string)"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-008
+      description: "The database MUST implement efficient time-range queries"
+      priority: MUST
+      validation:
+        type: performance_test
+    
+    - id: FR-009
+      description: "The database SHOULD support data replication for high availability"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The database SHOULD provide grafana-compatible API"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-011
+      description: "The database MAY support distributed queries across nodes"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 10
+      p99_latency_ms: 50
+      throughput_rps: 1000000
+      cpu_limit: "4000m"
+      memory_limit: "8Gi"
+      ingestion_rate_points_per_sec: 1000000
+      query_points_per_sec: 10000000
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "OPTIONAL"
+      encryption: "TLS_OPTIONAL"
+      data_encryption_at_rest: "OPTIONAL"
+    
+    quality:
+      max_cyclomatic_complexity: 12
+      min_test_coverage: 80
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "arrow"
+    - "parquet"
+    - "snappy"
+    - "zstd"
+    - "lz4"
+    - "rocksdb"
+    - "badger"
+    - "flatbuffers"
+    - "protobuf"
+  
+  disallowed_packages:
+    - "influxdb"
+    - "timescaledb"
+    - "prometheus"
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 8
+    max_memory_gb: 16
+    max_disk_gb: 100
+    max_network_bandwidth_mbps: 1000
+  
+  time_limits:
+    generation_minutes: 45
+    execution_minutes: 20
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/database.yaml"
+    - "config/retention.yaml"
+    - "config/aggregations.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  security: "tests/security/"
+  property: "tests/property/"
+  test_data:
+    input_files:
+      - "test_data/metrics.csv"
+      - "test_data/queries.sql"
+    expected_outputs:
+      - "test_data/expected/query_results.json"
+      - "test_data/expected/aggregations.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.30
+    pass_rate: 0.30
+    performance: 0.25
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 85
+    min_pass_rate: 90
+    min_performance_score: 85
+
+pass_criteria:
+  min_total_score: 0.80
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "sandbox_escape"
+    - "data_corruption"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-20"
+  last_modified: "2024-01-20T10:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "database"
+    - "time-series"
+    - "metrics"
+    - "monitoring"
+    - "compression"
+  references:
+    - title: "Time Series Database Design"
+      url: "https://www.timescale.com/blog/time-series-database-architecture-design/"
+    - title: "Gorilla Compression Paper"
+      url: "https://www.vldb.org/pvldb/vol8/p1816-teller.pdf"
+  notes: |
+    This problem tests the ability to implement a high-performance time-series database
+    with efficient compression, aggregations, and query capabilities for monitoring workloads.
