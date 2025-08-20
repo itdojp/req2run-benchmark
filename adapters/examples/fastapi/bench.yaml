@@ -1,0 +1,143 @@
+# FastAPI Framework Benchmark Configuration
+# Python web framework for building APIs with automatic validation
+
+version: "1.0"
+
+framework:
+  name: "FastAPI"
+  version: "0.109.0"
+  language: "python"
+  description: "Modern, fast (high-performance) web framework for building APIs with Python 3.8+"
+  repository: "https://github.com/tiangolo/fastapi"
+  homepage: "https://fastapi.tiangolo.com"
+
+compliance:
+  level: "L4"
+  features:
+    - build
+    - test
+    - performance
+    - security
+    - coverage
+    - lint
+
+commands:
+  build:
+    script: |
+      python -m venv venv
+      source venv/bin/activate || venv\\Scripts\\activate
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      pip install -e .
+    timeout: 300
+    workdir: "."
+
+  test:
+    script: |
+      source venv/bin/activate || venv\\Scripts\\activate
+      pytest tests/ -v --tb=short --junit-xml=test-results.xml
+    timeout: 600
+    env:
+      PYTHONPATH: "."
+      TEST_ENV: "true"
+
+  performance:
+    script: |
+      # Start the application in background
+      source venv/bin/activate || venv\\Scripts\\activate
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+      APP_PID=$!
+      sleep 5
+      
+      # Run performance tests
+      locust -f tests/performance/locustfile.py \
+        --host http://localhost:8000 \
+        --users 100 \
+        --spawn-rate 10 \
+        --run-time 60s \
+        --headless \
+        --csv=perf-results
+      
+      # Stop the application
+      kill $APP_PID
+    endpoint: "http://localhost:8000"
+    duration: 60
+    concurrency: 100
+    tool: "locust"
+    timeout: 120
+
+  security:
+    script: |
+      source venv/bin/activate || venv\\Scripts\\activate
+      # Static analysis
+      bandit -r app/ -f json -o bandit-report.json
+      
+      # Dependency check
+      safety check --json > safety-report.json
+      
+      # SAST scan
+      semgrep --config=auto --json -o semgrep-report.json app/
+    scan_type: "static"
+    severity: "medium"
+    timeout: 300
+
+  coverage:
+    script: |
+      source venv/bin/activate || venv\\Scripts\\activate
+      pytest tests/ --cov=app --cov-report=html --cov-report=json --cov-report=term
+    timeout: 600
+    continueOnError: false
+
+  lint:
+    script: |
+      source venv/bin/activate || venv\\Scripts\\activate
+      # Format check
+      black --check app/ tests/
+      
+      # Linting
+      flake8 app/ tests/
+      
+      # Type checking
+      mypy app/ --ignore-missing-imports
+    timeout: 180
+
+environment:
+  variables:
+    PYTHONPATH: "."
+    DATABASE_URL: "sqlite:///./test.db"
+    SECRET_KEY: "test-secret-key-only-for-benchmarks"
+    DEBUG: "false"
+    LOG_LEVEL: "INFO"
+  
+  ports:
+    - 8000
+  
+  services:
+    - postgres:15
+    - redis:7
+
+artifacts:
+  coverage: "htmlcov/index.html"
+  performance: "perf-results_stats.csv"
+  security: "bandit-report.json"
+  test_results: "test-results.xml"
+  logs: "logs/"
+
+requirements:
+  cpu: "2 cores"
+  memory: "4GB"
+  disk: "10GB"
+  gpu: false
+
+metadata:
+  authors:
+    - "Sebastián Ramírez"
+  license: "MIT"
+  tags:
+    - "api"
+    - "rest"
+    - "async"
+    - "validation"
+    - "openapi"
+    - "swagger"
+  benchmarkVersion: "1.0.0"

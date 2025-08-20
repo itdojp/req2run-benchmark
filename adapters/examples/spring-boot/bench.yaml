@@ -1,0 +1,184 @@
+# Spring Boot Framework Benchmark Configuration
+# Java-based framework for building production-ready applications
+
+version: "1.0"
+
+framework:
+  name: "Spring Boot"
+  version: "3.2.0"
+  language: "java"
+  description: "Spring Boot makes it easy to create stand-alone, production-grade Spring based Applications"
+  repository: "https://github.com/spring-projects/spring-boot"
+  homepage: "https://spring.io/projects/spring-boot"
+
+compliance:
+  level: "L5"
+  features:
+    - build
+    - test
+    - performance
+    - security
+    - coverage
+    - lint
+    - docs
+
+commands:
+  build:
+    script: |
+      # Maven build
+      ./mvnw clean compile
+      ./mvnw package -DskipTests
+      
+      # Alternative for Gradle
+      # ./gradlew clean build -x test
+    timeout: 600
+    workdir: "."
+
+  test:
+    script: |
+      # Run tests with Maven
+      ./mvnw test
+      
+      # Generate test report
+      ./mvnw surefire-report:report
+      
+      # Alternative for Gradle
+      # ./gradlew test
+    timeout: 900
+    env:
+      SPRING_PROFILES_ACTIVE: "test"
+      SERVER_PORT: "8080"
+
+  performance:
+    script: |
+      # Start the application
+      java -jar target/*.jar &
+      APP_PID=$!
+      sleep 10
+      
+      # Run JMeter tests
+      jmeter -n -t tests/performance/test-plan.jmx \
+        -l perf-results.jtl \
+        -e -o perf-report/
+      
+      # Alternative with Gatling
+      # ./mvnw gatling:test
+      
+      # Stop the application
+      kill $APP_PID
+    endpoint: "http://localhost:8080"
+    duration: 60
+    concurrency: 100
+    tool: "jmeter"
+    timeout: 120
+
+  security:
+    script: |
+      # OWASP Dependency Check
+      ./mvnw org.owasp:dependency-check-maven:check
+      
+      # SpotBugs security analysis
+      ./mvnw spotbugs:spotbugs
+      
+      # Find Security Bugs
+      ./mvnw compile findbugs:findbugs
+      
+      # Snyk vulnerability scan
+      snyk test --json > snyk-report.json || true
+      
+      # Container scan if using Docker
+      # trivy image myapp:latest --format json > trivy-report.json
+    scan_type: "static"
+    severity: "medium"
+    timeout: 600
+
+  coverage:
+    script: |
+      # Generate coverage with JaCoCo
+      ./mvnw clean test jacoco:report
+      
+      # Alternative with Gradle
+      # ./gradlew test jacocoTestReport
+      
+      # SonarQube analysis (if configured)
+      # ./mvnw sonar:sonar
+    timeout: 600
+
+  lint:
+    script: |
+      # Checkstyle
+      ./mvnw checkstyle:check
+      
+      # PMD
+      ./mvnw pmd:check
+      
+      # SpotBugs
+      ./mvnw spotbugs:check
+      
+      # Google Java Format check
+      ./mvnw fmt:check
+    timeout: 300
+    continueOnError: true
+
+  docs:
+    script: |
+      # Generate JavaDoc
+      ./mvnw javadoc:javadoc
+      
+      # Generate Spring REST Docs
+      ./mvnw asciidoctor:process-asciidoc
+      
+      # OpenAPI documentation
+      ./mvnw springdoc-openapi:generate
+    timeout: 300
+
+environment:
+  variables:
+    JAVA_OPTS: "-Xmx1024m -Xms512m"
+    SPRING_PROFILES_ACTIVE: "benchmark"
+    SERVER_PORT: "8080"
+    SPRING_DATASOURCE_URL: "jdbc:postgresql://localhost:5432/testdb"
+    SPRING_DATASOURCE_USERNAME: "testuser"
+    SPRING_DATASOURCE_PASSWORD: "testpass"
+    SPRING_REDIS_HOST: "localhost"
+    SPRING_REDIS_PORT: "6379"
+    JWT_SECRET: "test-secret-only-for-benchmarks"
+    LOG_LEVEL: "INFO"
+  
+  ports:
+    - 8080
+    - 8081  # Actuator port
+  
+  services:
+    - postgres:15
+    - redis:7
+    - elasticsearch:8
+
+artifacts:
+  jar: "target/*.jar"
+  coverage: "target/site/jacoco/index.html"
+  performance: "perf-report/index.html"
+  security: "target/dependency-check-report.html"
+  test_results: "target/surefire-reports/"
+  docs: "target/generated-docs/"
+  logs: "logs/"
+
+requirements:
+  cpu: "4 cores"
+  memory: "8GB"
+  disk: "20GB"
+  gpu: false
+
+metadata:
+  authors:
+    - "Pivotal Software"
+    - "Spring Boot Contributors"
+  license: "Apache-2.0"
+  tags:
+    - "enterprise"
+    - "microservices"
+    - "rest"
+    - "reactive"
+    - "cloud-native"
+    - "production-ready"
+  benchmarkVersion: "1.0.0"

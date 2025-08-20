@@ -1,0 +1,416 @@
+# Default configuration for UFAI Bench Tool
+# This file provides default values and settings for benchmark execution
+
+version: "1.0"
+
+# Runtime settings
+runtime:
+  # Maximum time for entire benchmark suite (seconds)
+  max_duration: 3600
+  
+  # Default timeouts for each stage (seconds)
+  timeouts:
+    build: 300
+    test: 600
+    performance: 1800
+    security: 600
+    coverage: 600
+    lint: 300
+    docs: 300
+    deploy: 600
+  
+  # Retry configuration
+  retry:
+    enabled: true
+    max_attempts: 3
+    backoff_seconds: 5
+  
+  # Parallel execution
+  parallel:
+    enabled: false
+    max_workers: 4
+
+# Resource limits
+resources:
+  cpu:
+    limit: 4
+    request: 2
+  memory:
+    limit: "8Gi"
+    request: "4Gi"
+  disk:
+    limit: "50Gi"
+  network:
+    egress_allowed: false
+    ingress_ports: [8000, 8080, 3000, 5000]
+
+# Security settings
+security:
+  sandbox:
+    enabled: true
+    type: "docker"  # docker, firejail, nsjail
+  
+  scan:
+    enabled: true
+    tools:
+      - bandit
+      - safety
+      - snyk
+      - trivy
+    
+    severity_threshold: "medium"
+    fail_on_vulnerability: true
+  
+  secrets:
+    scan_enabled: true
+    patterns:
+      - "password"
+      - "api_key"
+      - "secret"
+      - "token"
+      - "credential"
+
+# Performance testing defaults
+performance:
+  # Default tool to use
+  tool: "locust"
+  
+  # Load test configuration
+  load:
+    users: 100
+    spawn_rate: 10
+    duration: 60
+    
+  # Warm-up configuration
+  warmup:
+    enabled: true
+    duration: 10
+    
+  # Metrics to collect
+  metrics:
+    - requests_per_second
+    - latency_p50
+    - latency_p90
+    - latency_p95
+    - latency_p99
+    - error_rate
+    - cpu_usage
+    - memory_usage
+    
+  # Thresholds for pass/fail
+  thresholds:
+    error_rate: 1.0  # Max 1% errors
+    latency_p95: 500  # Max 500ms for p95
+    latency_p99: 1000  # Max 1000ms for p99
+
+# Test configuration
+testing:
+  # Coverage requirements
+  coverage:
+    enabled: true
+    threshold: 70
+    types:
+      - line
+      - branch
+      - function
+    
+  # Test discovery
+  discovery:
+    patterns:
+      - "**/test_*.py"
+      - "**/*_test.py"
+      - "**/tests/**/*.py"
+      - "**/*.test.js"
+      - "**/*.spec.js"
+      - "**/*_test.go"
+      - "**/test/**/*.java"
+    
+  # Output formats
+  output:
+    format: "json"  # json, xml, html
+    verbose: false
+    capture_stdout: true
+    capture_stderr: true
+
+# Artifact management
+artifacts:
+  # Storage location
+  storage:
+    type: "local"  # local, s3, gcs, azure
+    path: "/output"
+    
+  # Retention policy
+  retention:
+    days: 30
+    max_size: "10Gi"
+    
+  # Compression
+  compression:
+    enabled: true
+    format: "gzip"
+    
+  # Types to collect
+  collect:
+    - logs
+    - reports
+    - coverage
+    - performance
+    - security
+    - screenshots
+
+# Reporting configuration
+reporting:
+  # Output formats
+  formats:
+    - json
+    - html
+    - markdown
+    
+  # Report sections
+  sections:
+    - summary
+    - compliance
+    - stages
+    - metrics
+    - artifacts
+    - recommendations
+    
+  # Visualization
+  charts:
+    enabled: true
+    types:
+      - performance_trends
+      - coverage_heatmap
+      - security_matrix
+      - compliance_radar
+    
+  # Publishing
+  publish:
+    enabled: false
+    destinations:
+      - type: "file"
+        path: "/output/reports"
+      - type: "http"
+        url: "https://bench.req2run.io/api/results"
+        auth_required: true
+
+# Environment configuration
+environment:
+  # Default environment variables
+  variables:
+    NODE_ENV: "test"
+    PYTHONDONTWRITEBYTECODE: "1"
+    GO111MODULE: "on"
+    MAVEN_OPTS: "-Xmx1024m"
+    
+  # Service dependencies
+  services:
+    postgres:
+      image: "postgres:15"
+      env:
+        POSTGRES_PASSWORD: "testpass"
+        POSTGRES_DB: "testdb"
+      ports:
+        - 5432
+        
+    redis:
+      image: "redis:7"
+      ports:
+        - 6379
+        
+    mongodb:
+      image: "mongo:7"
+      env:
+        MONGO_INITDB_ROOT_USERNAME: "admin"
+        MONGO_INITDB_ROOT_PASSWORD: "testpass"
+      ports:
+        - 27017
+
+# Logging configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  
+  # Output configuration
+  output:
+    console:
+      enabled: true
+      format: "text"  # text, json
+      color: true
+      
+    file:
+      enabled: true
+      path: "/output/logs/bench.log"
+      format: "json"
+      rotate:
+        enabled: true
+        max_size: "100Mi"
+        max_files: 10
+        
+  # What to log
+  capture:
+    - commands
+    - metrics
+    - errors
+    - warnings
+    - timestamps
+    - durations
+
+# Validation rules
+validation:
+  # Schema validation
+  schema:
+    enabled: true
+    strict: false
+    
+  # Output validation
+  output:
+    required_fields:
+      - version
+      - timestamp
+      - framework
+      - stages
+      - overall
+      
+  # Metrics validation
+  metrics:
+    require_minimum: true
+    minimum_stages: ["build", "test"]
+
+# Integration settings
+integrations:
+  # CI/CD systems
+  ci:
+    detect: true
+    systems:
+      - github_actions
+      - gitlab_ci
+      - jenkins
+      - circleci
+      - azure_devops
+      
+  # Container registries
+  registries:
+    - type: "docker_hub"
+      url: "https://hub.docker.com"
+    - type: "ghcr"
+      url: "ghcr.io"
+      
+  # Monitoring
+  monitoring:
+    enabled: false
+    providers:
+      - type: "prometheus"
+        endpoint: "/metrics"
+      - type: "opentelemetry"
+        endpoint: "localhost:4317"
+
+# Cache configuration
+cache:
+  enabled: true
+  
+  # Cache locations
+  paths:
+    dependencies: "/cache/deps"
+    build: "/cache/build"
+    test: "/cache/test"
+    
+  # Cache strategy
+  strategy:
+    dependencies:
+      key: "deps-{{ checksum 'requirements.txt' }}"
+      restore_keys:
+        - "deps-{{ checksum 'requirements.txt' }}"
+        - "deps-"
+        
+    build:
+      key: "build-{{ .Branch }}-{{ .Revision }}"
+      restore_keys:
+        - "build-{{ .Branch }}-"
+        - "build-"
+        
+  # TTL
+  ttl:
+    dependencies: 86400  # 24 hours
+    build: 3600  # 1 hour
+    test: 1800  # 30 minutes
+
+# Feature flags
+features:
+  # Experimental features
+  experimental:
+    distributed_testing: false
+    ml_anomaly_detection: false
+    auto_remediation: false
+    
+  # Beta features
+  beta:
+    advanced_profiling: true
+    dependency_graph: true
+    cost_analysis: true
+    
+  # Stable features
+  stable:
+    basic_benchmarking: true
+    security_scanning: true
+    performance_testing: true
+    coverage_reporting: true
+
+# Compliance settings
+compliance:
+  # Minimum level required
+  minimum_level: "L0"
+  
+  # Strict mode (fail if below minimum)
+  strict: false
+  
+  # Level requirements override
+  levels:
+    L0:
+      required: ["build"]
+    L1:
+      required: ["build", "test"]
+      test_pass_rate: 80
+    L2:
+      required: ["build", "test", "performance"]
+      performance_threshold: 60
+    L3:
+      required: ["build", "test", "performance", "security"]
+      max_vulnerabilities:
+        critical: 0
+        high: 5
+    L4:
+      required: ["build", "test", "performance", "security", "coverage"]
+      coverage_threshold: 70
+    L5:
+      required: ["build", "test", "performance", "security", "coverage", "docs"]
+      overall_score: 90
+
+# Notification settings
+notifications:
+  enabled: false
+  
+  # Channels
+  channels:
+    - type: "webhook"
+      url: "${WEBHOOK_URL}"
+      events:
+        - benchmark_complete
+        - benchmark_failed
+        - compliance_achieved
+        
+    - type: "email"
+      smtp:
+        host: "${SMTP_HOST}"
+        port: 587
+        username: "${SMTP_USER}"
+        password: "${SMTP_PASS}"
+      recipients:
+        - "${NOTIFICATION_EMAIL}"
+      events:
+        - benchmark_failed
+        - security_vulnerabilities
+        
+  # Event filters
+  filters:
+    min_severity: "warning"
+    compliance_changes_only: true
