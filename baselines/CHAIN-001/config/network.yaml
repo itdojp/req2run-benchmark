@@ -1,0 +1,66 @@
+network:
+  # P2P network configuration
+  listen_addr: "0.0.0.0:30303"
+  external_addr: null  # Auto-detect if null
+  
+  # Peer management
+  max_peers: 50
+  min_peers: 5
+  peer_timeout_seconds: 30
+  
+  # Bootstrap nodes
+  bootstrap_nodes:
+    - "enode://a979fb575495b8d6db44f750317d0f4622bf4c2aa3365d6af7c284339968eef29b69ad0dce72a4d8db5ebb4968de0e3bec910127f134779fbcb0cb6d3331163c@127.0.0.1:30303"
+  
+  # Discovery
+  discovery:
+    enabled: true
+    protocol: "discv5"
+    refresh_interval_seconds: 30
+  
+  # Protocol settings
+  protocols:
+    - name: "eth"
+      version: 68
+    - name: "snap"
+      version: 1
+  
+  # Rate limiting
+  rate_limit:
+    max_requests_per_second: 100
+    max_bytes_per_second: 10485760  # 10 MB/s
+  
+  # Connection settings
+  connection:
+    dial_timeout_seconds: 5
+    handshake_timeout_seconds: 10
+    keep_alive_interval_seconds: 15
+
+# RPC server configuration
+rpc:
+  http:
+    enabled: true
+    host: "0.0.0.0"
+    port: 8545
+    cors_origins: ["*"]
+    max_request_size_mb: 10
+    rate_limit_per_minute: 1000
+  
+  ws:
+    enabled: true
+    host: "0.0.0.0"
+    port: 8546
+    max_connections: 100
+    max_subscriptions_per_connection: 10
+  
+  ipc:
+    enabled: false
+    path: "/tmp/chain.ipc"
+
+# API methods to enable
+api_modules:
+  - "eth"
+  - "net"
+  - "web3"
+  - "debug"
+  - "admin"

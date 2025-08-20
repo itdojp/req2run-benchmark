@@ -1,0 +1,68 @@
+consensus:
+  # Consensus algorithm
+  algorithm: "pos"  # Proof of Stake
+  
+  # Block production
+  block:
+    time_seconds: 3
+    max_size_mb: 1
+    max_transactions: 1000
+    gas_limit: 30000000
+  
+  # Proof of Stake parameters
+  pos:
+    # Epoch configuration
+    epoch_length: 32  # blocks per epoch
+    slots_per_epoch: 32
+    
+    # Validator settings
+    min_stake: 32000000000000000000  # 32 ETH in wei
+    max_validators: 100
+    validator_set_change_delay: 2  # epochs
+    
+    # Rewards and penalties
+    base_reward_factor: 64
+    base_penalty_factor: 32
+    inactivity_penalty_factor: 16
+    slashing_penalty_factor: 128
+    
+    # Finality
+    finality_threshold: 0.67  # 2/3 of validators
+    checkpoint_interval: 32  # blocks
+    
+    # Fork choice
+    fork_choice_rule: "lmd_ghost"  # Latest Message Driven GHOST
+    
+  # Security parameters
+  security:
+    max_fork_depth: 100
+    min_attestations: 2
+    double_sign_slashing: true
+    surround_vote_slashing: true
+    
+  # Performance tuning
+  performance:
+    parallel_validation: true
+    max_validation_threads: 4
+    cache_validated_blocks: 100
+    
+  # Slashing conditions
+  slashing:
+    # Double signing (proposing two blocks at same height)
+    double_sign:
+      enabled: true
+      penalty_percent: 5
+      jail_duration_epochs: 100
+    
+    # Surround voting (conflicting attestations)
+    surround_vote:
+      enabled: true
+      penalty_percent: 3
+      jail_duration_epochs: 50
+    
+    # Inactivity (missing too many blocks)
+    inactivity:
+      enabled: true
+      threshold_percent: 50
+      penalty_percent: 1
+      window_epochs: 10
