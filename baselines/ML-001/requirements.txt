@@ -1,0 +1,48 @@
+# Core ML dependencies
+numpy>=1.21.0,<2.0.0
+pandas>=1.4.0,<2.0.0
+scikit-learn>=1.1.0,<2.0.0
+
+# Deep learning frameworks
+tensorflow>=2.11.0,<3.0.0
+torch>=1.13.0,<2.0.0
+
+# Tree-based models
+xgboost>=1.7.0,<2.0.0
+
+# Hyperparameter optimization
+optuna>=3.0.0,<4.0.0
+
+# Time series specific
+statsmodels>=0.13.0,<1.0.0
+
+# ML lifecycle management
+mlflow>=2.0.0,<3.0.0
+
+# Web serving
+fastapi>=0.95.0,<1.0.0
+uvicorn[standard]>=0.20.0,<1.0.0
+pydantic>=1.10.0,<2.0.0
+
+# Monitoring and metrics
+prometheus-client>=0.15.0,<1.0.0
+
+# Data visualization
+plotly>=5.11.0,<6.0.0
+matplotlib>=3.6.0,<4.0.0
+
+# Utilities
+pyyaml>=6.0,<7.0
+python-multipart>=0.0.5,<1.0.0
+python-jose[cryptography]>=3.3.0,<4.0.0
+passlib[bcrypt]>=1.7.0,<2.0.0
+
+# Development and testing
+pytest>=7.0.0,<8.0.0
+pytest-asyncio>=0.21.0,<1.0.0
+pytest-cov>=4.0.0,<5.0.0
+httpx>=0.24.0,<1.0.0  # For testing FastAPI
+
+# Performance profiling
+memory-profiler>=0.60.0,<1.0.0
+psutil>=5.9.0,<6.0.0
