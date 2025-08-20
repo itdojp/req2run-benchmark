@@ -318,25 +318,53 @@ def perform_aggregation(logs: List[Dict], group_by: str, operation: str) -> Dict
 if __name__ == "__main__":
     import uvicorn
     import threading
+    import signal
+    import sys
     
-    # Start pipeline servers in background
+    # Global shutdown event
+    shutdown_event = threading.Event()
+    
+    # Modified pipeline start function with proper shutdown
     def start_pipeline():
         import asyncio
         
-        # Start UDP server
+        # Start UDP server in a non-daemon thread with shutdown event
         udp_thread = threading.Thread(
             target=pipeline.start_udp_server,
-            args=(514,),
-            daemon=True
+            args=(514, shutdown_event)
         )
         udp_thread.start()
         
-        # Start TCP server
-        asyncio.run(pipeline.start_tcp_server(5514))
+        # Start TCP server with shutdown handling
+        try:
+            asyncio.run(pipeline.start_tcp_server(5514))
+        except KeyboardInterrupt:
+            pass
+        finally:
+            shutdown_event.set()
     
-    # Start pipeline in background
-    pipeline_thread = threading.Thread(target=start_pipeline, daemon=True)
+    # Start pipeline in non-daemon thread
+    pipeline_thread = threading.Thread(target=start_pipeline)
     pipeline_thread.start()
     
+    # Shutdown handler
+    def handle_shutdown(signum, frame):
+        """Handle shutdown signals gracefully."""
+        print("\nShutting down gracefully...")
+        shutdown_event.set()
+        
+        # Give threads time to clean up
+        pipeline_thread.join(timeout=5)
+        
+        # Exit cleanly
+        sys.exit(0)
+    
+    # Register signal handlers
+    signal.signal(signal.SIGINT, handle_shutdown)
+    signal.signal(signal.SIGTERM, handle_shutdown)
+    
     # Start API server
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    try:
+        uvicorn.run(app, host="0.0.0.0", port=8000)
+    except KeyboardInterrupt:
+        handle_shutdown(None, None)

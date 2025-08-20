@@ -458,14 +458,19 @@ class LogStorage:
             LIMIT 1000
         """, (cutoff,))
         
+        # Batch updates for better performance
+        updates = []
         for row in cursor.fetchall():
             log_id, raw = row
             compressed = gzip.compress(raw.encode())
             compressed_str = f"COMPRESSED:{compressed.hex()}"
-            
-            cursor.execute(
+            updates.append((compressed_str, log_id))
+        
+        # Execute batch update
+        if updates:
+            cursor.executemany(
                 "UPDATE logs SET raw = ? WHERE id = ?",
-                (compressed_str, log_id)
+                updates
             )
         
         self.conn.commit()
@@ -565,13 +570,19 @@ class LogPipeline:
         async with server:
             await server.serve_forever()
     
-    def start_udp_server(self, port: int = 514):
+    def start_udp_server(self, port: int = 514, shutdown_event=None):
         """Start UDP syslog receiver."""
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0', port))
+        sock.settimeout(1.0)  # Set timeout to check shutdown periodically
         logger.info(f"UDP server listening on port {port}")
         
         while True:
+            # Check for shutdown signal
+            if shutdown_event and shutdown_event.is_set():
+                logger.info("UDP server shutting down...")
+                break
+                
             try:
                 data, addr = sock.recvfrom(65535)
                 self.executor.submit(
@@ -579,8 +590,12 @@ class LogPipeline:
                     data.decode('utf-8').strip(),
                     f"udp:{addr[0]}"
                 )
+            except socket.timeout:
+                continue  # Check shutdown event again
             except Exception as e:
                 logger.error(f"UDP server error: {e}")
+        
+        sock.close()
     
     def get_stats(self) -> Dict[str, Any]:
         """Get pipeline statistics."""
@@ -590,35 +605,56 @@ class LogPipeline:
 
 def main():
     """Main entry point."""
+    import signal
+    
     pipeline = LogPipeline()
+    shutdown_event = threading.Event()
     
     # Start UDP server in background thread
     udp_thread = threading.Thread(
         target=pipeline.start_udp_server,
-        args=(514,),
-        daemon=True
+        args=(514, shutdown_event)
     )
     udp_thread.start()
     
     # Apply retention policy periodically
     def retention_worker():
-        while True:
-            time.sleep(3600)  # Every hour
-            pipeline.storage.apply_retention({
-                'type': 'time',
-                'days': 7,
-                'compress': True,
-                'compress_after_days': 1
-            })
+        while not shutdown_event.is_set():
+            # Check for shutdown every minute instead of blocking for an hour
+            for _ in range(60):
+                if shutdown_event.is_set():
+                    break
+                time.sleep(60)
+            
+            if not shutdown_event.is_set():
+                pipeline.storage.apply_retention({
+                    'type': 'time',
+                    'days': 7,
+                    'compress': True,
+                    'compress_after_days': 1
+                })
     
-    retention_thread = threading.Thread(target=retention_worker, daemon=True)
+    retention_thread = threading.Thread(target=retention_worker)
     retention_thread.start()
+    
+    # Handle shutdown signals
+    def handle_shutdown(signum, frame):
+        logger.info("Shutdown signal received...")
+        shutdown_event.set()
+    
+    signal.signal(signal.SIGINT, handle_shutdown)
+    signal.signal(signal.SIGTERM, handle_shutdown)
     
     # Start TCP server (blocking)
     try:
         asyncio.run(pipeline.start_tcp_server(5514))
     except KeyboardInterrupt:
+        pass
+    finally:
         logger.info("Shutting down...")
+        shutdown_event.set()
+        udp_thread.join(timeout=5)
+        retention_thread.join(timeout=5)
 
 
 if __name__ == '__main__':
