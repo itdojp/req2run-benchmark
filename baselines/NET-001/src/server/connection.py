@@ -4,7 +4,7 @@ import asyncio
 import time
 import logging
 from enum import Enum
-from typing import Optional, Any
+from typing import Optional, Any, List
 from dataclasses import dataclass, field
 
 from ..protocol import (
@@ -80,7 +80,7 @@ class Connection:
         self.heartbeat_task: Optional[asyncio.Task] = None
         
         # Rate limiting
-        self.message_times: list[float] = []
+        self.message_times: List[float] = []
         
         # Get peer info
         self.peer_address = writer.get_extra_info('peername')

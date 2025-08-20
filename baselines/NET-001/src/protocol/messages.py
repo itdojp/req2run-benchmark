@@ -2,7 +2,7 @@
 
 import time
 import struct
-from typing import Any, Dict, Optional, Callable, Awaitable
+from typing import Any, Dict, Optional, Callable, Awaitable, List, Tuple
 from dataclasses import dataclass
 
 from .constants import MessageType, ErrorCode
@@ -100,7 +100,7 @@ class ProtocolMessages:
         return Frame(MessageType.AUTH, payload)
     
     @staticmethod
-    def parse_auth_message(payload: bytes) -> tuple[str, str]:
+    def parse_auth_message(payload: bytes) -> Tuple[str, str]:
         """Parse authentication message.
         
         Args:
@@ -140,7 +140,7 @@ class ProtocolMessages:
         return Frame(MessageType.AUTH_REPLY, payload)
     
     @staticmethod
-    def parse_auth_reply(payload: bytes) -> tuple[bool, Optional[str]]:
+    def parse_auth_reply(payload: bytes) -> Tuple[bool, Optional[str]]:
         """Parse authentication reply.
         
         Args:
@@ -176,7 +176,7 @@ class ProtocolMessages:
         return Frame(MessageType.DATA, payload)
     
     @staticmethod
-    def parse_data_message(payload: bytes) -> tuple[int, bytes]:
+    def parse_data_message(payload: bytes) -> Tuple[int, bytes]:
         """Parse data message.
         
         Args:
@@ -235,7 +235,7 @@ class MessageProcessor:
             rate_limit: Messages per second limit
         """
         self.rate_limit = rate_limit
-        self.message_times: list[float] = []
+        self.message_times: List[float] = []
         self.handler = MessageHandler()
     
     def check_rate_limit(self) -> bool:

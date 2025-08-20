@@ -2,7 +2,7 @@
 
 import struct
 import zlib
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from dataclasses import dataclass
 
 from .constants import (
@@ -199,7 +199,7 @@ class FrameDecoder:
             version=version
         )
     
-    def decode_all(self) -> list[Frame]:
+    def decode_all(self) -> List[Frame]:
         """Decode all available frames from buffer.
         
         Returns:
