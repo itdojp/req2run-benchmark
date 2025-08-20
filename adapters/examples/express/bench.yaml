@@ -1,0 +1,130 @@
+# Express.js Framework Benchmark Configuration
+# Fast, unopinionated, minimalist web framework for Node.js
+
+version: "1.0"
+
+framework:
+  name: "Express"
+  version: "4.18.2"
+  language: "javascript"
+  description: "Fast, unopinionated, minimalist web framework for Node.js"
+  repository: "https://github.com/expressjs/express"
+  homepage: "https://expressjs.com"
+
+compliance:
+  level: "L3"
+  features:
+    - build
+    - test
+    - performance
+    - security
+
+commands:
+  build:
+    script: |
+      npm ci --prefer-offline --no-audit
+      npm run build || echo "No build step defined"
+    timeout: 300
+    workdir: "."
+
+  test:
+    script: |
+      npm test -- --reporter json > test-results.json
+      npm test -- --reporter spec
+    timeout: 600
+    env:
+      NODE_ENV: "test"
+      PORT: "3000"
+
+  performance:
+    script: |
+      # Start the application
+      npm start &
+      APP_PID=$!
+      sleep 3
+      
+      # Run performance tests using autocannon
+      npx autocannon \
+        -c 100 \
+        -d 60 \
+        -p 10 \
+        --json \
+        http://localhost:3000 > perf-results.json
+      
+      # Alternative using wrk
+      # wrk -t12 -c400 -d60s --latency http://localhost:3000/
+      
+      # Stop the application
+      kill $APP_PID
+    endpoint: "http://localhost:3000"
+    duration: 60
+    concurrency: 100
+    tool: "autocannon"
+    timeout: 90
+
+  security:
+    script: |
+      # Dependency audit
+      npm audit --json > npm-audit.json || true
+      
+      # Snyk security scan
+      npx snyk test --json > snyk-report.json || true
+      
+      # ESLint security plugin
+      npx eslint . --ext .js,.jsx --plugin security --format json > eslint-security.json || true
+      
+      # OWASP dependency check (if available)
+      # dependency-check --scan . --format JSON --out dependency-check-report.json
+    scan_type: "dependency"
+    severity: "high"
+    timeout: 300
+
+  lint:
+    script: |
+      # ESLint
+      npx eslint . --ext .js,.jsx --format json > eslint-report.json
+      
+      # Prettier check
+      npx prettier --check "**/*.{js,jsx,json,md}"
+    timeout: 180
+    continueOnError: true
+
+environment:
+  variables:
+    NODE_ENV: "production"
+    PORT: "3000"
+    DATABASE_URL: "mongodb://localhost:27017/testdb"
+    SESSION_SECRET: "test-secret-only-for-benchmarks"
+    LOG_LEVEL: "info"
+  
+  ports:
+    - 3000
+  
+  services:
+    - mongodb:7
+    - redis:7
+
+artifacts:
+  test_results: "test-results.json"
+  performance: "perf-results.json"
+  security: "npm-audit.json"
+  logs: "logs/"
+
+requirements:
+  cpu: "2 cores"
+  memory: "2GB"
+  disk: "5GB"
+  gpu: false
+
+metadata:
+  authors:
+    - "TJ Holowaychuk"
+    - "Express.js Contributors"
+  license: "MIT"
+  tags:
+    - "web"
+    - "framework"
+    - "rest"
+    - "api"
+    - "middleware"
+  benchmarkVersion: "1.0.0"

@@ -1,0 +1,346 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bench YAML Schema",
+  "description": "Schema for bench.yaml configuration files in UFAI",
+  "type": "object",
+  "required": ["version", "framework", "commands"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version",
+      "enum": ["1.0", "1.1"]
+    },
+    "framework": {
+      "type": "object",
+      "description": "Framework metadata",
+      "required": ["name", "language"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Framework name",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "version": {
+          "type": "string",
+          "description": "Framework version",
+          "pattern": "^\\d+\\.\\d+(\\.\\d+)?(-[\\w\\.]+)?$"
+        },
+        "language": {
+          "type": "string",
+          "description": "Programming language",
+          "enum": ["python", "javascript", "typescript", "go", "rust", "java", "csharp", "ruby", "php", "other"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Framework description",
+          "maxLength": 500
+        },
+        "repository": {
+          "type": "string",
+          "description": "Repository URL",
+          "format": "uri"
+        },
+        "homepage": {
+          "type": "string",
+          "description": "Homepage URL",
+          "format": "uri"
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "description": "Compliance configuration",
+      "properties": {
+        "level": {
+          "type": "string",
+          "description": "Compliance level",
+          "enum": ["L0", "L1", "L2", "L3", "L4", "L5"]
+        },
+        "features": {
+          "type": "array",
+          "description": "Supported features",
+          "items": {
+            "type": "string",
+            "enum": ["build", "test", "performance", "security", "lint", "coverage", "docs", "deploy"]
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "commands": {
+      "type": "object",
+      "description": "Benchmark commands",
+      "required": ["build"],
+      "properties": {
+        "build": {
+          "$ref": "#/definitions/command"
+        },
+        "test": {
+          "$ref": "#/definitions/command"
+        },
+        "performance": {
+          "$ref": "#/definitions/performanceCommand"
+        },
+        "security": {
+          "$ref": "#/definitions/securityCommand"
+        },
+        "lint": {
+          "$ref": "#/definitions/command"
+        },
+        "coverage": {
+          "$ref": "#/definitions/command"
+        },
+        "docs": {
+          "$ref": "#/definitions/command"
+        },
+        "deploy": {
+          "$ref": "#/definitions/command"
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "description": "Environment configuration",
+      "properties": {
+        "variables": {
+          "type": "object",
+          "description": "Environment variables",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "ports": {
+          "type": "array",
+          "description": "Required ports",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "uniqueItems": true
+        },
+        "services": {
+          "type": "array",
+          "description": "Required services (Docker images)",
+          "items": {
+            "type": "string",
+            "pattern": "^[\\w\\-\\/]+:[\\w\\.\\-]+$"
+          }
+        },
+        "volumes": {
+          "type": "array",
+          "description": "Volume mounts",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "description": "Output artifacts",
+      "properties": {
+        "coverage": {
+          "type": "string",
+          "description": "Coverage report path"
+        },
+        "performance": {
+          "type": "string",
+          "description": "Performance report path"
+        },
+        "security": {
+          "type": "string",
+          "description": "Security report path"
+        },
+        "docs": {
+          "type": "string",
+          "description": "Documentation path"
+        },
+        "custom": {
+          "type": "object",
+          "description": "Custom artifacts",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "description": "System requirements",
+      "properties": {
+        "cpu": {
+          "type": "string",
+          "description": "CPU requirement (e.g., '2 cores')"
+        },
+        "memory": {
+          "type": "string",
+          "description": "Memory requirement (e.g., '4GB')"
+        },
+        "disk": {
+          "type": "string",
+          "description": "Disk requirement (e.g., '10GB')"
+        },
+        "gpu": {
+          "type": "boolean",
+          "description": "GPU required",
+          "default": false
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata",
+      "properties": {
+        "authors": {
+          "type": "array",
+          "description": "Framework authors",
+          "items": {
+            "type": "string"
+          }
+        },
+        "license": {
+          "type": "string",
+          "description": "License type"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Framework tags",
+          "items": {
+            "type": "string"
+          }
+        },
+        "benchmarkVersion": {
+          "type": "string",
+          "description": "Minimum benchmark version required"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "command": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Simple command string"
+        },
+        {
+          "type": "object",
+          "required": ["script"],
+          "properties": {
+            "script": {
+              "type": "string",
+              "description": "Command to execute"
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Timeout in seconds",
+              "minimum": 1,
+              "maximum": 3600
+            },
+            "workdir": {
+              "type": "string",
+              "description": "Working directory"
+            },
+            "env": {
+              "type": "object",
+              "description": "Environment variables",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "continueOnError": {
+              "type": "boolean",
+              "description": "Continue if command fails",
+              "default": false
+            }
+          }
+        }
+      ]
+    },
+    "performanceCommand": {
+      "type": "object",
+      "required": ["script"],
+      "properties": {
+        "script": {
+          "type": "string",
+          "description": "Performance test command"
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "Target endpoint URL",
+          "format": "uri"
+        },
+        "duration": {
+          "type": "integer",
+          "description": "Test duration in seconds",
+          "minimum": 1,
+          "maximum": 3600
+        },
+        "concurrency": {
+          "type": "integer",
+          "description": "Number of concurrent users/connections",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "rampUp": {
+          "type": "integer",
+          "description": "Ramp-up time in seconds",
+          "minimum": 0
+        },
+        "warmUp": {
+          "type": "integer",
+          "description": "Warm-up time in seconds",
+          "minimum": 0
+        },
+        "tool": {
+          "type": "string",
+          "description": "Performance testing tool",
+          "enum": ["locust", "jmeter", "gatling", "wrk", "ab", "autocannon", "custom"]
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Timeout in seconds",
+          "minimum": 1,
+          "maximum": 7200
+        }
+      }
+    },
+    "securityCommand": {
+      "type": "object",
+      "required": ["script"],
+      "properties": {
+        "script": {
+          "type": "string",
+          "description": "Security scan command"
+        },
+        "scanType": {
+          "type": "string",
+          "description": "Type of security scan",
+          "enum": ["static", "dynamic", "dependency", "container", "all"]
+        },
+        "tool": {
+          "type": "string",
+          "description": "Security scanning tool",
+          "enum": ["bandit", "safety", "snyk", "trivy", "gosec", "semgrep", "custom"]
+        },
+        "severity": {
+          "type": "string",
+          "description": "Minimum severity to report",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "ignoreFile": {
+          "type": "string",
+          "description": "Path to ignore file"
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Timeout in seconds",
+          "minimum": 1,
+          "maximum": 3600
+        }
+      }
+    }
+  }
+}
