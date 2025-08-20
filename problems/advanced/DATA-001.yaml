@@ -1,0 +1,250 @@
+problem_id: DATA-001
+title: Real-time Log Aggregation Pipeline
+category: data_processing
+difficulty: advanced
+time_limit: 45
+
+description: |
+  Create a real-time log aggregation system that can ingest, process, and analyze
+  log streams from multiple sources. The system must support filtering, aggregation,
+  alerting, and provide both real-time and historical query capabilities.
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "WHEN log data arrives, the system SHALL ingest logs in JSON, syslog, and plain text formats"
+      priority: MUST  # RFC 2119
+      validation:
+        - Parse JSON logs with nested fields
+        - Parse RFC 5424 syslog format
+        - Parse common log formats (Apache, Nginx)
+    
+    - id: FR-002
+      description: "The system SHALL support multiple concurrent log sources via TCP, UDP, and HTTP"
+      priority: MUST
+      validation:
+        - Accept TCP connections on port 5514
+        - Listen for UDP syslog on port 514
+        - Provide HTTP endpoint for log submission
+    
+    - id: FR-003
+      description: "WHEN processing logs, the system SHALL extract and index fields for searching"
+      priority: MUST
+      validation:
+        - Auto-detect and extract JSON fields
+        - Parse key=value pairs
+        - Extract timestamps in multiple formats
+    
+    - id: FR-004
+      description: "The system SHALL provide real-time filtering based on field values and patterns"
+      priority: MUST
+      validation:
+        - Support regex patterns
+        - Field equality and range queries
+        - Boolean operators (AND, OR, NOT)
+    
+    - id: FR-005
+      description: "WHEN configured, the system SHALL aggregate logs using time windows"
+      priority: MUST
+      validation:
+        - Tumbling windows (fixed intervals)
+        - Sliding windows (overlapping)
+        - Session windows (gap-based)
+    
+    - id: FR-006
+      description: "The system SHALL trigger alerts based on configured rules"
+      priority: MUST
+      validation:
+        - Threshold-based alerts
+        - Pattern matching alerts
+        - Anomaly detection
+    
+    - id: FR-007
+      description: "The system SHALL store logs with configurable retention policies"
+      priority: MUST
+      validation:
+        - Time-based retention
+        - Size-based retention
+        - Compression of old data
+    
+    - id: FR-008
+      description: "The system SHALL provide a query API for historical data"
+      priority: MUST
+      validation:
+        - Time range queries
+        - Full-text search
+        - Aggregation queries
+    
+    - id: FR-009
+      description: "WHEN logs contain sensitive data, the system SHOULD support field masking"
+      priority: SHOULD
+      validation:
+        - Mask credit card numbers
+        - Redact PII fields
+        - Configurable masking rules
+    
+    - id: FR-010
+      description: "The system MAY support log enrichment with external data"
+      priority: MAY
+      validation:
+        - GeoIP enrichment
+        - User info lookup
+        - Threat intelligence integration
+
+  non_functional:
+    - id: NFR-001
+      description: "The system SHALL process at least 100,000 logs per second"
+      priority: MUST
+      metric: throughput
+      threshold: 100000
+      unit: logs/second
+    
+    - id: NFR-002
+      description: "End-to-end latency SHALL be less than 1 second for 95% of logs"
+      priority: MUST
+      metric: latency_p95
+      threshold: 1000
+      unit: milliseconds
+    
+    - id: NFR-003
+      description: "The system SHALL compress stored logs to achieve at least 10:1 ratio"
+      priority: SHOULD
+      metric: compression_ratio
+      threshold: 10
+      unit: ratio
+    
+    - id: NFR-004
+      description: "Query response time SHALL be under 100ms for recent data"
+      priority: SHOULD
+      metric: query_latency
+      threshold: 100
+      unit: milliseconds
+    
+    - id: NFR-005
+      description: "The system SHALL handle back-pressure gracefully without data loss"
+      priority: MUST
+      validation:
+        - Buffer overflow protection
+        - Flow control mechanisms
+        - Graceful degradation
+
+test_cases:
+  - id: TC-001
+    name: "High-volume ingestion test"
+    description: "Test system with 1M logs across multiple sources"
+    input:
+      log_count: 1000000
+      sources:
+        - type: tcp
+          count: 10
+          rate: 5000
+        - type: udp
+          count: 5
+          rate: 10000
+        - type: http
+          count: 5
+          rate: 5000
+    expected:
+      all_logs_ingested: true
+      data_loss: 0
+      max_latency_ms: 1000
+  
+  - id: TC-002
+    name: "Complex query test"
+    description: "Test query performance with filters and aggregations"
+    input:
+      query: |
+        level:error AND service:api
+        | stats count by endpoint
+        | where count > 100
+      time_range: "last 1 hour"
+    expected:
+      response_time_ms: 100
+      result_accuracy: 100
+  
+  - id: TC-003
+    name: "Alert rule evaluation"
+    description: "Test alert triggering and accuracy"
+    input:
+      rule: "error_rate > 10 per minute"
+      test_duration: 300
+    expected:
+      alerts_triggered: true
+      false_positives: 0
+      detection_time_ms: 1000
+  
+  - id: TC-004
+    name: "Storage and compression test"
+    description: "Test storage efficiency and retention"
+    input:
+      logs_size_mb: 1000
+      retention_days: 7
+    expected:
+      compressed_size_mb: 100
+      query_performance_maintained: true
+  
+  - id: TC-005
+    name: "Failover and recovery test"
+    description: "Test system resilience"
+    input:
+      failure_type: "node_crash"
+      recovery_time_seconds: 30
+    expected:
+      data_loss: 0
+      service_available: true
+      auto_recovery: true
+
+evaluation:
+  metrics:
+    functional_coverage:
+      weight: 0.35
+      pass_threshold: 1.0
+    test_pass_rate:
+      weight: 0.25
+      pass_threshold: 0.9
+    performance_score:
+      weight: 0.20
+      components:
+        - throughput: 0.5
+        - latency: 0.3
+        - compression: 0.2
+    scalability:
+      weight: 0.10
+    reliability:
+      weight: 0.10
+
+constraints:
+  resources:
+    cpu_cores: 4
+    memory_gb: 8
+    disk_gb: 100
+  environment:
+    container: docker
+    languages:
+      - python: "3.11"
+      - go: "1.21"
+      - rust: "1.75"
+  time_limit_minutes: 45
+
+deliverables:
+  - source_code:
+      structure:
+        - src/
+        - tests/
+        - config/
+      build_file: Dockerfile
+  - documentation:
+      - README.md
+      - API.md
+      - CONFIGURATION.md
+  - deployment:
+      - docker-compose.yml
+      - kubernetes/
+
+reference_implementation:
+  repository: "baselines/DATA-001"
+  expected_score: 0.85
+  technologies:
+    - Apache Kafka or Redis Streams
+    - ClickHouse or TimescaleDB
+    - Elasticsearch or custom indexing

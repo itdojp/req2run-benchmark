@@ -1,7 +1,7 @@
 """Key derivation functions for password-based encryption."""
 
 import os
-from typing import Optional
+from typing import Optional, Tuple
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
@@ -109,7 +109,7 @@ class KeyDerivation:
         self.iterations = iterations
     
     def derive_from_password(self, password: str, 
-                            salt: Optional[bytes] = None) -> tuple[bytes, bytes]:
+                            salt: Optional[bytes] = None) -> Tuple[bytes, bytes]:
         """Derive key from password with optional salt.
         
         Args:

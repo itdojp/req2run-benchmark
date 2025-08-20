@@ -26,5 +26,5 @@ USER cryptouser
 ENV PYTHONPATH=/app
 
 # Entry point
-ENTRYPOIN ["python", "-m", "src.main"]
+ENTRYPOINT ["python", "-m", "src.main"]
 CMD ["--help"]
