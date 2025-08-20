@@ -11,6 +11,7 @@ import yaml
 import time
 import subprocess
 import argparse
+import shlex
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 import jsonschema
@@ -41,8 +42,29 @@ class BenchmarkRunner:
             config = yaml.safe_load(f)
         
         # Validate against schema if available
-        schema_path = "/etc/bench/bench-schema.json"
-        if os.path.exists(schema_path):
+        # Allow schema path to be set via env var, or search common locations
+        schema_env = os.environ.get("BENCH_SCHEMA_PATH")
+        candidate_paths = []
+        if schema_env:
+            candidate_paths.append(schema_env)
+        # Look in current directory
+        candidate_paths.append(str(Path.cwd() / "bench-schema.json"))
+        # Look in same directory as config file
+        config_dir = str(Path(self.config_path).parent)
+        candidate_paths.append(str(Path(config_dir) / "bench-schema.json"))
+        # Look in docs/ufai directory relative to bench script
+        bench_dir = Path(__file__).parent.parent.parent
+        candidate_paths.append(str(bench_dir / "docs" / "ufai" / "bench-schema.json"))
+        # Fallback to /etc
+        candidate_paths.append("/etc/bench/bench-schema.json")
+        
+        schema_path = None
+        for path in candidate_paths:
+            if os.path.exists(path):
+                schema_path = path
+                break
+        
+        if schema_path:
             with open(schema_path, 'r') as f:
                 schema = json.load(f)
             try:
@@ -53,6 +75,23 @@ class BenchmarkRunner:
         
         return config
     
+    def _validate_command(self, command: str) -> bool:
+        """Validate command for basic security checks."""
+        # Dangerous patterns to check for
+        dangerous_patterns = [
+            "rm -rf /",  # Dangerous deletion
+            ":(){ :|:& };:",  # Fork bomb
+            "> /dev/sda",  # Disk overwrite
+            "dd if=/dev/zero",  # Disk operations
+        ]
+        
+        for pattern in dangerous_patterns:
+            if pattern in command:
+                print(f"Security warning: Dangerous pattern detected in command")
+                return False
+        
+        return True
+    
     def run_command(self, cmd_config: Any, stage: str) -> Dict[str, Any]:
         """Run a benchmark command."""
         if isinstance(cmd_config, str):
@@ -62,10 +101,21 @@ class BenchmarkRunner:
             command = cmd_config.get("script", "")
             timeout = cmd_config.get("timeout", 300)
         
+        # Validate command for security
+        if not self._validate_command(command):
+            return {
+                "status": "error",
+                "duration": 0,
+                "error": "Command failed security validation"
+            }
+        
         print(f"Running {stage}: {command}")
         start_time = time.time()
         
         try:
+            # Note: We use shell=True because bench.yaml commands often contain
+            # shell features like pipes, redirections, and variable expansions.
+            # Security is handled through validation and sandboxing (Docker).
             result = subprocess.run(
                 command,
                 shell=True,

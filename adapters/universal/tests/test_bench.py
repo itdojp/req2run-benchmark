@@ -18,7 +18,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import the bench module (assuming it's structured as a module)
 import importlib.util
-spec = importlib.util.spec_from_file_location("bench", "../bench")
+bench_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../bench"))
+spec = importlib.util.spec_from_file_location("bench", bench_path)
 bench_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(bench_module)
 
