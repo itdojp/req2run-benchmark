@@ -19,11 +19,11 @@ Req2Run (Requirements to Running Code) is a benchmark framework for quantitative
 
 ### Features
 
-- 🎯 **Comprehensive Problem Set**: 15+ categories including Web APIs, cryptography, network protocols, data processing
+- 🎯 **Comprehensive Problem Set**: 34 problems across 15+ categories including Web APIs, cryptography, network protocols, data processing
 - 🤖 **Fully Automated Evaluation**: Execution from generation to evaluation without human intervention
 - 📊 **Quantitative Metrics**: Measures functional coverage, performance, security, and code quality
 - 🔧 **Standardized Environment**: Unified execution environment on Docker/Kubernetes
-- 📈 **Difficulty Levels**: Four levels - Basic, Intermediate, Advanced, Expert
+- 📈 **Difficulty Levels**: Four levels - Basic (1), Intermediate (8), Advanced (17), Expert (8)
 
 ### Quick Start
 
@@ -65,14 +65,22 @@ python -m req2run report --results ./results --format html
 
 | Category | Description | Count |
 |----------|-------------|-------|
-| `web_api` | RESTful API implementation | 3 |
-| `cli_tool` | CLI tool development | 2 |
-| `network_protocol` | Custom protocols | 2 |
-| `cryptography` | Encryption tools | 2 |
-| `data_processing` | Data pipelines | 2 |
-| `system_utility` | System utilities | 2 |
-| `machine_learning` | ML pipelines | 1 |
-| `database` | Database implementation | 2 |
+| `web_api` | RESTful APIs, GraphQL, WebSockets | 7 |
+| `database` | In-memory, time-series, event sourcing | 4 |
+| `cli_tool` | CLI tools, TUI dashboards, job orchestrators | 3 |
+| `network_protocol` | TCP/UDP, reverse proxy, gRPC | 3 |
+| `cryptography` | Encryption, ZKP, homomorphic | 3 |
+| `data_processing` | Stream processing, ETL, CDC | 3 |
+| `authentication` | OAuth, RBAC/ABAC | 2 |
+| `machine_learning` | ML pipelines with serving | 1 |
+| `language_processor` | SQL interpreter | 1 |
+| `real_time_communication` | WebRTC video conferencing | 1 |
+| `blockchain` | Smart contract platform | 1 |
+| `orchestration` | Container orchestration | 1 |
+| `api_gateway` | GraphQL federation | 1 |
+| `runtime_platform` | Serverless runtime | 1 |
+| `service_mesh` | Service mesh control plane | 1 |
+| `observability` | OpenTelemetry tracing | 1 |
 
 ### Evaluation Flow
 
@@ -224,11 +232,11 @@ Req2Run（Requirements to Running Code）は、AI/LLMシステムの実装能力
 
 ### 特徴
 
-- 🎯 **包括的な問題セット**: Web API、暗号化、ネットワークプロトコル、データ処理など15以上のカテゴリ
+- 🎯 **包括的な問題セット**: 34問題、Web API、暗号化、ネットワークプロトコル、データ処理など15以上のカテゴリ
 - 🤖 **完全自動評価**: 人間の介入なしで生成から評価まで実行
 - 📊 **定量的メトリクス**: 機能充足率、性能、セキュリティ、コード品質を測定
 - 🔧 **標準化された環境**: Docker/Kubernetes上での統一実行環境
-- 📈 **難易度レベル**: Basic、Intermediate、Advanced、Expertの4段階
+- 📈 **難易度レベル**: Basic (1)、Intermediate (8)、Advanced (17)、Expert (8)の4段階
 
 ### クイックスタート
 

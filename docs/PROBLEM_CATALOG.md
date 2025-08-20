@@ -6,11 +6,11 @@ This document provides a comprehensive catalog of all problems currently availab
 
 ## Problem Statistics
 
-- **Total Problems**: 33
+- **Total Problems**: 34
 - **Basic**: 1
 - **Intermediate**: 8
 - **Advanced**: 17
-- **Expert**: 7
+- **Expert**: 8
 
 ## Problem Categories
 
@@ -305,7 +305,7 @@ This document provides a comprehensive catalog of all problems currently availab
 
 ---
 
-### Expert Level (7 problems)
+### Expert Level (8 problems)
 
 #### LANG-001: SQL Query Language Interpreter
 - **Category**: `language_processor`
@@ -381,6 +381,17 @@ This document provides a comprehensive catalog of all problems currently availab
   - Operations on encrypted data
   - Noise management
 - **Location**: `problems/expert/CRYPTO-011.yaml`
+
+#### RTC-001: WebRTC Video Conferencing Server with SFU
+- **Category**: `real_time_communication`
+- **Languages**: JavaScript, TypeScript, Go, Rust, Python
+- **Time Limit**: 60 minutes generation, 30 minutes execution
+- **Key Requirements**:
+  - Selective Forwarding Unit (SFU) architecture
+  - Adaptive bitrate streaming and simulcast
+  - Support for 1000 concurrent rooms
+  - Screen sharing and recording capabilities
+- **Location**: `problems/expert/RTC-001.yaml`
 
 ---
 
