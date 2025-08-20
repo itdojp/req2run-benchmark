@@ -1,0 +1,197 @@
+id: WEB-013
+title: "GraphQL API with N+1 Query Prevention"
+difficulty: advanced
+category: web_api
+languages:
+  - python
+  - javascript
+  - typescript
+  - go
+  - java
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The API MUST implement GraphQL schema with queries and mutations"
+      priority: MUST
+      validation:
+        type: integration_test
+        endpoint: "/graphql"
+    
+    - id: FR-002
+      description: "The API MUST prevent N+1 query problems using DataLoader"
+      priority: MUST
+      validation:
+        type: performance_test
+    
+    - id: FR-003
+      description: "The API MUST implement query depth limiting"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-004
+      description: "The API MUST implement query complexity analysis"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-005
+      description: "The API MUST support subscriptions for real-time updates"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The API MUST implement proper error handling with extensions"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The API MUST support field-level authorization"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The API MUST implement query batching"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The API SHOULD support persisted queries"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The API MAY implement automatic query optimization"
+      priority: MAY
+      validation:
+        type: performance_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 100
+      p99_latency_ms: 300
+      throughput_rps: 2000
+      cpu_limit: "2000m"
+      memory_limit: "2Gi"
+      max_query_depth: 10
+      max_query_complexity: 1000
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_OPTIONAL"
+      query_whitelisting: "OPTIONAL"
+    
+    quality:
+      max_cyclomatic_complexity: 12
+      min_test_coverage: 85
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "graphql"
+    - "apollo-server"
+    - "graphene"
+    - "graphql-go"
+    - "graphql-java"
+    - "dataloader"
+    - "graphql-depth-limit"
+    - "graphql-query-complexity"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 4
+    max_memory_gb: 4
+    max_disk_gb: 10
+    max_network_bandwidth_mbps: 200
+  
+  time_limits:
+    generation_minutes: 40
+    execution_minutes: 20
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/graphql.yaml"
+    - "config/database.yaml"
+    - "schema.graphql"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  test_data:
+    input_files:
+      - "test_data/queries.graphql"
+      - "test_data/mutations.graphql"
+      - "test_data/subscriptions.graphql"
+    expected_outputs:
+      - "test_data/expected/responses.json"
+      - "test_data/expected/query_metrics.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35
+    pass_rate: 0.25
+    performance: 0.25
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 90
+    min_pass_rate: 95
+    min_performance_score: 90
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "n_plus_one_query"
+    - "query_complexity_exceeded"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T11:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "graphql"
+    - "api"
+    - "dataloader"
+    - "n+1"
+    - "performance"
+    - "query-optimization"
+  references:
+    - title: "GraphQL Best Practices"
+      url: "https://graphql.org/learn/best-practices/"
+    - title: "DataLoader Pattern"
+      url: "https://github.com/graphql/dataloader"
+    - title: "N+1 Problem"
+      url: "https://stackoverflow.com/questions/97197/what-is-the-n1-selects-problem-in-orm"
+  notes: |
+    This problem tests the ability to implement a performant GraphQL API
+    with proper query optimization, N+1 prevention, and security measures.

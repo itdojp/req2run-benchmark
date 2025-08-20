@@ -1,0 +1,196 @@
+id: DB-010
+title: "Two-Phase Money Transfer with SERIALIZABLE Isolation and Idempotency"
+difficulty: advanced
+category: database
+languages:
+  - python
+  - go
+  - java
+  - rust
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST implement atomic money transfers between accounts"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The system MUST use SERIALIZABLE isolation level for transactions"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The system MUST guarantee exactly-once execution with idempotency keys"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The system MUST maintain balance consistency invariants at all times"
+      priority: MUST
+      validation:
+        type: property_test
+    
+    - id: FR-005
+      description: "The system MUST prevent negative balances"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-006
+      description: "The system MUST implement optimistic locking with retry logic"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The system MUST log all transaction attempts with audit trail"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The system MUST handle concurrent transfers without deadlocks"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The system SHOULD implement transaction timeouts"
+      priority: SHOULD
+      validation:
+        type: unit_test
+    
+    - id: FR-010
+      description: "The system SHOULD provide transaction status queries"
+      priority: SHOULD
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 150
+      p99_latency_ms: 500
+      throughput_rps: 100
+      cpu_limit: "2000m"
+      memory_limit: "4Gi"
+      concurrent_transactions: 20
+    
+    security:
+      network_egress: "DENY"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_OPTIONAL"
+      audit_logging: "REQUIRED"
+    
+    quality:
+      max_cyclomatic_complexity: 12
+      min_test_coverage: 90
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "psycopg2"
+    - "sqlalchemy"
+    - "pg"
+    - "database/sql"
+    - "tokio-postgres"
+    - "redis"
+    - "uuid"
+  
+  disallowed_packages:
+    - "orm"  # Must use raw SQL for control
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 4
+    max_memory_gb: 8
+    max_disk_gb: 20
+    max_network_bandwidth_mbps: 100
+  
+  time_limits:
+    generation_minutes: 45
+    execution_minutes: 20
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/database.yaml"
+    - "config/transaction.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  property: "tests/property/"
+  test_data:
+    input_files:
+      - "test_data/accounts.sql"
+      - "test_data/transfers.json"
+    expected_outputs:
+      - "test_data/expected/balances.json"
+      - "test_data/expected/audit_log.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35
+    pass_rate: 0.30
+    performance: 0.20
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 95
+    min_pass_rate: 98
+    min_performance_score: 85
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+    - "FR-008"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "data_corruption"
+    - "consistency_violation"
+    - "double_spending"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T10:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "database"
+    - "transactions"
+    - "consistency"
+    - "idempotency"
+    - "serializable"
+    - "two-phase"
+  references:
+    - title: "ACID Properties"
+      url: "https://en.wikipedia.org/wiki/ACID"
+    - title: "Two-Phase Commit Protocol"
+      url: "https://en.wikipedia.org/wiki/Two-phase_commit_protocol"
+    - title: "Serializable Isolation"
+      url: "https://www.postgresql.org/docs/current/transaction-iso.html"
+  notes: |
+    This problem tests the ability to implement correct and performant database
+    transactions with strong consistency guarantees, idempotency, and proper
+    handling of concurrent operations.

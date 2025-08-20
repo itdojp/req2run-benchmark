@@ -1,0 +1,197 @@
+id: AUTH-011
+title: "RBAC/ABAC Hybrid Authorization System"
+difficulty: advanced
+category: authentication
+languages:
+  - python
+  - go
+  - java
+  - typescript
+  - rust
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST implement Role-Based Access Control (RBAC)"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The system MUST implement Attribute-Based Access Control (ABAC)"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The system MUST support policy inheritance and composition"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-004
+      description: "The system MUST evaluate policies in constant time"
+      priority: MUST
+      validation:
+        type: performance_test
+    
+    - id: FR-005
+      description: "The system MUST support dynamic policy updates without restart"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The system MUST provide audit logs for all authorization decisions"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The system MUST support delegation of permissions"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The system MUST implement policy conflict resolution"
+      priority: SHOULD
+      validation:
+        type: unit_test
+    
+    - id: FR-009
+      description: "The system SHOULD support time-based policies"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The system MAY support machine learning for anomaly detection"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 10
+      p99_latency_ms: 50
+      throughput_rps: 10000
+      cpu_limit: "2000m"
+      memory_limit: "2Gi"
+      policy_evaluation_time_ms: 5
+    
+    security:
+      network_egress: "DENY"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_REQUIRED"
+      principle_of_least_privilege: "REQUIRED"
+    
+    quality:
+      max_cyclomatic_complexity: 15
+      min_test_coverage: 90
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "casbin"
+    - "opa"
+    - "keycloak"
+    - "authzed"
+    - "oso"
+    - "permit.io"
+    - "cerbos"
+    - "policy-engine"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 4
+    max_memory_gb: 4
+    max_disk_gb: 10
+    max_network_bandwidth_mbps: 100
+  
+  time_limits:
+    generation_minutes: 45
+    execution_minutes: 20
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/rbac.yaml"
+    - "config/abac.yaml"
+    - "config/policies.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  test_data:
+    input_files:
+      - "test_data/roles.json"
+      - "test_data/attributes.json"
+      - "test_data/policies.json"
+      - "test_data/access_requests.json"
+    expected_outputs:
+      - "test_data/expected/decisions.json"
+      - "test_data/expected/audit_logs.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35
+    pass_rate: 0.30
+    performance: 0.20
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 95
+    min_pass_rate: 98
+    min_performance_score: 90
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "unauthorized_access"
+    - "policy_bypass"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T11:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "authorization"
+    - "rbac"
+    - "abac"
+    - "access-control"
+    - "security"
+    - "policy-engine"
+  references:
+    - title: "RBAC vs ABAC"
+      url: "https://www.okta.com/identity-101/rbac-vs-abac/"
+    - title: "NIST ABAC Guide"
+      url: "https://nvlpubs.nist.gov/nistpubs/specialpublications/NIST.sp.800-162.pdf"
+    - title: "Policy Engines"
+      url: "https://www.openpolicyagent.org/docs/latest/"
+  notes: |
+    This problem tests the ability to implement a sophisticated authorization
+    system combining RBAC and ABAC with efficient policy evaluation and
+    comprehensive audit logging.
