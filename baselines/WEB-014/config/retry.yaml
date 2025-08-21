@@ -1,0 +1,197 @@
+# Retry Policy Configuration for Webhook System
+
+# Global Retry Settings
+retry_policy:
+  # Initial delay before first retry (seconds)
+  initial_delay: 1.0
+  
+  # Maximum delay between retries (seconds)
+  max_delay: 300.0
+  
+  # Exponential backoff multiplier
+  multiplier: 2.0
+  
+  # Add random jitter to prevent thundering herd
+  jitter: true
+  
+  # Jitter range (0.0 = no jitter, 1.0 = full random)
+  jitter_range: 0.25
+  
+  # Maximum number of retry attempts
+  max_attempts: 5
+
+# Per-Event-Type Retry Policies
+event_retry_policies:
+  # Critical events (higher retry count)
+  critical:
+    events:
+      - "payment.success"
+      - "payment.failed"
+      - "order.created"
+    retry_policy:
+      initial_delay: 0.5
+      max_delay: 600.0
+      multiplier: 1.5
+      max_attempts: 8
+      jitter: true
+      jitter_range: 0.1
+  
+  # Standard events
+  standard:
+    events:
+      - "user.created"
+      - "user.updated"
+      - "order.updated"
+    retry_policy:
+      initial_delay: 1.0
+      max_delay: 300.0
+      multiplier: 2.0
+      max_attempts: 5
+      jitter: true
+      jitter_range: 0.25
+  
+  # Low priority events
+  low_priority:
+    events:
+      - "user.deleted"
+      - "system.maintenance"
+    retry_policy:
+      initial_delay: 2.0
+      max_delay: 180.0
+      multiplier: 2.5
+      max_attempts: 3
+      jitter: true
+      jitter_range: 0.5
+
+# HTTP Error Code Retry Policies
+http_error_policies:
+  # Retry on these HTTP status codes
+  retryable_status_codes:
+    - 408  # Request Timeout
+    - 429  # Too Many Requests
+    - 502  # Bad Gateway
+    - 503  # Service Unavailable
+    - 504  # Gateway Timeout
+    - 520  # Unknown Error (Cloudflare)
+    - 521  # Web Server Down (Cloudflare)
+    - 522  # Connection Timed Out (Cloudflare)
+    - 523  # Origin Unreachable (Cloudflare)
+    - 524  # Timeout Occurred (Cloudflare)
+  
+  # Don't retry on these HTTP status codes
+  non_retryable_status_codes:
+    - 400  # Bad Request
+    - 401  # Unauthorized
+    - 403  # Forbidden
+    - 404  # Not Found
+    - 405  # Method Not Allowed
+    - 409  # Conflict
+    - 410  # Gone
+    - 413  # Payload Too Large
+    - 422  # Unprocessable Entity
+    - 451  # Unavailable For Legal Reasons
+  
+  # Special retry policies for specific status codes
+  status_code_policies:
+    429:  # Rate limiting
+      initial_delay: 60.0
+      max_delay: 3600.0
+      multiplier: 1.0  # Linear backoff
+      max_attempts: 3
+    
+    503:  # Service unavailable
+      initial_delay: 30.0
+      max_delay: 900.0
+      multiplier: 2.0
+      max_attempts: 4
+
+# Timeout Settings
+timeouts:
+  # Default request timeout (seconds)
+  default_timeout: 30
+  
+  # Timeout per retry attempt (increases with each attempt)
+  progressive_timeout:
+    enabled: true
+    base_timeout: 10
+    timeout_multiplier: 1.5
+    max_timeout: 60
+  
+  # Connection timeout
+  connect_timeout: 10
+  
+  # Read timeout
+  read_timeout: 30
+
+# Circuit Breaker Integration
+circuit_breaker:
+  # Enable circuit breaker for retry logic
+  enabled: true
+  
+  # Don't retry when circuit is open
+  skip_retry_when_open: true
+  
+  # Failure threshold to trigger circuit breaker
+  failure_threshold: 10
+  
+  # Success threshold to close circuit breaker
+  success_threshold: 5
+  
+  # Time to wait before trying again (seconds)
+  timeout: 120
+
+# Dead Letter Queue (DLQ) Settings
+dlq:
+  # Enable DLQ for failed retries
+  enabled: true
+  
+  # Send to DLQ after max attempts reached
+  send_after_max_attempts: true
+  
+  # DLQ retention period (days)
+  retention_days: 7
+  
+  # Enable DLQ replay functionality
+  enable_replay: true
+  
+  # Maximum replay attempts
+  max_replay_attempts: 3
+
+# Retry Statistics and Monitoring
+monitoring:
+  # Track retry statistics
+  track_statistics: true
+  
+  # Retry metrics to collect
+  metrics:
+    - "retry_attempts_total"
+    - "retry_success_rate"
+    - "retry_delay_distribution"
+    - "dlq_messages_total"
+  
+  # Alert on high retry rates
+  alerts:
+    high_retry_rate_threshold: 0.3  # 30%
+    dlq_growth_rate_threshold: 100  # messages per hour
+
+# Advanced Retry Features
+advanced:
+  # Adaptive retry delays based on endpoint response times
+  adaptive_delays:
+    enabled: false
+    base_multiplier: 1.0
+    response_time_threshold: 1000  # ms
+    slow_endpoint_multiplier: 1.5
+  
+  # Retry budget (prevent retry storms)
+  retry_budget:
+    enabled: true
+    budget_per_hour: 1000
+    budget_refill_rate: 1.0  # per minute
+  
+  # Conditional retries based on response content
+  conditional_retries:
+    enabled: false
+    retry_conditions:
+      - response_contains: "temporary error"
+      - response_contains: "try again later"

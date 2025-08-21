@@ -1,0 +1,33 @@
+# CDC Configuration
+sources:
+  - id: postgres_source
+    type: postgresql
+    connection_string: postgresql+asyncpg://user:password@localhost/source_db
+    poll_interval: 1
+    tables:
+      - users
+      - orders
+      - products
+    
+  - id: mysql_source
+    type: mysql
+    host: localhost
+    port: 3306
+    user: root
+    password: password
+    database: source_db
+    binlog_enabled: true
+    
+  - id: mongodb_source
+    type: mongodb
+    connection_string: mongodb://localhost:27017
+    database: source_db
+    collections:
+      - customers
+      - transactions
+
+cdc_options:
+  buffer_size: 10000
+  deduplication_ttl: 3600
+  checkpoint_interval: 60
+  max_lag_seconds: 30

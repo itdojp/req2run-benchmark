@@ -1,0 +1,170 @@
+# CQRS Configuration
+
+command_bus:
+  # Command processing
+  async_processing: false  # Process commands synchronously by default
+  timeout_seconds: 30
+  retry_count: 3
+  retry_delay_ms: 100
+  
+  # Command validation
+  validate_schema: true
+  validate_authorization: true
+  
+  # Command handlers
+  handlers:
+    - type: AccountCommandHandler
+      aggregates:
+        - Account
+      commands:
+        - CreateAccount
+        - DepositMoney
+        - WithdrawMoney
+        - Transfer
+        - CloseAccount
+        
+    - type: OrderCommandHandler
+      aggregates:
+        - Order
+      commands:
+        - CreateOrder
+        - AddItem
+        - RemoveItem
+        - ConfirmOrder
+        - ShipOrder
+        - DeliverOrder
+        - CancelOrder
+        
+    - type: InventoryCommandHandler
+      aggregates:
+        - Product
+      commands:
+        - AddProduct
+        - ReceiveStock
+        - ReserveStock
+        - ReleaseStock
+        - ShipStock
+        - AdjustStock
+        
+  # Middleware
+  middleware:
+    - logging
+    - metrics
+    - validation
+    - authorization
+    - transaction
+    
+query_bus:
+  # Query processing
+  cache_enabled: true
+  cache_ttl_seconds: 60
+  max_result_size_mb: 10
+  
+  # Query optimization
+  query_optimization: true
+  index_hints_enabled: true
+  
+  # Query handlers
+  handlers:
+    - type: ProjectionQueryHandler
+      queries:
+        - GetAccountBalance
+        - GetTransactionHistory
+        - GetOrderSummary
+        - GetOrdersByCustomer
+        - GetInventoryLevel
+        - GetUserActivity
+        
+    - type: ReportingQueryHandler
+      queries:
+        - GenerateDailyReport
+        - GenerateMonthlyStatement
+        - GetAnalytics
+        
+  # Query middleware
+  middleware:
+    - logging
+    - metrics
+    - caching
+    - pagination
+    
+aggregates:
+  # Aggregate settings
+  Account:
+    snapshot_frequency: 50
+    max_events_per_aggregate: 10000
+    business_rules:
+      - min_balance: 0
+      - max_withdrawal: 10000
+      - require_verification_above: 5000
+      
+  Order:
+    snapshot_frequency: 100
+    max_events_per_aggregate: 5000
+    business_rules:
+      - max_items: 100
+      - max_total: 100000
+      - auto_cancel_after_days: 30
+      
+  Product:
+    snapshot_frequency: 200
+    max_events_per_aggregate: 20000
+    business_rules:
+      - min_stock: 0
+      - reorder_point: 10
+      - max_reservation_hours: 24
+      
+sagas:
+  # Saga configuration
+  enabled: true
+  
+  # Saga types
+  types:
+    - name: TransferSaga
+      description: "Handle money transfer between accounts"
+      timeout_minutes: 5
+      compensation_enabled: true
+      
+    - name: OrderFulfillmentSaga
+      description: "Handle order fulfillment process"
+      timeout_minutes: 60
+      compensation_enabled: true
+      
+    - name: InventoryReplenishmentSaga
+      description: "Handle automatic inventory replenishment"
+      timeout_minutes: 1440  # 24 hours
+      compensation_enabled: false
+      
+  # Saga persistence
+  storage:
+    type: postgresql
+    table: saga_state
+    
+  # Saga monitoring
+  monitoring:
+    track_duration: true
+    alert_on_timeout: true
+    alert_on_failure: true
+    
+event_sourcing:
+  # Event versioning
+  versioning:
+    enabled: true
+    strategy: semantic  # semantic, sequential
+    
+  # Event migration
+  migration:
+    auto_migrate: true
+    migration_timeout_seconds: 60
+    
+  # Event replay
+  replay:
+    max_events_per_replay: 100000
+    parallel_replay: true
+    replay_workers: 4
+    
+  # Event stream branching
+  branching:
+    enabled: true
+    max_branches: 10
+    auto_merge: false

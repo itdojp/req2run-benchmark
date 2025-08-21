@@ -1,0 +1,202 @@
+# Policy Definitions
+policies:
+  # RBAC Policies
+  - id: policy_admin_full_access
+    name: Admin Full Access
+    type: rbac
+    effect: allow
+    priority: 100
+    enabled: true
+    roles:
+      - role_admin
+      - role_superadmin
+    permissions:
+      - read
+      - write
+      - delete
+      - admin
+      - audit
+
+  - id: policy_manager_team_access
+    name: Manager Team Access
+    type: rbac
+    effect: allow
+    priority: 80
+    enabled: true
+    roles:
+      - role_manager
+    permissions:
+      - read
+      - write
+      - approve
+      - delegate
+
+  - id: policy_editor_content_access
+    name: Editor Content Access
+    type: rbac
+    effect: allow
+    priority: 60
+    enabled: true
+    roles:
+      - role_editor
+    permissions:
+      - read
+      - write
+      - update
+
+  - id: policy_user_read_access
+    name: User Read Access
+    type: rbac
+    effect: allow
+    priority: 40
+    enabled: true
+    roles:
+      - role_user
+    permissions:
+      - read
+      - list
+
+  # ABAC Policies
+  - id: policy_clearance_check
+    name: Security Clearance Check
+    type: abac
+    effect: deny
+    priority: 90
+    enabled: true
+    subject_attributes:
+      clearance:
+        operator: less_than
+        value: secret
+    resource_attributes:
+      classification:
+        operator: in
+        value: [secret, top_secret]
+
+  - id: policy_department_access
+    name: Department-based Access
+    type: abac
+    effect: allow
+    priority: 70
+    enabled: true
+    subject_attributes:
+      department:
+        operator: equals
+        value: "{{resource.owner_department}}"
+    resource_attributes:
+      classification:
+        operator: in
+        value: [internal, confidential]
+
+  - id: policy_pii_protection
+    name: PII Data Protection
+    type: abac
+    effect: deny
+    priority: 95
+    enabled: true
+    subject_attributes:
+      clearance:
+        operator: not_in
+        value: [secret, top_secret]
+    resource_attributes:
+      data_type:
+        operator: equals
+        value: pii
+
+  # Time-based Policies
+  - id: policy_business_hours_only
+    name: Business Hours Access
+    type: time_based
+    effect: allow
+    priority: 50
+    enabled: true
+    roles:
+      - role_user
+      - role_editor
+    permissions:
+      - read
+      - write
+    time_constraints:
+      weekdays: [0, 1, 2, 3, 4]  # Monday to Friday
+      hours: [9, 18]  # 9 AM to 6 PM
+
+  - id: policy_maintenance_window
+    name: Maintenance Window Restriction
+    type: time_based
+    effect: deny
+    priority: 85
+    enabled: true
+    roles:
+      - role_user
+      - role_editor
+      - role_reviewer
+    permissions:
+      - write
+      - delete
+    time_constraints:
+      weekdays: [6]  # Sunday
+      hours: [0, 6]  # Midnight to 6 AM
+
+  # Hybrid Policies
+  - id: policy_contractor_limitations
+    name: Contractor Access Limitations
+    type: hybrid
+    effect: deny
+    priority: 75
+    enabled: true
+    roles:
+      - role_user
+      - role_editor
+    subject_attributes:
+      employment_type:
+        operator: equals
+        value: contractor
+    resource_attributes:
+      sensitivity_level:
+        operator: greater_than
+        value: 3
+
+  - id: policy_remote_access_restrictions
+    name: Remote Access Restrictions
+    type: hybrid
+    effect: deny
+    priority: 65
+    enabled: true
+    roles:
+      - role_user
+    environment_attributes:
+      ip_range:
+        operator: equals
+        value: external
+    resource_attributes:
+      classification:
+        operator: in
+        value: [confidential, secret, top_secret]
+
+# Policy Sets for Composition
+policy_sets:
+  - id: policyset_default
+    name: Default Policy Set
+    description: Standard policy evaluation set
+    conflict_resolution: deny_overrides
+    enabled: true
+    policies:
+      - policy_clearance_check
+      - policy_pii_protection
+      - policy_admin_full_access
+      - policy_manager_team_access
+      - policy_editor_content_access
+      - policy_user_read_access
+      - policy_business_hours_only
+
+  - id: policyset_strict
+    name: Strict Security Policy Set
+    description: Enhanced security policy set
+    conflict_resolution: deny_overrides
+    enabled: false
+    policies:
+      - policy_clearance_check
+      - policy_pii_protection
+      - policy_department_access
+      - policy_contractor_limitations
+      - policy_remote_access_restrictions
+      - policy_maintenance_window

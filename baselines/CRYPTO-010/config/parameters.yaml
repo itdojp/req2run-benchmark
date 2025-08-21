@@ -1,0 +1,31 @@
+# System parameters configuration
+api:
+  host: 0.0.0.0
+  port: 8000
+  workers: 4
+  timeout: 60
+  max_request_size: 10485760  # 10MB
+
+limits:
+  max_proof_size: 1048576  # 1MB
+  max_witness_size: 10485760  # 10MB
+  max_circuit_size: 1000000  # constraints
+  max_vector_length: 10000
+  max_polynomial_degree: 1000
+
+rates:
+  proof_generation_per_minute: 100
+  verification_per_minute: 1000
+  key_generation_per_hour: 10
+
+monitoring:
+  metrics_enabled: true
+  metrics_port: 9090
+  logging_level: INFO
+  audit_log_enabled: true
+
+defaults:
+  key_type: schnorr
+  proof_type: interactive
+  commitment_type: pedersen
+  range_proof_type: bulletproof

@@ -48,31 +48,46 @@ The Req2Run benchmark suite provides a comprehensive evaluation framework for AI
 - All problems have complete YAML specifications following the standard schema
 
 ### Baseline Implementations
-- **Complete**: 20/35 (57.1%)
+- **Complete**: 35/35 (100%)
 - **In Progress**: 0
-- **Missing**: 15/35 (42.9%)
+- **Missing**: 0/35 (0%)
 
 #### Baselines Available
 1. AUTH-010 ✓
-2. CHAIN-001 ✓
-3. CLI-001 ✓
-4. CLI-010 ✓
-5. CRYPTO-001 ✓
-6. DATA-001 ✓
-7. DB-001 ✓
-8. DB-010 ✓
-9. FN-001 ✓
-10. GQL-001 ✓
-11. LANG-001 ✓
-12. MESH-001 ✓
-13. ML-001 ✓
-14. NET-001 ✓
-15. NET-010 ✓ (newly added)
-16. ORCH-001 ✓
-17. SYS-001 ✓
-18. TS-001 ✓
-19. WEB-001 ✓
-20. WEB-010 ✓
+2. AUTH-011 ✓
+3. CHAIN-001 ✓
+4. CLI-001 ✓
+5. CLI-010 ✓
+6. CLI-011 ✓
+7. CRYPTO-001 ✓
+8. CRYPTO-010 ✓
+9. CRYPTO-011 ✓
+10. DATA-001 ✓
+11. DATA-010 ✓
+12. DATA-011 ✓
+13. DB-001 ✓
+14. DB-010 ✓
+15. DB-011 ✓
+16. FN-001 ✓
+17. GQL-001 ✓
+18. LANG-001 ✓
+19. MESH-001 ✓
+20. ML-001 ✓
+21. NET-001 ✓
+22. NET-010 ✓
+23. NET-011 ✓
+24. OBS-010 ✓
+25. ORCH-001 ✓
+26. RTC-001 ✓
+27. SYS-001 ✓
+28. TS-001 ✓
+29. WEB-001 ✓
+30. WEB-010 ✓
+31. WEB-011 ✓
+32. WEB-012 ✓
+33. WEB-013 ✓
+34. WEB-014 ✓
+35. WEB-001-task-api ✓
 
 ## Evaluation Metrics
 

@@ -1,0 +1,111 @@
+# Webhook System Configuration
+
+# Webhook Engine Settings
+webhook_engine:
+  # Number of worker threads for webhook delivery
+  worker_count: 4
+  
+  # Maximum size of delivery queue
+  max_queue_size: 10000
+  
+  # Worker sleep interval when queue is empty (seconds)
+  worker_sleep_interval: 1.0
+  
+  # Enable metrics collection
+  metrics_enabled: true
+
+# Default Webhook Endpoint Settings
+defaults:
+  # Default timeout for webhook requests (seconds)
+  timeout: 30
+  
+  # Default maximum retries
+  max_retries: 5
+  
+  # Default headers sent with all webhooks
+  headers:
+    User-Agent: "WebhookEngine/1.0"
+    Content-Type: "application/json"
+  
+  # Default events to subscribe to (empty means all)
+  events: []
+
+# Webhook Security Settings
+security:
+  # Require HMAC signature for all webhooks
+  require_signature: true
+  
+  # Signature algorithm (sha256, sha512)
+  signature_algorithm: "sha256"
+  
+  # Signature header name
+  signature_header: "X-Webhook-Signature"
+  
+  # Timestamp header name  
+  timestamp_header: "X-Webhook-Timestamp"
+  
+  # Maximum age of webhook request (seconds)
+  max_timestamp_age: 300
+
+# Event Type Definitions
+event_types:
+  # User events
+  - "user.created"
+  - "user.updated" 
+  - "user.deleted"
+  
+  # Order events
+  - "order.created"
+  - "order.updated"
+  - "order.cancelled"
+  
+  # Payment events
+  - "payment.success"
+  - "payment.failed"
+  
+  # System events
+  - "system.maintenance"
+  - "system.alert"
+
+# Webhook Payload Settings
+payload:
+  # Include event metadata in payload
+  include_metadata: true
+  
+  # Maximum payload size (bytes)
+  max_size: 1048576  # 1MB
+  
+  # Payload compression
+  compression:
+    enabled: true
+    algorithm: "gzip"
+    min_size: 1024  # Compress if payload > 1KB
+
+# Rate Limiting
+rate_limiting:
+  # Global rate limiting
+  global:
+    requests_per_second: 1000
+    burst_size: 100
+  
+  # Per-endpoint rate limiting  
+  per_endpoint:
+    requests_per_second: 100
+    burst_size: 20
+  
+  # Enable rate limiting
+  enabled: true
+
+# Circuit Breaker Settings
+circuit_breaker:
+  # Enable circuit breaker for failing endpoints
+  enabled: true
+  
+  # Failure threshold to open circuit
+  failure_threshold: 5
+  
+  # Time to wait before trying again (seconds)
+  timeout: 60
+  
+  # Success threshold to close circuit
+  success_threshold: 3

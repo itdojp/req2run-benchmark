@@ -1,0 +1,153 @@
+# GraphQL API Configuration
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+  workers: 4
+
+graphql:
+  # Query limits
+  max_query_depth: 10
+  max_query_complexity: 1000
+  
+  # Features
+  introspection: true
+  playground: true
+  batching: true
+  persisted_queries: true
+  
+  # Subscriptions
+  subscriptions:
+    enabled: true
+    websocket_path: "/graphql"
+    keepalive: 30
+    
+  # Schema
+  schema_file: "schema.graphql"
+  auto_reload_schema: false
+
+dataloader:
+  cache_enabled: true
+  cache_ttl: 60  # seconds
+  max_batch_size: 100
+  batch_delay: 0  # milliseconds
+
+rate_limiting:
+  enabled: true
+  
+  # Global limits
+  requests_per_minute: 100
+  burst: 20
+  
+  # Per-operation limits
+  query_limit: 200
+  mutation_limit: 50
+  subscription_limit: 10
+  
+  # Complexity-based limiting
+  complexity_per_minute: 10000
+
+security:
+  # Authentication
+  jwt_secret: "${JWT_SECRET}"
+  jwt_algorithm: "HS256"
+  token_expiry: 86400  # 24 hours
+  refresh_token_expiry: 2592000  # 30 days
+  
+  # CORS
+  cors:
+    enabled: true
+    origins:
+      - "*"
+    methods:
+      - "GET"
+      - "POST"
+      - "OPTIONS"
+    headers:
+      - "*"
+    credentials: true
+  
+  # Query whitelisting (production)
+  query_whitelisting:
+    enabled: false
+    whitelist_file: "config/whitelisted_queries.json"
+  
+  # Field authorization
+  field_authorization:
+    enabled: true
+    unauthorized_field_value: null
+
+monitoring:
+  # Metrics
+  metrics_enabled: true
+  metrics_port: 9090
+  metrics_path: "/metrics"
+  
+  # Logging
+  log_level: "INFO"
+  log_queries: true
+  log_errors: true
+  slow_query_threshold: 1000  # milliseconds
+  
+  # Tracing
+  tracing:
+    enabled: false
+    service_name: "graphql-api"
+    jaeger_host: "localhost"
+    jaeger_port: 6831
+    sample_rate: 0.1
+
+database:
+  url: "${DATABASE_URL}"
+  pool_size: 20
+  max_overflow: 10
+  pool_timeout: 30
+  echo: false
+  
+  # Connection retry
+  retry_on_connection_error: true
+  max_retries: 3
+  retry_delay: 1  # seconds
+
+caching:
+  # Redis cache
+  redis:
+    enabled: false
+    url: "${REDIS_URL}"
+    ttl: 300  # seconds
+    
+  # In-memory cache
+  memory:
+    enabled: true
+    max_size: 1000
+    ttl: 60  # seconds
+
+performance:
+  # Query execution
+  timeout: 30  # seconds
+  max_aliases: 15
+  max_tokens: 10000
+  
+  # Parallel execution
+  max_concurrent_resolvers: 100
+  
+  # Connection pooling
+  keep_alive: true
+  keep_alive_timeout: 90
+  
+errors:
+  # Error handling
+  include_stacktrace: false
+  include_extensions: true
+  mask_errors: true
+  
+  # Error codes
+  codes:
+    UNAUTHENTICATED: "UNAUTHENTICATED"
+    FORBIDDEN: "FORBIDDEN"
+    VALIDATION_FAILED: "VALIDATION_FAILED"
+    DEPTH_LIMIT_EXCEEDED: "DEPTH_LIMIT_EXCEEDED"
+    COMPLEXITY_LIMIT_EXCEEDED: "COMPLEXITY_LIMIT_EXCEEDED"
+    RATE_LIMIT_EXCEEDED: "RATE_LIMIT_EXCEEDED"
+    INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR"
