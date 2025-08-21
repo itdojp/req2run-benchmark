@@ -1,0 +1,269 @@
+# Req2Run Problem: WebRTC Video Conferencing Server
+# Expert-level real-time communication system with SFU, recording, and screen sharing
+
+id: RTC-001
+title: "Scalable WebRTC SFU with Recording"
+difficulty: expert
+category: real_time_communication
+estimated_time_minutes: 60
+languages: 
+  - javascript
+  - typescript
+  - go
+  - java
+  - rust
+  - python
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST implement WebRTC Selective Forwarding Unit (SFU) supporting up to 50 participants per room"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: sfu_implementation
+    
+    - id: FR-002
+      description: "The system MUST implement adaptive bitrate control based on network conditions and client capabilities"
+      priority: MUST
+      validation:
+        type: performance_test
+        check: adaptive_bitrate
+    
+    - id: FR-003
+      description: "The system MUST support simulcast (multiple quality streams) for bandwidth optimization"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: simulcast_support
+    
+    - id: FR-004
+      description: "The system MUST implement conference recording in WebM format with cloud storage integration"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: recording_functionality
+    
+    - id: FR-005
+      description: "The system MUST support screen sharing with annotation capabilities"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: screen_sharing
+    
+    - id: FR-006
+      description: "The system SHOULD implement end-to-end encryption (E2EE) for media streams"
+      priority: SHOULD
+      validation:
+        type: security_test
+        check: e2ee_implementation
+    
+    - id: FR-007
+      description: "The system MUST implement WebRTC signaling server with room management"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: signaling_server
+    
+    - id: FR-008
+      description: "The system MUST support TURN/STUN servers for NAT traversal"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: nat_traversal
+    
+    - id: FR-009
+      description: "The system MUST implement real-time quality metrics and monitoring"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: quality_monitoring
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 150  # MUST achieve end-to-end latency under 150ms
+      p99_latency_ms: 250
+      concurrent_users: 2500  # MUST support 50 rooms × 50 participants
+      cpu_limit: "8000m"      # 8 CPU cores max
+      memory_limit: "4Gi"     # 4GB RAM limit
+    
+    security:
+      network_egress: ALLOW  # Need TURN servers and cloud storage
+      secrets_in_code: FORBIDDEN
+      authentication: REQUIRED
+      authorization: true
+      encryption: TLS_REQUIRED
+    
+    quality:
+      max_cyclomatic_complexity: 15  # Real-time systems complexity
+      min_test_coverage: 85
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    # JavaScript/TypeScript WebRTC
+    - "socket.io"
+    - "mediasoup"
+    - "kurento-utils"
+    - "simple-peer"
+    - "webrtc-adapter"
+    - "express"
+    - "@types/node"
+    - "jest"
+    - "typescript"
+    
+    # Go WebRTC packages
+    - "github.com/pion/webrtc/v3"
+    - "github.com/gorilla/websocket"
+    - "github.com/gin-gonic/gin"
+    
+    # Java WebRTC
+    - "org.kurento"
+    - "springframework"
+    - "netty"
+    
+    # Rust WebRTC
+    - "webrtc"
+    - "tokio"
+    - "tungstenite"
+    
+    # Python WebRTC
+    - "aiortc"
+    - "aiohttp"
+    - "websockets"
+    
+    # Testing and monitoring
+    - "prometheus-client"
+    - "grafana"
+  
+  disallowed_packages:
+    - proprietary-webrtc-sdks  # Must use open source WebRTC
+  
+  disallowed_syscalls:
+    - mount
+    - setuid
+    - setgid
+    - chroot
+  
+  resource_limits:
+    max_cpu_cores: 8
+    max_memory_gb: 4
+    max_disk_gb: 100  # Need space for recordings
+    max_network_bandwidth_mbps: 1000  # High bandwidth for video
+  
+  time_limits:
+    generation_minutes: 60  # Expert complexity
+    execution_minutes: 20   # Include media processing time
+
+artifacts:
+  entrypoint: "main"
+  dockerfile: "templates/webrtc-server.dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/webrtc_config.yaml"
+    - "config/turn_config.json"
+    - "client/index.html"
+
+tests:
+  unit: "tests/rtc_001_unit.py"
+  integration: "tests/rtc_001_integration.py"
+  performance: "tests/rtc_001_performance.py"
+  security: "tests/rtc_001_security.py"
+  property: "tests/rtc_001_property.py"
+  test_data:
+    input_files:
+      - "test_data/sample_video.webm"
+      - "test_data/signaling_messages.json"
+      - "test_data/network_conditions.json"
+    expected_outputs:
+      - "test_data/expected_sfu_routing.json"
+      - "test_data/expected_recordings.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35  # WebRTC functionality coverage
+    test_pass_rate: 0.25       # Test reliability
+    performance: 0.25          # Latency and throughput critical
+    code_quality: 0.10         # Code maintainability
+    security: 0.05             # Security requirements
+  
+  thresholds:
+    min_functional_coverage: 100  # All MUST requirements
+    min_pass_rate: 85
+    min_performance_score: 90     # High performance threshold
+
+pass_criteria:
+  min_total_score: 0.80  # Expert-level threshold
+  mandatory_requirements:
+    - FR-001  # SFU implementation
+    - FR-002  # Adaptive bitrate
+    - FR-003  # Simulcast
+    - FR-004  # Recording
+    - FR-005  # Screen sharing
+    - FR-007  # Signaling server
+    - FR-008  # TURN/STUN
+    - FR-009  # Quality monitoring
+  forbidden_violations:
+    - runtime_failure
+    - sandbox_escape
+    - critical_security
+
+reference_solution:
+  available: true
+  path: "baselines/RTC-001/"
+  expected_score: 0.85
+  performance_baseline:
+    p95_latency_ms: 120    # Reference should be faster
+    concurrent_rooms: 1000
+    memory_per_participant_mb: 2
+    mos_score: 4.2        # Mean Opinion Score >4.0
+
+metadata:
+  author: "ITdo Inc. Japan"
+  created_date: "2024-08-20"
+  last_modified: "2024-08-20T12:00:00Z"
+  version: "1.0.0"
+  tags:
+    - webrtc
+    - video-conferencing
+    - sfu
+    - real-time
+    - streaming
+    - recording
+    - screen-sharing
+    - expert
+    - multimedia
+  references:
+    - title: "WebRTC Specification"
+      url: "https://www.w3.org/TR/webrtc/"
+    - title: "Mediasoup SFU"
+      url: "https://mediasoup.org/"
+    - title: "WebRTC for the Curious"
+      url: "https://webrtcforthecurious.com/"
+    - title: "Pion WebRTC (Go)"
+      url: "https://github.com/pion/webrtc"
+    - title: "WebRTC Samples"
+      url: "https://webrtc.github.io/samples/"
+  notes: |
+    This expert-level problem tests the ability to implement a complete WebRTC-based
+    video conferencing system with advanced features:
+    
+    - Selective Forwarding Unit (SFU) for efficient bandwidth usage
+    - Adaptive bitrate control based on network conditions
+    - Simulcast support for multiple quality streams
+    - Conference recording with cloud storage integration
+    - Screen sharing with annotation capabilities
+    - Real-time quality monitoring and metrics
+    - TURN/STUN server integration for NAT traversal
+    - Optional end-to-end encryption for security
+    
+    The implementation must achieve low latency (<150ms end-to-end) while supporting
+    large-scale deployments (1000 concurrent rooms, 50 participants each).
+    
+    Key real-time requirements:
+    - Sub-150ms glass-to-glass latency
+    - Adaptive quality based on network conditions
+    - Graceful degradation under network stress
+    - High availability and fault tolerance
+    - Comprehensive monitoring and alerting
