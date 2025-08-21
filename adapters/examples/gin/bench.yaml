@@ -1,0 +1,162 @@
+# Gin Web Framework Benchmark Configuration
+# High-performance HTTP web framework written in Go
+
+version: "1.0"
+
+framework:
+  name: "Gin"
+  version: "1.9.1"
+  language: "go"
+  description: "Gin is a HTTP web framework written in Go with a martini-like API and high performance"
+  repository: "https://github.com/gin-gonic/gin"
+  homepage: "https://gin-gonic.com"
+
+compliance:
+  level: "L4"
+  features:
+    - build
+    - test
+    - performance
+    - security
+    - coverage
+
+commands:
+  build:
+    script: |
+      # Download dependencies
+      go mod download
+      
+      # Build the application
+      go build -v -o bin/app ./cmd/server
+      
+      # Verify build
+      ./bin/app --version || echo "Built successfully"
+    timeout: 300
+    workdir: "."
+
+  test:
+    script: |
+      # Run tests with coverage
+      go test -v -race -coverprofile=coverage.out ./...
+      
+      # Generate test report
+      go test -json ./... > test-results.json
+    timeout: 600
+    env:
+      GO_ENV: "test"
+      GIN_MODE: "test"
+
+  performance:
+    script: |
+      # Build and start the application
+      go build -o bin/app ./cmd/server
+      ./bin/app &
+      APP_PID=$!
+      sleep 2
+      
+      # Run benchmark tests
+      go test -bench=. -benchmem -benchtime=60s ./... > bench-results.txt
+      
+      # Run load test with vegeta
+      echo "GET http://localhost:8080/" | vegeta attack \
+        -duration=60s \
+        -rate=1000/1s \
+        -workers=100 | \
+        vegeta report -type=json > perf-results.json
+      
+      # Alternative with wrk
+      # wrk -t12 -c400 -d60s --latency http://localhost:8080/
+      
+      # Stop the application
+      kill $APP_PID
+    endpoint: "http://localhost:8080"
+    duration: 60
+    concurrency: 100
+    tool: "vegeta"
+    timeout: 90
+
+  security:
+    script: |
+      # Static security analysis with gosec
+      gosec -fmt json -out gosec-report.json ./...
+      
+      # Dependency vulnerability check
+      go list -json -m all | nancy sleuth --output json > nancy-report.json
+      
+      # License check
+      go-licenses check ./... --disallowed_types=forbidden,restricted
+      
+      # Additional scanning with semgrep
+      semgrep --config=auto --json -o semgrep-report.json .
+    scan_type: "static"
+    severity: "medium"
+    timeout: 300
+
+  coverage:
+    script: |
+      # Generate coverage report
+      go test -coverprofile=coverage.out ./...
+      go tool cover -html=coverage.out -o coverage.html
+      go tool cover -func=coverage.out > coverage.txt
+      
+      # Calculate coverage percentage
+      go tool cover -func=coverage.out | grep total | awk '{print $3}'
+    timeout: 300
+
+  lint:
+    script: |
+      # golangci-lint with multiple linters
+      golangci-lint run --out-format json > lint-report.json
+      
+      # Go fmt check
+      test -z "$(gofmt -l .)"
+      
+      # Go vet
+      go vet ./...
+    timeout: 180
+
+environment:
+  variables:
+    GO_ENV: "production"
+    GIN_MODE: "release"
+    PORT: "8080"
+    DATABASE_URL: "postgres://user:pass@localhost:5432/testdb"
+    REDIS_URL: "redis://localhost:6379"
+    JWT_SECRET: "test-secret-only-for-benchmarks"
+    LOG_LEVEL: "info"
+  
+  ports:
+    - 8080
+  
+  services:
+    - postgres:15
+    - redis:7
+
+artifacts:
+  binary: "bin/app"
+  coverage: "coverage.html"
+  performance: "perf-results.json"
+  security: "gosec-report.json"
+  test_results: "test-results.json"
+  benchmark: "bench-results.txt"
+  logs: "logs/"
+
+requirements:
+  cpu: "2 cores"
+  memory: "2GB"
+  disk: "5GB"
+  gpu: false
+
+metadata:
+  authors:
+    - "Manu Martinez-Almeida"
+    - "Gin Contributors"
+  license: "MIT"
+  tags:
+    - "web"
+    - "framework"
+    - "rest"
+    - "api"
+    - "performance"
+    - "middleware"
+  benchmarkVersion: "1.0.0"

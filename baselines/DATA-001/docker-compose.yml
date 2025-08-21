@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  log-aggregator:
+    build: .
+    container_name: data-001-aggregator
+    ports:
+      - "514:514/udp"   # Syslog UDP
+      - "5514:5514"     # TCP log ingestion
+      - "8000:8000"     # HTTP API
+    volumes:
+      - log-data:/data
+    environment:
+      - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - log-network
+
+  # Optional: Log generator for testing
+  log-generator:
+    image: python:3.11-slim
+    container_name: data-001-generator
+    depends_on:
+      - log-aggregator
+    volumes:
+      - ./test_client.py:/test_client.py
+    command: python /test_client.py
+    environment:
+      - LOG_AGGREGATOR_HOST=log-aggregator
+    networks:
+      - log-network
+    profiles:
+      - test
+
+volumes:
+  log-data:
+    driver: local
+
+networks:
+  log-network:
+    driver: bridge

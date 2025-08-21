@@ -1,0 +1,62 @@
+# Stream Processing Configuration
+app_name: "DATA-010 Stream Processor"
+debug: false
+
+# Processing Configuration
+processing:
+  parallelism: 4
+  queue_size: 10000
+  checkpoint_interval: 30.0  # seconds
+
+# State Storage
+state:
+  path: "./state"
+
+# Windowing Configuration
+windowing:
+  cleanup_interval: 60.0  # seconds
+  windows:
+    # Tumbling window - 1 minute non-overlapping windows
+    - type: "tumbling"
+      size_ms: 60000  # 1 minute
+      allowed_lateness_ms: 5000  # 5 seconds
+    
+    # Sliding window - 5 minute windows sliding every 30 seconds
+    - type: "sliding"
+      size_ms: 300000  # 5 minutes
+      slide_ms: 30000  # 30 seconds
+      allowed_lateness_ms: 10000  # 10 seconds
+    
+    # Session window - 30 second inactivity gap
+    - type: "session"
+      gap_ms: 30000  # 30 seconds inactivity gap
+      allowed_lateness_ms: 15000  # 15 seconds
+
+# Watermark Configuration
+watermarks:
+  delay_seconds: 5.0  # Allow 5 seconds for late data
+
+# Source Configuration
+sources:
+  topics:
+    - "user-events"
+    - "sensor-data"
+    - "transactions"
+
+# Sink Configuration  
+sinks:
+  topics:
+    - "aggregated-events"
+    - "alerts"
+
+# Kafka Configuration (if using Kafka)
+kafka:
+  bootstrap_servers: "localhost:9092"
+  group_id: "data-010-processor"
+  auto_offset_reset: "latest"
+
+# API Server Configuration
+api:
+  host: "0.0.0.0"
+  port: 8080
+  metrics_port: 9090

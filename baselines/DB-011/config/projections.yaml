@@ -1,0 +1,110 @@
+# Projections Configuration
+
+projections:
+  - name: account_balance
+    description: "Account balance and transaction history"
+    enabled: true
+    read_models:
+      - balance
+    event_types:
+      - AccountCreated
+      - MoneyDeposited
+      - MoneyWithdrawn
+      - TransferCompleted
+    update_mode: async  # async, sync
+    
+  - name: order_summary
+    description: "Order summaries and statistics"
+    enabled: true
+    read_models:
+      - summary
+    event_types:
+      - OrderCreated
+      - ItemAdded
+      - OrderConfirmed
+      - OrderShipped
+      - OrderDelivered
+      - OrderCancelled
+    update_mode: async
+    
+  - name: inventory
+    description: "Inventory levels and movements"
+    enabled: true
+    read_models:
+      - stock
+    event_types:
+      - ProductAdded
+      - StockReceived
+      - StockReserved
+      - StockReleased
+      - StockShipped
+    update_mode: sync  # Inventory needs immediate consistency
+    
+  - name: user_activity
+    description: "User activity timeline"
+    enabled: true
+    read_models:
+      - activity
+    event_types:
+      - UserRegistered
+      - UserLoggedIn
+      - UserAction
+      - UserLoggedOut
+    update_mode: async
+    
+  - name: audit_log
+    description: "Complete audit trail"
+    enabled: true
+    read_models:
+      - audit
+    event_types:
+      - "*"  # All events
+    update_mode: async
+    retention_days: 90
+    
+read_model_storage:
+  type: hybrid  # memory, redis, postgresql, hybrid
+  
+  memory:
+    max_size_mb: 1024
+    eviction_policy: lru
+    
+  redis:
+    host: localhost
+    port: 6379
+    db: 1
+    ttl_seconds: 3600
+    
+  postgresql:
+    connection_string: postgresql://user:password@localhost/readmodels
+    schema: projections
+    
+rebuild:
+  # Rebuild settings
+  parallel_rebuilds: 2
+  batch_size: 1000
+  checkpoint_interval: 10000
+  
+  # Rebuild triggers
+  auto_rebuild_on_error: true
+  scheduled_rebuild_cron: "0 3 * * 0"  # Weekly at 3 AM Sunday
+  
+consistency:
+  # Consistency settings
+  eventual_consistency_window_ms: 1000
+  strong_consistency_aggregates:
+    - Account  # Account operations need strong consistency
+    - Inventory
+    
+  # Conflict resolution
+  conflict_resolution: last_write_wins  # last_write_wins, custom
+  
+monitoring:
+  # Projection lag monitoring
+  max_lag_events: 1000
+  max_lag_time_seconds: 60
+  alert_on_lag: true
+  
+  # Health checks
+  health_check_interval_seconds: 30
+  unhealthy_threshold: 3

@@ -1,0 +1,867 @@
+# WEB-001-task-api: Task Management API with Rate Limiting
+
+**Languages / 言語:** [English](#english) | [日本語](#japanese)
+
+## English
+
+# WEB-001-task-api: Task Management API with Rate Limiting
+
+## Overview
+
+A production-ready RESTful API for task management with JWT authentication, rate limiting, and data persistence. This implementation provides comprehensive CRUD operations for tasks with user authentication and IP-based rate limiting.
+
+## Key Features
+
+- **CRUD Operations**: Complete Create, Read, Update, Delete operations for tasks
+- **JWT Authentication**: Secure token-based authentication system
+- **Rate Limiting**: IP-based rate limiting (100 requests/minute per IP)
+- **Data Persistence**: Support for SQLite, PostgreSQL, and MySQL
+- **Pagination**: Efficient pagination for task listings
+- **Permission Control**: User-specific task access control
+- **Input Validation**: Comprehensive request validation
+- **Error Handling**: Structured error responses
+- **Health Check**: Built-in health monitoring endpoint
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│              Client Application              │
+└─────────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────┐
+│            FastAPI Application              │
+├─────────────────────────────────────────────┤
+│  ┌─────────┐  ┌──────────┐  ┌───────────┐ │
+│  │  Auth   │  │   Rate   │  │   CORS    │ │
+│  │  Layer  │  │  Limiter │  │ Middleware│ │
+│  └─────────┘  └──────────┘  └───────────┘ │
+│                     │                       │
+│  ┌─────────────────────────────────────┐  │
+│  │         API Endpoints               │  │
+│  │  /auth  /tasks  /health            │  │
+│  └─────────────────────────────────────┘  │
+│                     │                       │
+│  ┌─────────────────────────────────────┐  │
+│  │      SQLAlchemy ORM Layer          │  │
+│  └─────────────────────────────────────┘  │
+└─────────────────────────────────────────────┘
+                      │
+         ┌────────────┴────────────┐
+         ▼                         ▼
+┌──────────────┐          ┌──────────────┐
+│   Database   │          │    Redis     │
+│  (SQLite/    │          │ (Rate Limit) │
+│  PostgreSQL) │          └──────────────┘
+└──────────────┘
+```
+
+## Quick Start
+
+### Using Docker
+
+```bash
+# Build the image
+docker build -t task-api .
+
+# Run with SQLite (default)
+docker run -p 3000:3000 task-api
+
+# Run with PostgreSQL
+docker run -p 3000:3000 \
+  -e DATABASE_URL="postgresql://user:pass@postgres/taskdb" \
+  -e REDIS_URL="redis://redis:6379" \
+  -e JWT_SECRET="your-secret-key" \
+  task-api
+```
+
+### Manual Setup
+
+1. **Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+2. **Set environment variables:**
+```bash
+export DATABASE_URL="sqlite:///./tasks.db"
+export REDIS_URL="redis://localhost:6379"
+export JWT_SECRET="your-secret-key"
+export PORT=3000
+```
+
+3. **Run the application:**
+```bash
+python src/main.py
+```
+
+4. **Access the API documentation:**
+```bash
+open http://localhost:3000/docs
+```
+
+## API Usage
+
+### 1. Register User
+
+```bash
+curl -X POST "http://localhost:3000/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "password123"
+  }'
+
+# Response:
+{
+  "access_token": "eyJ...",
+  "token_type": "bearer",
+  "expires_in": 86400
+}
+```
+
+### 2. Login
+
+```bash
+curl -X POST "http://localhost:3000/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "password": "password123"
+  }'
+```
+
+### 3. Create Task
+
+```bash
+curl -X POST "http://localhost:3000/tasks" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Deploy v2.0",
+    "description": "Production deployment for version 2.0",
+    "due_date": "2024-12-31T23:59:59Z"
+  }'
+
+# Response:
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "title": "Deploy v2.0",
+  "description": "Production deployment for version 2.0",
+  "due_date": "2024-12-31T23:59:59Z",
+  "status": "pending",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### 4. List Tasks with Pagination
+
+```bash
+curl -X GET "http://localhost:3000/tasks?page=1&limit=10" \
+  -H "Authorization: Bearer <token>"
+
+# Response:
+{
+  "tasks": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Deploy v2.0",
+      "description": "Production deployment for version 2.0",
+      "due_date": "2024-12-31T23:59:59Z",
+      "status": "pending",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 42
+  }
+}
+```
+
+### 5. Get Specific Task
+
+```bash
+curl -X GET "http://localhost:3000/tasks/{task_id}" \
+  -H "Authorization: Bearer <token>"
+```
+
+### 6. Update Task
+
+```bash
+curl -X PUT "http://localhost:3000/tasks/{task_id}" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Updated Title",
+    "status": "in_progress"
+  }'
+```
+
+### 7. Delete Task
+
+```bash
+curl -X DELETE "http://localhost:3000/tasks/{task_id}" \
+  -H "Authorization: Bearer <token>"
+```
+
+## Rate Limiting
+
+The API implements IP-based rate limiting:
+
+- **Limit**: 100 requests per minute per IP address
+- **Headers**: Rate limit information is included in response headers
+- **Error Response**: HTTP 429 when limit exceeded
+
+```json
+{
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded"
+}
+```
+
+Response headers:
+```
+X-RateLimit-Remaining: 0
+Retry-After: 60
+```
+
+## Security Features
+
+1. **JWT Authentication**: Secure token-based authentication
+2. **Password Hashing**: Bcrypt password hashing
+3. **Input Validation**: Pydantic schema validation
+4. **SQL Injection Prevention**: SQLAlchemy ORM with parameterized queries
+5. **XSS Protection**: JSON-only responses
+6. **CORS Configuration**: Configurable CORS middleware
+7. **Permission Control**: User-specific resource access
+
+## Error Handling
+
+The API returns structured error responses:
+
+### Authentication Error (401)
+```json
+{
+  "error": "Unauthorized",
+  "message": "Invalid or expired token"
+}
+```
+
+### Permission Error (403)
+```json
+{
+  "error": "Forbidden",
+  "message": "You don't have permission to modify this task"
+}
+```
+
+### Rate Limit Error (429)
+```json
+{
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded"
+}
+```
+
+## Performance Characteristics
+
+- **Response Time**: P95 < 200ms (as per requirements)
+- **Concurrent Connections**: Supports 1000+ concurrent connections
+- **Database Pooling**: Connection pooling for optimal performance
+- **Async Processing**: Non-blocking I/O with FastAPI
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | Database connection string | `sqlite:///./tasks.db` |
+| `REDIS_URL` | Redis connection string | `redis://localhost:6379` |
+| `JWT_SECRET` | Secret key for JWT signing | `your-secret-key-change-in-production` |
+| `PORT` | Application port | `3000` |
+
+### Database Support
+
+The application supports multiple databases:
+
+- **SQLite** (default): `sqlite:///./tasks.db`
+- **PostgreSQL**: `postgresql://user:password@localhost/taskdb`
+- **MySQL**: `mysql://user:password@localhost/taskdb`
+
+## Testing
+
+### Unit Tests
+
+```bash
+pytest tests/unit/ -v
+```
+
+### Integration Tests
+
+```bash
+pytest tests/integration/ -v
+```
+
+### Load Testing
+
+```bash
+# Using Apache Bench
+ab -n 1000 -c 10 -H "Authorization: Bearer <token>" http://localhost:3000/tasks
+
+# Using JMeter
+jmeter -n -t tests/load/task_api_load_test.jmx
+```
+
+## Production Deployment
+
+### Docker Compose
+
+```yaml
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@db/taskdb
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=taskdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+```
+
+### Kubernetes
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: task-api
+  template:
+    metadata:
+      labels:
+        app: task-api
+    spec:
+      containers:
+      - name: api
+        image: task-api:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jwt-secret
+              key: secret
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+```
+
+## Monitoring
+
+The application provides health check endpoint:
+
+```bash
+curl http://localhost:3000/health
+
+# Response:
+{
+  "status": "healthy",
+  "timestamp": "2024-01-01T00:00:00Z"
+}
+```
+
+## Troubleshooting
+
+### Database Connection Issues
+- Verify DATABASE_URL is correct
+- Check database server is running
+- Ensure database credentials are valid
+
+### Redis Connection Issues
+- Verify REDIS_URL is correct
+- Check Redis server is running
+- Rate limiting will fall back to in-memory if Redis unavailable
+
+### Authentication Issues
+- Verify JWT_SECRET is set correctly
+- Check token expiration (24 hours by default)
+- Ensure Authorization header format: `Bearer <token>`
+
+## License
+
+MIT
+
+---
+
+## Japanese
+
+# WEB-001-task-api: タスク管理APIとレート制限機能
+
+## 概要
+
+タスク管理のための本番環境対応RESTful APIで、JWT認証、レート制限、データ永続化機能を備えています。この実装は、ユーザー認証とIPベースのレート制限を備えたタスクの包括的なCRUD操作を提供します。
+
+## 主な機能
+
+- **CRUD操作**: タスクの完全な作成、読み取り、更新、削除操作
+- **JWT認証**: セキュアなトークンベース認証システム
+- **レート制限**: IPベースのレート制限（IPあたり100リクエスト/分）
+- **データ永続化**: SQLite、PostgreSQL、MySQLのサポート
+- **ページネーション**: タスク一覧の効率的なページネーション
+- **権限制御**: ユーザー固有のタスクアクセス制御
+- **入力検証**: 包括的なリクエスト検証
+- **エラー処理**: 構造化されたエラーレスポンス
+- **ヘルスチェック**: 組み込みヘルス監視エンドポイント
+
+## アーキテクチャ
+
+```
+┌─────────────────────────────────────────────┐
+│              Client Application              │
+└─────────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────┐
+│            FastAPI Application              │
+├─────────────────────────────────────────────┤
+│  ┌─────────┐  ┌──────────┐  ┌───────────┐ │
+│  │  Auth   │  │   Rate   │  │   CORS    │ │
+│  │  Layer  │  │  Limiter │  │ Middleware│ │
+│  └─────────┘  └──────────┘  └───────────┘ │
+│                     │                       │
+│  ┌─────────────────────────────────────┐  │
+│  │         API Endpoints               │  │
+│  │  /auth  /tasks  /health            │  │
+│  └─────────────────────────────────────┘  │
+│                     │                       │
+│  ┌─────────────────────────────────────┐  │
+│  │      SQLAlchemy ORM Layer          │  │
+│  └─────────────────────────────────────┘  │
+└─────────────────────────────────────────────┘
+                      │
+         ┌────────────┴────────────┐
+         ▼                         ▼
+┌──────────────┐          ┌──────────────┐
+│   Database   │          │    Redis     │
+│  (SQLite/    │          │ (Rate Limit) │
+│  PostgreSQL) │          └──────────────┘
+└──────────────┘
+```
+
+## クイックスタート
+
+### Dockerを使用
+
+```bash
+# イメージをビルド
+docker build -t task-api .
+
+# SQLite（デフォルト）で実行
+docker run -p 3000:3000 task-api
+
+# PostgreSQLで実行
+docker run -p 3000:3000 \
+  -e DATABASE_URL="postgresql://user:pass@postgres/taskdb" \
+  -e REDIS_URL="redis://redis:6379" \
+  -e JWT_SECRET="your-secret-key" \
+  task-api
+```
+
+### 手動セットアップ
+
+1. **依存関係のインストール:**
+```bash
+pip install -r requirements.txt
+```
+
+2. **環境変数の設定:**
+```bash
+export DATABASE_URL="sqlite:///./tasks.db"
+export REDIS_URL="redis://localhost:6379"
+export JWT_SECRET="your-secret-key"
+export PORT=3000
+```
+
+3. **アプリケーションの実行:**
+```bash
+python src/main.py
+```
+
+4. **APIドキュメントへのアクセス:**
+```bash
+open http://localhost:3000/docs
+```
+
+## API使用方法
+
+### 1. ユーザー登録
+
+```bash
+curl -X POST "http://localhost:3000/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "password123"
+  }'
+
+# レスポンス:
+{
+  "access_token": "eyJ...",
+  "token_type": "bearer",
+  "expires_in": 86400
+}
+```
+
+### 2. ログイン
+
+```bash
+curl -X POST "http://localhost:3000/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "password": "password123"
+  }'
+```
+
+### 3. タスク作成
+
+```bash
+curl -X POST "http://localhost:3000/tasks" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Deploy v2.0",
+    "description": "Production deployment for version 2.0",
+    "due_date": "2024-12-31T23:59:59Z"
+  }'
+
+# レスポンス:
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "title": "Deploy v2.0",
+  "description": "Production deployment for version 2.0",
+  "due_date": "2024-12-31T23:59:59Z",
+  "status": "pending",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### 4. ページネーション付きタスク一覧
+
+```bash
+curl -X GET "http://localhost:3000/tasks?page=1&limit=10" \
+  -H "Authorization: Bearer <token>"
+
+# レスポンス:
+{
+  "tasks": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Deploy v2.0",
+      "description": "Production deployment for version 2.0",
+      "due_date": "2024-12-31T23:59:59Z",
+      "status": "pending",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 42
+  }
+}
+```
+
+### 5. 特定タスクの取得
+
+```bash
+curl -X GET "http://localhost:3000/tasks/{task_id}" \
+  -H "Authorization: Bearer <token>"
+```
+
+### 6. タスク更新
+
+```bash
+curl -X PUT "http://localhost:3000/tasks/{task_id}" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Updated Title",
+    "status": "in_progress"
+  }'
+```
+
+### 7. タスク削除
+
+```bash
+curl -X DELETE "http://localhost:3000/tasks/{task_id}" \
+  -H "Authorization: Bearer <token>"
+```
+
+## レート制限
+
+APIはIPベースのレート制限を実装しています：
+
+- **制限**: IPアドレスあたり1分間に100リクエスト
+- **ヘッダー**: レート制限情報がレスポンスヘッダーに含まれます
+- **エラーレスポンス**: 制限を超えた場合はHTTP 429
+
+```json
+{
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded"
+}
+```
+
+レスポンスヘッダー:
+```
+X-RateLimit-Remaining: 0
+Retry-After: 60
+```
+
+## セキュリティ機能
+
+1. **JWT認証**: セキュアなトークンベース認証
+2. **パスワードハッシュ化**: Bcryptパスワードハッシュ化
+3. **入力検証**: Pydanticスキーマ検証
+4. **SQLインジェクション防止**: パラメータ化クエリを使用したSQLAlchemy ORM
+5. **XSS保護**: JSONのみのレスポンス
+6. **CORS設定**: 設定可能なCORSミドルウェア
+7. **権限制御**: ユーザー固有のリソースアクセス
+
+## エラー処理
+
+APIは構造化されたエラーレスポンスを返します：
+
+### 認証エラー (401)
+```json
+{
+  "error": "Unauthorized",
+  "message": "Invalid or expired token"
+}
+```
+
+### 権限エラー (403)
+```json
+{
+  "error": "Forbidden",
+  "message": "You don't have permission to modify this task"
+}
+```
+
+### レート制限エラー (429)
+```json
+{
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded"
+}
+```
+
+## パフォーマンス特性
+
+- **応答時間**: P95 < 200ms（要件通り）
+- **同時接続**: 1000以上の同時接続をサポート
+- **データベースプーリング**: 最適なパフォーマンスのための接続プーリング
+- **非同期処理**: FastAPIによるノンブロッキングI/O
+
+## 設定
+
+### 環境変数
+
+| 変数 | 説明 | デフォルト |
+|------|------|----------|
+| `DATABASE_URL` | データベース接続文字列 | `sqlite:///./tasks.db` |
+| `REDIS_URL` | Redis接続文字列 | `redis://localhost:6379` |
+| `JWT_SECRET` | JWT署名用秘密鍵 | `your-secret-key-change-in-production` |
+| `PORT` | アプリケーションポート | `3000` |
+
+### データベースサポート
+
+アプリケーションは複数のデータベースをサポートします：
+
+- **SQLite** (デフォルト): `sqlite:///./tasks.db`
+- **PostgreSQL**: `postgresql://user:password@localhost/taskdb`
+- **MySQL**: `mysql://user:password@localhost/taskdb`
+
+## テスト
+
+### 単体テスト
+
+```bash
+pytest tests/unit/ -v
+```
+
+### 統合テスト
+
+```bash
+pytest tests/integration/ -v
+```
+
+### 負荷テスト
+
+```bash
+# Apache Benchを使用
+ab -n 1000 -c 10 -H "Authorization: Bearer <token>" http://localhost:3000/tasks
+
+# JMeterを使用
+jmeter -n -t tests/load/task_api_load_test.jmx
+```
+
+## 本番環境デプロイ
+
+### Docker Compose
+
+```yaml
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@db/taskdb
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=taskdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+```
+
+### Kubernetes
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: task-api
+  template:
+    metadata:
+      labels:
+        app: task-api
+    spec:
+      containers:
+      - name: api
+        image: task-api:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jwt-secret
+              key: secret
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+```
+
+## モニタリング
+
+アプリケーションはヘルスチェックエンドポイントを提供します：
+
+```bash
+curl http://localhost:3000/health
+
+# レスポンス:
+{
+  "status": "healthy",
+  "timestamp": "2024-01-01T00:00:00Z"
+}
+```
+
+## トラブルシューティング
+
+### データベース接続問題
+- DATABASE_URLが正しいことを確認
+- データベースサーバーが稼働していることを確認
+- データベース認証情報が有効であることを確認
+
+### Redis接続問題
+- REDIS_URLが正しいことを確認
+- Redisサーバーが稼働していることを確認
+- Redisが利用できない場合、レート制限はインメモリにフォールバック
+
+### 認証問題
+- JWT_SECRETが正しく設定されていることを確認
+- トークンの有効期限を確認（デフォルト24時間）
+- Authorizationヘッダーの形式を確認：`Bearer <token>`
+
+## ライセンス
+
+MIT

@@ -1,0 +1,47 @@
+# Homomorphic Encryption Configuration
+schemes:
+  paillier:
+    enabled: true
+    key_size: 2048
+    supports:
+      - addition
+      - scalar_multiplication
+    max_plaintext_size: 256  # bits
+    
+  bfv:
+    enabled: true
+    ring_dimension: 4096
+    plaintext_modulus: 1024
+    ciphertext_modulus_bits: 60
+    supports:
+      - addition
+      - multiplication
+      - bootstrapping
+    
+  ckks:
+    enabled: true
+    precision: 40
+    scale: 1099511627776  # 2^40
+    supports:
+      - approximate_arithmetic
+      - floating_point
+
+operations:
+  addition:
+    noise_growth: linear
+    complexity: O(n)
+    
+  multiplication:
+    noise_growth: multiplicative
+    complexity: O(n^2)
+    requires_relinearization: true
+    
+  bootstrapping:
+    enabled: true
+    threshold: 0.8  # Bootstrap when 80% noise budget used
+    time_ms: 1000
+
+security:
+  level: 128  # bits
+  error_distribution: gaussian
+  standard_deviation: 3.2

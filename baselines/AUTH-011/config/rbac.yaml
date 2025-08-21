@@ -1,0 +1,109 @@
+# RBAC Configuration
+roles:
+  - id: role_superadmin
+    name: superadmin
+    description: Super administrator with unrestricted access
+    permissions:
+      - "*"
+    parent_roles: []
+
+  - id: role_admin
+    name: admin  
+    description: Administrator with full access
+    permissions:
+      - read
+      - write
+      - delete
+      - admin
+      - audit
+    parent_roles: []
+
+  - id: role_manager
+    name: manager
+    description: Manager with elevated privileges
+    permissions:
+      - read
+      - write
+      - approve
+      - delegate
+    parent_roles:
+      - role_user
+
+  - id: role_editor
+    name: editor
+    description: Editor with read and write access
+    permissions:
+      - read
+      - write
+      - update
+    parent_roles:
+      - role_user
+
+  - id: role_reviewer
+    name: reviewer
+    description: Reviewer with read and comment access
+    permissions:
+      - read
+      - comment
+      - approve
+    parent_roles:
+      - role_user
+
+  - id: role_user
+    name: user
+    description: Basic user with read access
+    permissions:
+      - read
+      - list
+    parent_roles: []
+
+  - id: role_guest
+    name: guest
+    description: Guest with minimal access
+    permissions:
+      - read_public
+    parent_roles: []
+
+permissions:
+  - name: read
+    description: Read resources
+    resource_types:
+      - document
+      - file
+      - record
+
+  - name: write
+    description: Write/create resources
+    resource_types:
+      - document
+      - file
+      - record
+
+  - name: delete
+    description: Delete resources
+    resource_types:
+      - document
+      - file
+      - record
+
+  - name: admin
+    description: Administrative operations
+    resource_types:
+      - system
+      - configuration
+
+  - name: audit
+    description: Access audit logs
+    resource_types:
+      - audit_log
+
+  - name: delegate
+    description: Delegate permissions to others
+    resource_types:
+      - permission
+
+  - name: approve
+    description: Approve requests and changes
+    resource_types:
+      - request
+      - change

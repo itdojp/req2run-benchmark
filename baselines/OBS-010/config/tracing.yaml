@@ -1,0 +1,104 @@
+# OpenTelemetry Tracing Configuration
+app:
+  name: "OBS-010 Observability Demo"
+  version: "1.0.0"
+  environment: "development"
+
+tracing:
+  service_name: "obs-010-service"
+  service_version: "1.0.0"
+  
+  # Exporter endpoints (configure as needed)
+  jaeger_endpoint: null  # e.g., "localhost:14268"
+  otlp_endpoint: null    # e.g., "http://localhost:4317"
+  zipkin_endpoint: null  # e.g., "http://localhost:9411/api/v2/spans"
+  console_exporter: true
+  
+  # Sampling configuration
+  sampling:
+    type: "probabilistic"  # or "always_on", "always_off"
+    rate: 1.0  # Sample 100% of traces (adjust for production)
+  
+  # Resource attributes
+  resource_attributes:
+    deployment.environment: "development"
+    service.namespace: "obs-010"
+    service.instance.id: "1"
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+  workers: 1
+
+database:
+  url: "sqlite:///./obs_demo.db"
+  pool_size: 5
+  echo: false
+
+logging:
+  level: "INFO"
+  format: "structured"  # or "text"
+  
+security:
+  secret_key: "demo-secret-key-change-in-production"
+
+performance:
+  max_workers: 4
+  request_timeout: 30
+  
+# Build configuration
+build:
+  steps:
+    - name: "install_dependencies"
+      type: "python"
+      module: "pip"
+      args: ["install", "-r", "requirements.txt"]
+      timeout: 300
+    
+    - name: "run_linting" 
+      type: "command"
+      command: "flake8 src/ --max-line-length=120"
+      timeout: 60
+    
+    - name: "run_type_check"
+      type: "command"
+      command: "mypy src/ --ignore-missing-imports"
+      timeout: 120
+    
+    - name: "run_tests"
+      type: "python"
+      module: "pytest"
+      args: ["tests/", "-v", "--cov=src"]
+      timeout: 300
+
+# Test configuration
+test:
+  framework: "pytest"
+  patterns: ["test_*.py", "*_test.py"]
+  directories: ["tests", "test"]
+  parallel: false
+  coverage: true
+  verbose: true
+  
+  # Performance benchmarks
+  benchmarks:
+    iterations: 100
+    warmup: 10
+    thresholds:
+      latency_ms: 10.0
+      throughput_ops_sec: 500.0
+      memory_mb: 100.0
+      cpu_time_ms: 5.0
+
+# Monitoring and alerting
+monitoring:
+  health_check_interval: 30
+  metrics_collection_interval: 10
+  
+  # Thresholds for alerting
+  thresholds:
+    error_rate_percent: 5.0
+    response_time_p99_ms: 1000.0
+    memory_usage_percent: 90.0
+    cpu_usage_percent: 80.0

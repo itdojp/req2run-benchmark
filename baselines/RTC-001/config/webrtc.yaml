@@ -1,0 +1,202 @@
+# WebRTC Server Configuration
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  ssl: false
+  ssl_cert: null
+  ssl_key: null
+
+webrtc:
+  # ICE servers for NAT traversal
+  ice_servers:
+    - urls:
+        - "stun:stun.l.google.com:19302"
+        - "stun:stun1.l.google.com:19302"
+    - urls:
+        - "turn:turn.example.com:3478"
+      username: "user"
+      credential: "pass"
+  
+  # Media constraints
+  max_bitrate: 5000000  # 5 Mbps
+  min_bitrate: 50000    # 50 Kbps
+  start_bitrate: 1000000 # 1 Mbps
+  
+  # Codec preferences
+  video_codec: "VP8"  # VP8, VP9, H264
+  audio_codec: "opus"
+  
+  # Advanced features
+  simulcast: true
+  dtx: true  # Discontinuous Transmission
+  fec: true  # Forward Error Correction
+  nack: true # Negative Acknowledgment
+  
+  # Jitter buffer
+  jitter_buffer_target: 200  # ms
+  jitter_buffer_max: 1000    # ms
+
+rooms:
+  max_participants: 100
+  auto_create: true
+  idle_timeout: 3600  # seconds
+  
+  # Room defaults
+  default_video_quality: "high"
+  default_audio_quality: "high"
+  allow_recording: true
+  allow_screen_share: true
+
+recording:
+  enabled: true
+  path: "recordings"
+  format: "webm"  # webm, mp4
+  video_codec: "vp8"
+  audio_codec: "opus"
+  video_bitrate: 2500000
+  audio_bitrate: 128000
+  
+  # S3 upload (optional)
+  s3_upload: false
+  s3_bucket: "recordings"
+  s3_region: "us-east-1"
+
+simulcast:
+  enabled: true
+  layers:
+    - rid: "low"
+      max_bitrate: 150000
+      scale_down: 4
+    - rid: "medium"
+      max_bitrate: 500000
+      scale_down: 2
+    - rid: "high"
+      max_bitrate: 2500000
+      scale_down: 1
+
+adaptive_bitrate:
+  enabled: true
+  algorithm: "gcc"  # gcc (Google Congestion Control), transport-cc
+  
+  # Thresholds
+  packet_loss_threshold: 0.05  # 5%
+  jitter_threshold: 100  # ms
+  
+  # Rate control
+  increase_factor: 1.05
+  decrease_factor: 0.85
+  
+  # Probing
+  probing_enabled: true
+  probing_interval: 3000  # ms
+
+bandwidth_estimation:
+  enabled: true
+  initial_bandwidth: 1000000  # 1 Mbps
+  min_bandwidth: 50000        # 50 Kbps
+  max_bandwidth: 10000000     # 10 Mbps
+
+quality_control:
+  # Video quality levels
+  qualities:
+    low:
+      width: 320
+      height: 240
+      framerate: 15
+      bitrate: 150000
+    medium:
+      width: 640
+      height: 480
+      framerate: 30
+      bitrate: 500000
+    high:
+      width: 1280
+      height: 720
+      framerate: 30
+      bitrate: 2500000
+    hd:
+      width: 1920
+      height: 1080
+      framerate: 30
+      bitrate: 5000000
+
+screen_share:
+  enabled: true
+  max_framerate: 5
+  max_bitrate: 3000000
+  capture_cursor: true
+
+audio:
+  echo_cancellation: true
+  noise_suppression: true
+  auto_gain_control: true
+  
+  # Opus settings
+  opus:
+    stereo: true
+    dtx: true
+    fec: true
+    bitrate: 128000
+    max_playback_rate: 48000
+
+security:
+  # DTLS-SRTP for media encryption
+  dtls_srtp: true
+  
+  # Authentication
+  require_auth: false
+  auth_token_header: "X-Auth-Token"
+  
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    max_rooms_per_ip: 10
+    max_participants_per_ip: 50
+    
+  # CORS
+  cors:
+    enabled: true
+    allowed_origins:
+      - "*"
+    allowed_methods:
+      - "GET"
+      - "POST"
+      - "DELETE"
+      - "OPTIONS"
+
+monitoring:
+  metrics_enabled: true
+  metrics_interval: 30  # seconds
+  
+  # Prometheus metrics
+  prometheus:
+    enabled: true
+    port: 9090
+    path: "/metrics"
+  
+  # Logging
+  log_level: "INFO"
+  log_format: "json"
+  
+  # Health checks
+  health_check:
+    enabled: true
+    interval: 30  # seconds
+    timeout: 5    # seconds
+
+performance:
+  # Thread pool
+  worker_threads: 8
+  
+  # Connection pool
+  max_connections: 10000
+  connection_timeout: 30  # seconds
+  
+  # Memory limits
+  max_memory_per_room: 100  # MB
+  max_memory_total: 8192     # MB
+  
+  # CPU limits
+  max_cpu_per_room: 25      # percent
+  max_cpu_total: 90          # percent

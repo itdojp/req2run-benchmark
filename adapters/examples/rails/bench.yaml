@@ -1,0 +1,158 @@
+# Ruby on Rails Framework Benchmark Configuration
+# Full-stack web application framework written in Ruby
+
+version: "1.0"
+
+framework:
+  name: "Ruby on Rails"
+  version: "7.1.0"
+  language: "ruby"
+  description: "Ruby on Rails is a full-stack web framework optimized for programmer happiness"
+  repository: "https://github.com/rails/rails"
+  homepage: "https://rubyonrails.org"
+
+compliance:
+  level: "L3"
+  features:
+    - build
+    - test
+    - performance
+    - security
+
+commands:
+  build:
+    script: |
+      # Install dependencies
+      bundle install --deployment --without development
+      
+      # Setup database
+      bundle exec rails db:create
+      bundle exec rails db:migrate
+      
+      # Precompile assets
+      bundle exec rails assets:precompile
+      
+      # Additional setup
+      bundle exec rails db:seed
+    timeout: 600
+    workdir: "."
+
+  test:
+    script: |
+      # Run RSpec tests
+      bundle exec rspec --format json --out test-results.json
+      bundle exec rspec --format documentation
+      
+      # Alternative with Minitest
+      # bundle exec rails test
+    timeout: 900
+    env:
+      RAILS_ENV: "test"
+      DATABASE_URL: "postgresql://localhost/test_db"
+
+  performance:
+    script: |
+      # Start Rails server
+      bundle exec rails server -e production -p 3000 &
+      APP_PID=$!
+      sleep 10
+      
+      # Run performance tests with Apache Bench
+      ab -n 10000 -c 100 -g perf-results.tsv http://localhost:3000/
+      
+      # Alternative with wrk
+      # wrk -t12 -c400 -d60s --latency http://localhost:3000/
+      
+      # Rails-specific performance test
+      # bundle exec rails test:benchmark
+      
+      # Stop the application
+      kill $APP_PID
+    endpoint: "http://localhost:3000"
+    duration: 60
+    concurrency: 100
+    tool: "ab"
+    timeout: 120
+
+  security:
+    script: |
+      # Brakeman security scanner
+      bundle exec brakeman -f json -o brakeman-report.json
+      
+      # Bundle audit for dependency vulnerabilities
+      bundle exec bundle-audit check --format json > bundle-audit.json
+      
+      # Rails security check
+      bundle exec rails security:check || true
+      
+      # Additional OWASP scanning
+      # dependency-check --scan . --format JSON --out dependency-check.json
+    scan_type: "static"
+    severity: "medium"
+    timeout: 300
+
+  coverage:
+    script: |
+      # Run tests with SimpleCov coverage
+      COVERAGE=true bundle exec rspec
+      
+      # Generate coverage report
+      bundle exec rails coverage:report
+    timeout: 600
+    continueOnError: false
+
+  lint:
+    script: |
+      # RuboCop for Ruby style
+      bundle exec rubocop --format json --out rubocop-report.json
+      
+      # Rails Best Practices
+      bundle exec rails_best_practices --format json
+      
+      # ERB linting
+      bundle exec erb_lint --format json
+    timeout: 180
+
+environment:
+  variables:
+    RAILS_ENV: "production"
+    PORT: "3000"
+    DATABASE_URL: "postgresql://user:pass@localhost:5432/rails_db"
+    REDIS_URL: "redis://localhost:6379"
+    SECRET_KEY_BASE: "test-secret-key-only-for-benchmarks"
+    RAILS_LOG_LEVEL: "info"
+    RAILS_SERVE_STATIC_FILES: "true"
+  
+  ports:
+    - 3000
+  
+  services:
+    - postgres:15
+    - redis:7
+    - sidekiq:latest
+
+artifacts:
+  coverage: "coverage/index.html"
+  performance: "perf-results.tsv"
+  security: "brakeman-report.json"
+  test_results: "test-results.json"
+  logs: "log/"
+
+requirements:
+  cpu: "2 cores"
+  memory: "4GB"
+  disk: "10GB"
+  gpu: false
+
+metadata:
+  authors:
+    - "David Heinemeier Hansson"
+    - "Rails Contributors"
+  license: "MIT"
+  tags:
+    - "mvc"
+    - "full-stack"
+    - "convention-over-configuration"
+    - "active-record"
+    - "rest"
+  benchmarkVersion: "1.0.0"

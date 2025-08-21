@@ -1,0 +1,152 @@
+# Database Configuration
+
+postgresql:
+  host: localhost
+  port: 5432
+  database: graphql_db
+  username: graphql_user
+  password: "${DB_PASSWORD}"
+  
+  # Connection pool
+  pool:
+    min_size: 5
+    max_size: 20
+    max_overflow: 10
+    pool_timeout: 30
+    idle_timeout: 3600
+    
+  # SSL
+  ssl:
+    enabled: false
+    cert_file: null
+    key_file: null
+    ca_file: null
+
+# Schema
+schema:
+  auto_create: true
+  auto_migrate: true
+  
+tables:
+  - name: users
+    columns:
+      - name: id
+        type: SERIAL PRIMARY KEY
+      - name: username
+        type: VARCHAR(50) UNIQUE NOT NULL
+      - name: email
+        type: VARCHAR(255) UNIQUE NOT NULL
+      - name: password_hash
+        type: VARCHAR(255) NOT NULL
+      - name: name
+        type: VARCHAR(100)
+      - name: role
+        type: VARCHAR(20) DEFAULT 'user'
+      - name: last_active
+        type: TIMESTAMP
+      - name: created_at
+        type: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      - name: updated_at
+        type: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    indexes:
+      - columns: [email]
+      - columns: [username]
+      - columns: [created_at]
+      
+  - name: posts
+    columns:
+      - name: id
+        type: SERIAL PRIMARY KEY
+      - name: title
+        type: VARCHAR(255) NOT NULL
+      - name: content
+        type: TEXT NOT NULL
+      - name: published
+        type: BOOLEAN DEFAULT false
+      - name: author_id
+        type: INTEGER REFERENCES users(id) ON DELETE CASCADE
+      - name: view_count
+        type: INTEGER DEFAULT 0
+      - name: created_at
+        type: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      - name: updated_at
+        type: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    indexes:
+      - columns: [author_id]
+      - columns: [published, created_at]
+      - columns: [title]
+        type: GIN
+        
+  - name: comments
+    columns:
+      - name: id
+        type: SERIAL PRIMARY KEY
+      - name: content
+        type: TEXT NOT NULL
+      - name: post_id
+        type: INTEGER REFERENCES posts(id) ON DELETE CASCADE
+      - name: author_id
+        type: INTEGER REFERENCES users(id) ON DELETE CASCADE
+      - name: parent_id
+        type: INTEGER REFERENCES comments(id) ON DELETE CASCADE
+      - name: created_at
+        type: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      - name: updated_at
+        type: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    indexes:
+      - columns: [post_id]
+      - columns: [author_id]
+      - columns: [parent_id]
+      
+  - name: tags
+    columns:
+      - name: id
+        type: SERIAL PRIMARY KEY
+      - name: name
+        type: VARCHAR(50) UNIQUE NOT NULL
+      - name: created_at
+        type: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    indexes:
+      - columns: [name]
+      
+  - name: post_tags
+    columns:
+      - name: post_id
+        type: INTEGER REFERENCES posts(id) ON DELETE CASCADE
+      - name: tag_id
+        type: INTEGER REFERENCES tags(id) ON DELETE CASCADE
+      - name: created_at
+        type: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    constraints:
+      - type: PRIMARY KEY
+        columns: [post_id, tag_id]
+    indexes:
+      - columns: [post_id]
+      - columns: [tag_id]
+      
+  - name: user_profiles
+    columns:
+      - name: id
+        type: SERIAL PRIMARY KEY
+      - name: user_id
+        type: INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE
+      - name: bio
+        type: TEXT
+      - name: avatar
+        type: VARCHAR(255)
+      - name: website
+        type: VARCHAR(255)
+      - name: location
+        type: VARCHAR(100)
+      - name: updated_at
+        type: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    indexes:
+      - columns: [user_id]
+
+# Seed data
+seed_data:
+  enabled: false
+  files:
+    - users.sql
+    - posts.sql
+    - tags.sql

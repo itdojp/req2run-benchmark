@@ -1,0 +1,60 @@
+# WEB-014: Event-Driven Webhook System with Retry and DLQ
+# Core dependencies
+
+# FastAPI framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# HTTP client for webhook delivery
+aiohttp==3.9.1
+httpx==0.25.2
+
+# Database and ORM (optional, using in-memory for baseline)
+asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.23
+
+# Configuration and data validation
+pydantic==2.5.0
+pydantic-settings==2.1.0
+pyyaml==6.0.1
+
+# Queue and message processing
+celery[redis]==5.3.4
+redis==5.0.1
+
+# Retry and backoff utilities
+backoff==2.2.1
+tenacity==8.2.3
+
+# Metrics and monitoring
+prometheus-client==0.19.0
+
+# Logging and utilities
+structlog==23.2.0
+python-json-logger==2.0.7
+
+# Security and authentication
+cryptography==41.0.8
+pyjwt==2.8.0
+
+# Date/time utilities
+python-dateutil==2.8.2
+
+# Development and testing dependencies
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+httpx==0.25.2
+
+# Optional database adapters
+psycopg2-binary==2.9.9
+
+# Environment and configuration
+python-dotenv==1.0.0
+
+# JSON schema validation
+jsonschema==4.20.0
+
+# Async utilities
+anyio==4.1.0
+trio==0.23.2

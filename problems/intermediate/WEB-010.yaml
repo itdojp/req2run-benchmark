@@ -1,0 +1,188 @@
+id: WEB-010
+title: "Search + CRUD with Paging, Sort, and Filter"
+difficulty: intermediate
+category: web_api
+languages:
+  - python
+  - javascript
+  - typescript
+  - go
+  - java
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The API MUST provide full CRUD operations for resources"
+      priority: MUST
+      validation:
+        type: integration_test
+        endpoint: "/api/v1/items"
+    
+    - id: FR-002
+      description: "The API MUST support full-text search across all fields"
+      priority: MUST
+      validation:
+        type: integration_test
+        endpoint: "/api/v1/items/search"
+    
+    - id: FR-003
+      description: "The API MUST implement cursor-based pagination"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The API MUST support multi-field sorting"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-005
+      description: "The API MUST support complex filtering with operators"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The API MUST validate all input parameters"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-007
+      description: "The API MUST return proper HTTP status codes"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The API MUST support bulk operations"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The API SHOULD implement search result highlighting"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The API MAY support saved searches"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 100
+      p99_latency_ms: 200
+      throughput_rps: 1000
+      cpu_limit: "1000m"
+      memory_limit: "512Mi"
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "OPTIONAL"
+      encryption: "TLS_OPTIONAL"
+    
+    quality:
+      max_cyclomatic_complexity: 10
+      min_test_coverage: 80
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "fastapi"
+    - "flask"
+    - "express"
+    - "gin"
+    - "spring-boot"
+    - "elasticsearch"
+    - "postgres"
+    - "mongodb"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 2
+    max_memory_gb: 1
+    max_disk_gb: 10
+    max_network_bandwidth_mbps: 100
+  
+  time_limits:
+    generation_minutes: 20
+    execution_minutes: 10
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/api.yaml"
+    - "config/database.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  test_data:
+    input_files:
+      - "test_data/items.json"
+      - "test_data/queries.json"
+    expected_outputs:
+      - "test_data/expected/search_results.json"
+      - "test_data/expected/crud_responses.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.40
+    pass_rate: 0.30
+    performance: 0.15
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 90
+    min_pass_rate: 95
+    min_performance_score: 80
+
+pass_criteria:
+  min_total_score: 0.75
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T11:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "rest-api"
+    - "crud"
+    - "search"
+    - "pagination"
+    - "filtering"
+    - "sorting"
+  references:
+    - title: "REST API Design"
+      url: "https://restfulapi.net/"
+    - title: "Cursor Pagination"
+      url: "https://jsonapi.org/profiles/ethanresnick/cursor-pagination/"
+  notes: |
+    This problem tests the ability to implement a comprehensive REST API
+    with advanced search, filtering, sorting, and pagination features.

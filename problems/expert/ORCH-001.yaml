@@ -1,0 +1,208 @@
+id: ORCH-001
+title: "Container Orchestration Controller"
+difficulty: expert
+category: orchestration
+languages:
+  - go
+  - rust
+  - python
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The controller MUST manage container lifecycles (create, start, stop, delete)"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The controller MUST implement pod scheduling with resource constraints"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The controller MUST support auto-scaling based on CPU/memory metrics"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The controller MUST handle service discovery and load balancing"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-005
+      description: "The controller MUST implement health checks and self-healing"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The controller MUST support declarative configuration (YAML/JSON)"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-007
+      description: "The controller MUST provide rolling updates with zero downtime"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The controller MUST implement network policies and isolation"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The controller SHOULD support multi-node cluster management"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The controller SHOULD implement persistent volume management"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-011
+      description: "The controller MAY support custom resource definitions (CRDs)"
+      priority: MAY
+      validation:
+        type: unit_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 100
+      p99_latency_ms: 500
+      throughput_rps: 1000
+      cpu_limit: "2000m"
+      memory_limit: "4Gi"
+      scheduling_time_ms: 50
+      container_startup_time_s: 5
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_REQUIRED"
+      rbac_enabled: "REQUIRED"
+      pod_security_policies: "ENFORCED"
+    
+    quality:
+      max_cyclomatic_complexity: 15
+      min_test_coverage: 85
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "docker"
+    - "containerd"
+    - "runc"
+    - "kubernetes-client"
+    - "etcd-client"
+    - "prometheus-client"
+    - "grpc"
+    - "protobuf"
+    - "yaml"
+    - "jsonschema"
+  
+  disallowed_packages:
+    - "kubernetes"
+    - "openshift"
+    - "rancher"
+  
+  disallowed_syscalls:
+    - "ptrace"
+  
+  resource_limits:
+    max_cpu_cores: 4
+    max_memory_gb: 8
+    max_disk_gb: 50
+    max_network_bandwidth_mbps: 100
+  
+  time_limits:
+    generation_minutes: 60
+    execution_minutes: 30
+
+artifacts:
+  entrypoint: "cmd/controller/main.go"
+  dockerfile: "Dockerfile"
+  healthcheck: "/healthz"
+  config_files:
+    - "config/controller.yaml"
+    - "config/scheduler.yaml"
+    - "config/network.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  security: "tests/security/"
+  property: "tests/property/"
+  test_data:
+    input_files:
+      - "test_data/deployments.yaml"
+      - "test_data/services.yaml"
+      - "test_data/pods.yaml"
+    expected_outputs:
+      - "test_data/expected/cluster_state.json"
+      - "test_data/expected/scheduling_decisions.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35
+    pass_rate: 0.25
+    performance: 0.20
+    code_quality: 0.10
+    security: 0.10
+  
+  thresholds:
+    min_functional_coverage: 90
+    min_pass_rate: 95
+    min_performance_score: 85
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "sandbox_escape"
+    - "container_escape"
+    - "data_loss"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-20"
+  last_modified: "2024-01-20T10:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "orchestration"
+    - "containers"
+    - "kubernetes-like"
+    - "scheduling"
+    - "distributed-systems"
+    - "cloud-native"
+  references:
+    - title: "Kubernetes Architecture"
+      url: "https://kubernetes.io/docs/concepts/architecture/"
+    - title: "Borg Paper"
+      url: "https://research.google/pubs/pub43438/"
+    - title: "Container Runtime Specification"
+      url: "https://github.com/opencontainers/runtime-spec"
+  notes: |
+    This problem tests the ability to implement a production-grade container orchestration
+    system with scheduling, scaling, service discovery, and self-healing capabilities.

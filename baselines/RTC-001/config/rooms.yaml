@@ -1,0 +1,223 @@
+# Room Configuration
+
+default_room:
+  max_participants: 100
+  max_video_tracks_per_participant: 2
+  max_audio_tracks_per_participant: 1
+  allow_screen_share: true
+  allow_recording: true
+  auto_kick_on_idle: true
+  idle_timeout: 300  # seconds
+  
+  # Permissions
+  permissions:
+    can_publish_video: true
+    can_publish_audio: true
+    can_subscribe: true
+    can_screen_share: true
+    can_record: false
+    can_kick_participants: false
+    can_mute_participants: false
+  
+  # Quality settings
+  default_video_quality: "high"
+  default_audio_quality: "high"
+  adaptive_quality: true
+  
+  # Layout
+  layout:
+    type: "grid"  # grid, presenter, custom
+    max_tiles: 25
+    
+room_types:
+  - name: "conference"
+    description: "Standard video conference room"
+    max_participants: 100
+    features:
+      - video
+      - audio
+      - screen_share
+      - recording
+      - chat
+    layout: "grid"
+    
+  - name: "webinar"
+    description: "One-to-many broadcast"
+    max_participants: 1000
+    max_publishers: 5
+    features:
+      - video
+      - audio
+      - screen_share
+      - recording
+      - q_and_a
+    layout: "presenter"
+    
+  - name: "classroom"
+    description: "Educational setting"
+    max_participants: 50
+    features:
+      - video
+      - audio
+      - screen_share
+      - recording
+      - whiteboard
+      - breakout_rooms
+    layout: "presenter"
+    
+  - name: "interview"
+    description: "One-on-one or small group"
+    max_participants: 5
+    features:
+      - video
+      - audio
+      - screen_share
+      - recording
+    layout: "grid"
+    
+  - name: "broadcast"
+    description: "Live streaming"
+    max_participants: 10000
+    max_publishers: 1
+    features:
+      - video
+      - audio
+      - streaming
+    layout: "presenter"
+
+room_features:
+  chat:
+    enabled: true
+    max_message_length: 500
+    history_size: 100
+    file_sharing: true
+    emoji_reactions: true
+    
+  whiteboard:
+    enabled: true
+    tools:
+      - pen
+      - eraser
+      - text
+      - shapes
+      - sticky_notes
+    collaborative: true
+    save_enabled: true
+    
+  breakout_rooms:
+    enabled: true
+    max_rooms: 10
+    auto_close_on_main_room_end: true
+    allow_participant_choice: false
+    
+  polls:
+    enabled: true
+    max_options: 10
+    allow_multiple_choice: true
+    show_results_live: true
+    
+  q_and_a:
+    enabled: true
+    moderation: true
+    upvoting: true
+    anonymous_questions: true
+    
+  recording:
+    enabled: true
+    auto_start: false
+    include_shared_screen: true
+    include_chat: true
+    cloud_storage: false
+    local_storage: true
+    
+  streaming:
+    enabled: false
+    platforms:
+      - youtube
+      - twitch
+      - facebook
+    max_concurrent_streams: 3
+    
+  virtual_backgrounds:
+    enabled: true
+    blur_background: true
+    custom_images: true
+    max_custom_images: 10
+    
+  transcription:
+    enabled: false
+    languages:
+      - en
+      - es
+      - fr
+      - de
+      - ja
+    real_time: true
+    save_transcript: true
+    
+  translation:
+    enabled: false
+    languages:
+      - en
+      - es
+      - fr
+      - de
+      - ja
+    real_time: false
+
+moderation:
+  enabled: true
+  
+  # Participant management
+  kick_participant: true
+  mute_participant: true
+  disable_video: true
+  promote_to_moderator: true
+  
+  # Content moderation
+  profanity_filter: true
+  spam_detection: true
+  
+  # Waiting room
+  waiting_room:
+    enabled: true
+    auto_admit: false
+    custom_message: "Please wait for the host to admit you"
+  
+  # Access control
+  require_password: false
+  password: null
+  require_registration: false
+  allowed_emails: []
+  blocked_emails: []
+
+analytics:
+  enabled: true
+  
+  # Metrics to track
+  metrics:
+    - participant_count
+    - duration
+    - video_quality
+    - audio_quality
+    - packet_loss
+    - bandwidth_usage
+    - cpu_usage
+    - memory_usage
+    
+  # Events to track
+  events:
+    - room_created
+    - room_deleted
+    - participant_joined
+    - participant_left
+    - recording_started
+    - recording_stopped
+    - screen_share_started
+    - screen_share_stopped
+    
+  # Export settings
+  export:
+    format: "json"  # json, csv
+    interval: 3600  # seconds
+    destination: "file"  # file, s3, elasticsearch

@@ -1,0 +1,43 @@
+# Zero-Knowledge Proof configuration
+protocols:
+  schnorr:
+    enabled: true
+    non_interactive_enabled: true
+    fiat_shamir_enabled: true
+    multi_round_enabled: true
+    threshold_enabled: true
+  
+  range_proofs:
+    bulletproof_enabled: true
+    sigma_protocol_enabled: true
+    aggregate_enabled: true
+  
+  snark:
+    enabled: true
+    recursive_enabled: true
+    universal_setup: false
+
+security:
+  min_entropy_bits: 128
+  random_source: os_urandom
+  replay_protection: true
+  replay_window: 3600  # seconds
+  commitment_freshness_check: true
+  commitment_ttl: 300  # seconds
+
+validation:
+  strict_mode: true
+  check_group_membership: true
+  check_range_bounds: true
+  check_proof_freshness: true
+
+optimization:
+  batch_verification: true
+  batch_size: 100
+  parallel_proving: false
+  parallel_threads: 4
+  
+storage:
+  store_proofs: true
+  proof_retention_days: 30
+  max_stored_proofs: 1000000
