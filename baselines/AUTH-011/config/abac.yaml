@@ -1,0 +1,125 @@
+# ABAC Configuration
+attributes:
+  subject:
+    - name: department
+      type: string
+      values:
+        - IT
+        - HR
+        - Finance
+        - Marketing
+        - Sales
+        - Engineering
+    
+    - name: clearance
+      type: string
+      values:
+        - top_secret
+        - secret
+        - confidential
+        - restricted
+        - public
+    
+    - name: location
+      type: string
+      values:
+        - headquarters
+        - branch_office
+        - remote
+    
+    - name: employment_type
+      type: string
+      values:
+        - full_time
+        - part_time
+        - contractor
+        - intern
+    
+    - name: seniority_years
+      type: integer
+      min: 0
+      max: 50
+
+  resource:
+    - name: classification
+      type: string
+      values:
+        - top_secret
+        - secret
+        - confidential
+        - internal
+        - public
+    
+    - name: data_type
+      type: string
+      values:
+        - pii
+        - financial
+        - health
+        - intellectual_property
+        - general
+    
+    - name: owner_department
+      type: string
+      values:
+        - IT
+        - HR
+        - Finance
+        - Marketing
+        - Sales
+        - Engineering
+    
+    - name: sensitivity_level
+      type: integer
+      min: 1
+      max: 5
+
+  environment:
+    - name: time_of_day
+      type: string
+      values:
+        - business_hours
+        - after_hours
+        - weekend
+    
+    - name: ip_range
+      type: string
+      values:
+        - internal
+        - vpn
+        - external
+    
+    - name: device_type
+      type: string
+      values:
+        - managed
+        - unmanaged
+        - mobile
+    
+    - name: network_zone
+      type: string
+      values:
+        - trusted
+        - dmz
+        - untrusted
+
+policies:
+  - name: clearance_based_access
+    description: Access based on clearance level matching
+    conditions:
+      - subject.clearance >= resource.classification
+    
+  - name: department_isolation
+    description: Resources can only be accessed by same department
+    conditions:
+      - subject.department == resource.owner_department
+    
+  - name: pii_protection
+    description: PII data requires special clearance
+    conditions:
+      - resource.data_type == 'pii' implies subject.clearance in ['secret', 'top_secret']
+    
+  - name: contractor_restrictions
+    description: Contractors have limited access
+    conditions:
+      - subject.employment_type == 'contractor' implies resource.classification not in ['secret', 'top_secret']

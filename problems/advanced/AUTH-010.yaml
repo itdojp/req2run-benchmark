@@ -1,0 +1,195 @@
+id: AUTH-010
+title: "OAuth 2.1/OIDC with PKCE Mock IdP Integration"
+difficulty: advanced
+category: authentication
+languages:
+  - python
+  - javascript
+  - go
+  - java
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST implement OAuth 2.1 authorization code flow with PKCE"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The system MUST validate JWT tokens using JWKs from IdP"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The system MUST implement token refresh with rotation"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The system MUST reject tokens with invalid signatures or alg=none"
+      priority: MUST
+      validation:
+        type: security_test
+    
+    - id: FR-005
+      description: "The system MUST validate nonce to prevent replay attacks"
+      priority: MUST
+      validation:
+        type: security_test
+    
+    - id: FR-006
+      description: "The system MUST handle clock skew of ±60 seconds"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-007
+      description: "The system MUST validate aud, iss, exp, and nbf claims"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The system MUST implement secure state parameter handling"
+      priority: MUST
+      validation:
+        type: security_test
+    
+    - id: FR-009
+      description: "The system SHOULD support multiple IdP configurations"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The system SHOULD implement token introspection endpoint"
+      priority: SHOULD
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 100
+      p99_latency_ms: 300
+      throughput_rps: 500
+      cpu_limit: "2000m"
+      memory_limit: "2Gi"
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_REQUIRED"
+      token_storage: "ENCRYPTED"
+      csrf_protection: "REQUIRED"
+    
+    quality:
+      max_cyclomatic_complexity: 10
+      min_test_coverage: 90
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "jose"
+    - "jsonwebtoken"
+    - "oauth2-server"
+    - "oidc-provider"
+    - "passport"
+    - "authlib"
+    - "go-oidc"
+    - "spring-security"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 4
+    max_memory_gb: 4
+    max_disk_gb: 10
+    max_network_bandwidth_mbps: 100
+  
+  time_limits:
+    generation_minutes: 45
+    execution_minutes: 20
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/oauth.yaml"
+    - "config/idp.yaml"
+    - "config/jwks.json"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  security: "tests/security/"
+  test_data:
+    input_files:
+      - "test_data/mock_idp_responses.json"
+      - "test_data/invalid_tokens.json"
+    expected_outputs:
+      - "test_data/expected/auth_flows.json"
+      - "test_data/expected/error_responses.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.30
+    pass_rate: 0.25
+    performance: 0.15
+    code_quality: 0.10
+    security: 0.20
+  
+  thresholds:
+    min_functional_coverage: 95
+    min_pass_rate: 98
+    min_performance_score: 80
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+    - "FR-008"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "token_forgery"
+    - "replay_attack"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T10:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "oauth2"
+    - "oidc"
+    - "pkce"
+    - "authentication"
+    - "jwt"
+    - "security"
+  references:
+    - title: "OAuth 2.1 Draft"
+      url: "https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1"
+    - title: "PKCE RFC 7636"
+      url: "https://datatracker.ietf.org/doc/html/rfc7636"
+    - title: "OpenID Connect Core"
+      url: "https://openid.net/specs/openid-connect-core-1_0.html"
+  notes: |
+    This problem tests the ability to implement secure OAuth 2.1/OIDC authentication
+    with PKCE, proper token validation, and protection against common attacks.

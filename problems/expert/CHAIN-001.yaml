@@ -1,0 +1,215 @@
+id: CHAIN-001
+title: "Blockchain Smart Contract Platform"
+difficulty: expert
+category: blockchain
+languages:
+  - python
+  - go
+  - rust
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The platform MUST implement a blockchain with Proof of Stake consensus"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The platform MUST support smart contracts with a Turing-complete VM"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The platform MUST provide EVM-compatible bytecode execution"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-004
+      description: "The platform MUST implement account state management with Merkle Patricia Tries"
+      priority: MUST
+      validation:
+        type: unit_test
+    
+    - id: FR-005
+      description: "The platform MUST support transaction validation and gas metering"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The platform MUST provide JSON-RPC API (eth_* methods)"
+      priority: MUST
+      validation:
+        type: api_test
+        endpoint: "/rpc"
+        expected_response:
+          jsonrpc: "2.0"
+          id: 1
+    
+    - id: FR-007
+      description: "The platform MUST support contract deployment and interaction"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The platform MUST implement event logging and filtering"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The platform SHOULD support WebSocket subscriptions for real-time events"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The platform SHOULD implement cross-shard communication"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-011
+      description: "The platform MAY support zero-knowledge proof verification"
+      priority: MAY
+      validation:
+        type: unit_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 500
+      p99_latency_ms: 1000
+      throughput_rps: 1000
+      cpu_limit: "4000m"
+      memory_limit: "8Gi"
+      block_time_seconds: 3
+      transaction_throughput_tps: 500
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_REQUIRED"
+      consensus_security: "BFT"
+      double_spend_protection: "REQUIRED"
+      replay_attack_protection: "REQUIRED"
+    
+    quality:
+      max_cyclomatic_complexity: 15
+      min_test_coverage: 85
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "web3"
+    - "eth-account"
+    - "py-evm"
+    - "rlp"
+    - "pysha3"
+    - "coincurve"
+    - "leveldb"
+    - "rocksdb"
+    - "protobuf"
+    - "grpc"
+  
+  disallowed_packages:
+    - "truffle"
+    - "hardhat"
+    - "ganache"
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 4
+    max_memory_gb: 8
+    max_disk_gb: 100
+    max_network_bandwidth_mbps: 100
+  
+  time_limits:
+    generation_minutes: 60
+    execution_minutes: 30
+
+artifacts:
+  entrypoint: "src/main.py"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/genesis.json"
+    - "config/network.yaml"
+    - "config/consensus.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  security: "tests/security/"
+  property: "tests/property/"
+  test_data:
+    input_files:
+      - "test_data/contracts/ERC20.sol"
+      - "test_data/contracts/Staking.sol"
+      - "test_data/accounts.json"
+    expected_outputs:
+      - "test_data/expected/block_0.json"
+      - "test_data/expected/state_root.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35
+    pass_rate: 0.25
+    performance: 0.20
+    code_quality: 0.10
+    security: 0.10
+  
+  thresholds:
+    min_functional_coverage: 90
+    min_pass_rate: 95
+    min_performance_score: 80
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "sandbox_escape"
+    - "consensus_failure"
+    - "double_spend"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-20"
+  last_modified: "2024-01-20T10:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "blockchain"
+    - "smart-contracts"
+    - "consensus"
+    - "evm"
+    - "proof-of-stake"
+    - "distributed-systems"
+  references:
+    - title: "Ethereum Yellow Paper"
+      url: "https://ethereum.github.io/yellowpaper/paper.pdf"
+    - title: "EVM Specification"
+      url: "https://www.evm.codes/"
+    - title: "JSON-RPC API"
+      url: "https://ethereum.org/en/developers/docs/apis/json-rpc/"
+  notes: |
+    This problem tests the ability to implement a production-grade blockchain platform
+    with smart contract capabilities. The implementation should handle consensus,
+    state management, transaction processing, and provide standard APIs for interaction.

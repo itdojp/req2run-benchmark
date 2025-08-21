@@ -1,0 +1,255 @@
+# GraphQL Schema Definition
+
+scalar DateTime
+scalar JSON
+
+# Types
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  name: String
+  posts: [Post!]!
+  comments: [Comment!]!
+  profile: UserProfile
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type UserProfile {
+  id: ID!
+  userId: ID!
+  bio: String
+  avatar: String
+  website: String
+  location: String
+  user: User!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  published: Boolean!
+  authorId: ID!
+  author: User!
+  comments: [Comment!]!
+  tags: [Tag!]!
+  viewCount: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Comment {
+  id: ID!
+  content: String!
+  postId: ID!
+  post: Post!
+  authorId: ID!
+  author: User!
+  parentId: ID
+  parent: Comment
+  replies: [Comment!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Tag {
+  id: ID!
+  name: String!
+  posts: [Post!]!
+  postCount: Int!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+type PostConnection {
+  edges: [PostEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type PostEdge {
+  node: Post!
+  cursor: String!
+}
+
+# Query Types
+type Query {
+  # User queries
+  user(id: ID!): User
+  users(
+    limit: Int = 10
+    offset: Int = 0
+    orderBy: UserOrderBy = CREATED_AT_DESC
+  ): [User!]!
+  me: User
+  
+  # Post queries
+  post(id: ID!): Post
+  posts(
+    first: Int
+    after: String
+    last: Int
+    before: String
+    published: Boolean
+    authorId: ID
+    tagName: String
+    orderBy: PostOrderBy = CREATED_AT_DESC
+  ): PostConnection!
+  
+  # Search
+  searchPosts(query: String!, limit: Int = 10): [Post!]!
+  
+  # Tags
+  tags(limit: Int = 20): [Tag!]!
+  popularTags(limit: Int = 10): [Tag!]!
+  
+  # Comments
+  comment(id: ID!): Comment
+  postComments(postId: ID!, limit: Int = 50): [Comment!]!
+  
+  # Statistics
+  statistics: Statistics!
+}
+
+# Mutation Types
+type Mutation {
+  # Authentication
+  signUp(input: SignUpInput!): AuthPayload!
+  signIn(input: SignInInput!): AuthPayload!
+  refreshToken(token: String!): AuthPayload!
+  
+  # User mutations
+  updateProfile(input: UpdateProfileInput!): User!
+  deleteAccount: Boolean!
+  
+  # Post mutations
+  createPost(input: CreatePostInput!): Post!
+  updatePost(id: ID!, input: UpdatePostInput!): Post!
+  deletePost(id: ID!): Boolean!
+  publishPost(id: ID!): Post!
+  unpublishPost(id: ID!): Post!
+  
+  # Comment mutations
+  createComment(input: CreateCommentInput!): Comment!
+  updateComment(id: ID!, content: String!): Comment!
+  deleteComment(id: ID!): Boolean!
+  
+  # Tag mutations
+  createTag(name: String!): Tag!
+  addTagToPost(postId: ID!, tagId: ID!): Post!
+  removeTagFromPost(postId: ID!, tagId: ID!): Post!
+}
+
+# Subscription Types
+type Subscription {
+  # Post subscriptions
+  postAdded(authorId: ID): Post!
+  postUpdated(id: ID!): Post!
+  postDeleted: ID!
+  
+  # Comment subscriptions
+  commentAdded(postId: ID!): Comment!
+  commentUpdated(postId: ID!): Comment!
+  commentDeleted(postId: ID!): ID!
+  
+  # Real-time statistics
+  statisticsUpdated: Statistics!
+}
+
+# Input Types
+input SignUpInput {
+  username: String!
+  email: String!
+  password: String!
+  name: String
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+
+input UpdateProfileInput {
+  name: String
+  bio: String
+  avatar: String
+  website: String
+  location: String
+}
+
+input CreatePostInput {
+  title: String!
+  content: String!
+  published: Boolean = false
+  tagIds: [ID!]
+}
+
+input UpdatePostInput {
+  title: String
+  content: String
+  published: Boolean
+  tagIds: [ID!]
+}
+
+input CreateCommentInput {
+  content: String!
+  postId: ID!
+  parentId: ID
+}
+
+# Enum Types
+enum UserOrderBy {
+  CREATED_AT_ASC
+  CREATED_AT_DESC
+  USERNAME_ASC
+  USERNAME_DESC
+}
+
+enum PostOrderBy {
+  CREATED_AT_ASC
+  CREATED_AT_DESC
+  UPDATED_AT_ASC
+  UPDATED_AT_DESC
+  VIEW_COUNT_DESC
+  TITLE_ASC
+}
+
+# Auth Types
+type AuthPayload {
+  token: String!
+  refreshToken: String!
+  user: User!
+}
+
+# Statistics Type
+type Statistics {
+  totalUsers: Int!
+  totalPosts: Int!
+  totalComments: Int!
+  totalTags: Int!
+  activeUsers: Int!
+  postsToday: Int!
+  commentsToday: Int!
+}
+
+# Error Types
+type Error {
+  message: String!
+  code: String!
+  field: String
+  extensions: JSON
+}
+
+# Directive Definitions
+directive @auth on FIELD_DEFINITION
+directive @hasRole(role: String!) on FIELD_DEFINITION
+directive @rateLimit(limit: Int!, duration: Int!) on FIELD_DEFINITION
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
+directive @complexity(value: Int!) on FIELD_DEFINITION

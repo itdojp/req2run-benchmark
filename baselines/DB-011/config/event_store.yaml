@@ -1,0 +1,63 @@
+# Event Store Configuration
+
+database:
+  type: postgresql
+  host: localhost
+  port: 5432
+  database: eventstore
+  user: postgres
+  password: password
+  pool_size: 20
+  
+redis:
+  host: localhost
+  port: 6379
+  db: 0
+  password: null
+  
+storage:
+  # Event storage settings
+  events:
+    table_name: events
+    partition_by: month
+    retention_days: 365
+    
+  # Snapshot settings
+  snapshots:
+    enabled: true
+    frequency: 100  # Create snapshot every N events
+    table_name: snapshots
+    retention_count: 5  # Keep last N snapshots per aggregate
+    
+  # Archive settings
+  archive:
+    enabled: true
+    after_days: 30
+    storage: s3
+    bucket: event-archive
+    
+performance:
+  # Batch settings
+  batch_size: 100
+  batch_timeout_ms: 100
+  
+  # Cache settings
+  cache_enabled: true
+  cache_ttl_seconds: 60
+  
+  # Async processing
+  worker_threads: 4
+  queue_size: 10000
+  
+security:
+  # Event tampering protection
+  checksum_enabled: true
+  checksum_algorithm: sha256
+  
+  # Encryption
+  encryption_at_rest: false
+  encryption_key: null
+  
+  # Access control
+  require_authentication: true
+  audit_log_enabled: true

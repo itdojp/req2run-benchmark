@@ -1,0 +1,78 @@
+# Reverse Proxy Configuration
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  access_log: true
+
+# Backend servers
+backends:
+  - id: backend1
+    url: http://localhost:8001
+    weight: 1
+    health_check_enabled: true
+  
+  - id: backend2
+    url: http://localhost:8002
+    weight: 1
+    health_check_enabled: true
+  
+  - id: backend3
+    url: http://localhost:8003
+    weight: 2  # Higher weight for more traffic
+    health_check_enabled: true
+
+# Load balancing
+load_balancing:
+  algorithm: round_robin  # Options: round_robin, random, weighted, least_connections
+
+# Timeouts (in seconds)
+timeouts:
+  request: 30
+  connect: 10
+  read: 30
+
+# Retry configuration
+retry:
+  max_attempts: 3
+  delay_base: 0.1  # Base delay in seconds
+  delay_max: 2.0   # Maximum delay in seconds
+
+# Circuit breaker configuration
+circuit_breaker:
+  enabled: true
+  failure_threshold: 5  # Open circuit after 5 failures
+  success_threshold: 2  # Close circuit after 2 successes
+  timeout: 30          # Timeout before trying half-open (seconds)
+
+# Rate limiting configuration
+rate_limit:
+  enabled: true
+  algorithm: token_bucket  # Options: token_bucket, sliding_window
+  requests_per_second: 100
+  burst: 200
+  window: 60  # Window size in seconds (for sliding_window)
+  
+  per_client:
+    enabled: true
+    requests_per_second: 10
+    burst: 20
+
+# Health check configuration
+health_check:
+  enabled: true
+  path: /health
+  interval: 10    # Check interval in seconds
+  timeout: 5      # Health check timeout in seconds
+  failure_threshold: 3  # Mark unhealthy after 3 failed checks
+
+# Connection pool configuration
+connection_pool:
+  size: 1000
+  per_host: 100
+
+# CORS
+cors_enabled: true
+
+# Maximum request size (bytes)
+max_request_size: 10485760  # 10MB

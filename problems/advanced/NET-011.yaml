@@ -1,0 +1,194 @@
+id: NET-011
+title: "gRPC Service Mesh with Load Balancing and Health Checks"
+difficulty: advanced
+category: network_protocol
+languages:
+  - go
+  - java
+  - python
+  - rust
+  - typescript
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST implement gRPC service discovery"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The system MUST provide client-side load balancing"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The system MUST implement health checking with grpc.health.v1"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The system MUST support streaming RPCs (unary, server, client, bidirectional)"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-005
+      description: "The system MUST implement retry policies with deadlines"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The system MUST provide distributed tracing integration"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The system MUST implement mTLS for service communication"
+      priority: MUST
+      validation:
+        type: security_test
+    
+    - id: FR-008
+      description: "The system MUST support service versioning"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The system SHOULD implement request hedging"
+      priority: SHOULD
+      validation:
+        type: performance_test
+    
+    - id: FR-010
+      description: "The system MAY support reflection for debugging"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 20
+      p99_latency_ms: 100
+      throughput_rps: 50000
+      cpu_limit: "4000m"
+      memory_limit: "4Gi"
+      connection_pool_size: 1000
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_REQUIRED"
+      mtls: "REQUIRED"
+    
+    quality:
+      max_cyclomatic_complexity: 12
+      min_test_coverage: 85
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "grpc"
+    - "protobuf"
+    - "grpc-go"
+    - "grpc-java"
+    - "grpcio"
+    - "tonic"
+    - "envoy"
+    - "consul"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 8
+    max_memory_gb: 8
+    max_disk_gb: 20
+    max_network_bandwidth_mbps: 1000
+  
+  time_limits:
+    generation_minutes: 45
+    execution_minutes: 25
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/grpc.health.v1.Health/Check"
+  config_files:
+    - "proto/service.proto"
+    - "config/mesh.yaml"
+    - "config/loadbalancer.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  test_data:
+    input_files:
+      - "test_data/requests.proto"
+      - "test_data/streaming_data.bin"
+    expected_outputs:
+      - "test_data/expected/responses.proto"
+      - "test_data/expected/metrics.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.30
+    pass_rate: 0.25
+    performance: 0.30
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 90
+    min_pass_rate: 95
+    min_performance_score: 90
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "connection_leak"
+    - "mtls_failure"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T11:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "grpc"
+    - "service-mesh"
+    - "load-balancing"
+    - "microservices"
+    - "mtls"
+    - "health-check"
+  references:
+    - title: "gRPC Documentation"
+      url: "https://grpc.io/docs/"
+    - title: "Service Mesh"
+      url: "https://www.nginx.com/blog/what-is-a-service-mesh/"
+    - title: "gRPC Health Checking"
+      url: "https://github.com/grpc/grpc/blob/master/doc/health-checking.md"
+  notes: |
+    This problem tests the ability to implement a gRPC-based service mesh
+    with advanced features like load balancing, health checking, and mTLS.

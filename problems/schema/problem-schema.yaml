@@ -49,6 +49,8 @@ properties:
       - "api_gateway"
       - "runtime_platform"
       - "service_mesh"
+      - "authentication"
+      - "observability"
     description: "Problem category"
   
   languages:

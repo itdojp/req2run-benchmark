@@ -1,0 +1,39 @@
+# DB-010 Financial Transaction System Dependencies
+
+# Database
+psycopg2-binary==2.9.9
+asyncpg==0.29.0
+sqlalchemy==2.0.23
+
+# Web Framework
+fastapi==0.111.0
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# Utilities
+uuid==1.30
+python-dotenv==1.0.0
+pyyaml==6.0.1
+
+# Retry and Circuit Breaker
+tenacity==8.2.3
+pybreaker==1.0.1
+
+# Logging and Monitoring
+python-json-logger==2.0.7
+prometheus-client==0.19.0
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-timeout==2.2.0
+hypothesis==6.92.1  # Property-based testing
+faker==20.1.0
+
+# Performance Testing
+locust==2.20.0
+
+# Development
+black==23.12.1
+mypy==1.7.1
+pylint==3.0.3

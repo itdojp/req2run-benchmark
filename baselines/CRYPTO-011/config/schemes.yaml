@@ -1,0 +1,66 @@
+# Encryption Schemes Configuration
+paillier:
+  type: partially_homomorphic
+  operations:
+    - addition
+    - scalar_multiplication
+  properties:
+    semantic_security: true
+    probabilistic: true
+    key_homomorphic: false
+  applications:
+    - voting
+    - auctions
+    - statistics
+
+bfv:
+  type: fully_homomorphic
+  operations:
+    - addition
+    - multiplication
+    - bootstrapping
+  properties:
+    leveled: true
+    circuit_privacy: false
+    quantum_resistant: true
+  parameters:
+    polynomial_modulus_degree: 4096
+    coefficient_modulus:
+      - 60
+      - 40
+      - 40
+    plain_modulus: 1024
+
+ckks:
+  type: approximate_homomorphic
+  operations:
+    - real_addition
+    - real_multiplication
+    - rescaling
+  properties:
+    approximate_arithmetic: true
+    fixed_point: true
+    bootstrappable: true
+  applications:
+    - machine_learning
+    - statistics
+    - signal_processing
+
+comparison:
+  paillier:
+    encryption_time: fast
+    operation_time: fast
+    ciphertext_size: moderate
+    bootstrapping: not_supported
+    
+  bfv:
+    encryption_time: moderate
+    operation_time: slow
+    ciphertext_size: large
+    bootstrapping: supported
+    
+  ckks:
+    encryption_time: moderate
+    operation_time: moderate
+    ciphertext_size: large
+    bootstrapping: supported

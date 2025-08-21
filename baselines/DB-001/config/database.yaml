@@ -1,0 +1,131 @@
+database:
+  # Connection settings
+  max_connections: 1000
+  connection_timeout_ms: 5000
+  idle_timeout_ms: 300000
+  
+  # Memory settings
+  shared_buffers: 8GB
+  work_mem: 256MB
+  temp_buffers: 32MB
+  
+  # Transaction settings
+  default_isolation_level: "read_committed"
+  max_prepared_transactions: 100
+  deadlock_timeout_ms: 1000
+  
+  # Checkpoint and WAL
+  checkpoint_interval: 5m
+  checkpoint_completion_target: 0.9
+  wal_level: "replica"
+  wal_buffers: 16MB
+  wal_sync_method: "fdatasync"
+  
+  # Query optimization
+  enable_cost_based_optimizer: true
+  statistics_sample_rate: 0.1
+  join_collapse_limit: 8
+  
+storage:
+  # Directory paths
+  data_directory: "/var/lib/db001/data"
+  wal_directory: "/var/lib/db001/wal"
+  temp_directory: "/tmp/db001"
+  
+  # File management
+  max_open_files: 10000
+  file_sync_interval_ms: 1000
+  
+  # Page settings
+  page_size: 8192
+  pages_per_segment: 131072
+  
+  # Buffer pool
+  buffer_pool_size: 4GB
+  buffer_replacement_policy: "lru"
+  
+performance:
+  # Parallelism
+  parallel_workers: 8
+  parallel_scan_threshold_rows: 100000
+  
+  # I/O settings
+  async_io: true
+  prefetch_size: 1MB
+  direct_io: false
+  
+  # Cache settings
+  query_cache_size: 512MB
+  prepared_statement_cache_size: 1000
+  
+  # Memory limits
+  sort_mem_limit: 512MB
+  hash_join_mem_limit: 1GB
+  
+network:
+  # Server settings
+  listen_address: "0.0.0.0"
+  port: 5432
+  
+  # HTTP API
+  http_enabled: true
+  http_port: 8080
+  
+  # Metrics endpoint
+  metrics_enabled: true
+  metrics_port: 9090
+  
+  # SSL/TLS
+  ssl_enabled: false
+  ssl_cert_file: "/etc/db001/server.crt"
+  ssl_key_file: "/etc/db001/server.key"
+  
+logging:
+  # Log levels: trace, debug, info, warn, error
+  level: "info"
+  
+  # Log destinations
+  stdout: true
+  file:
+    enabled: true
+    path: "/var/log/db001/database.log"
+    max_size_mb: 100
+    max_backups: 10
+  
+  # Slow query logging
+  slow_query_log: true
+  slow_query_threshold_ms: 1000
+  
+  # Audit logging
+  audit_log: true
+  audit_log_path: "/var/log/db001/audit.log"
+  
+monitoring:
+  # Prometheus metrics
+  prometheus_enabled: true
+  prometheus_port: 9090
+  
+  # Health checks
+  health_check_interval_s: 30
+  
+  # Performance counters
+  collect_table_statistics: true
+  collect_index_statistics: true
+  collect_query_statistics: true
+  
+security:
+  # Authentication
+  authentication_method: "scram-sha-256"
+  password_encryption: "scram-sha-256"
+  
+  # Authorization
+  enable_rbac: true
+  default_role: "reader"
+  
+  # Connection security
+  require_ssl: false
+  host_ssl_mode: "prefer"
+  
+  # Limits
+  max_failed_login_attempts: 5
+  lockout_duration_minutes: 15

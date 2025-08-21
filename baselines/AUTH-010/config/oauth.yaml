@@ -1,0 +1,44 @@
+# OAuth 2.1 Configuration
+oauth:
+  # Token lifetimes
+  access_token_lifetime: 900  # 15 minutes
+  refresh_token_lifetime: 2592000  # 30 days
+  authorization_code_lifetime: 600  # 10 minutes
+  id_token_lifetime: 3600  # 1 hour
+  
+  # PKCE settings
+  pkce_required: true
+  pkce_plain_allowed: false
+  
+  # Security
+  require_https: false  # Set to true in production
+  validate_redirect_uri: true
+  allow_wildcard_redirect: false
+  
+  # Token settings
+  token_rotation_enabled: true
+  revoke_on_reuse: true
+  
+  # Supported flows
+  supported_grant_types:
+    - authorization_code
+    - refresh_token
+  
+  supported_response_types:
+    - code
+  
+  supported_scopes:
+    - openid
+    - profile
+    - email
+    - offline_access
+  
+  # OIDC
+  oidc_enabled: true
+  userinfo_endpoint_enabled: true
+  
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    requests_per_minute: 100
+    burst_size: 200

@@ -1,0 +1,213 @@
+# Media Configuration
+
+video:
+  # Supported codecs
+  codecs:
+    - name: "VP8"
+      priority: 100
+      parameters:
+        profile-level-id: "1"
+    - name: "VP9"
+      priority: 90
+      parameters:
+        profile-id: "0"
+    - name: "H264"
+      priority: 80
+      parameters:
+        profile-level-id: "42e01f"
+        packetization-mode: "1"
+    - name: "AV1"
+      priority: 70
+      enabled: false
+  
+  # Resolution constraints
+  resolutions:
+    min:
+      width: 160
+      height: 120
+    max:
+      width: 3840
+      height: 2160
+    preferred:
+      width: 1280
+      height: 720
+  
+  # Frame rate
+  framerate:
+    min: 1
+    max: 60
+    preferred: 30
+  
+  # Bitrate (bps)
+  bitrate:
+    min: 50000
+    max: 10000000
+    initial: 1000000
+  
+  # Processing
+  processing:
+    denoising: true
+    hardware_acceleration: true
+    
+audio:
+  # Supported codecs
+  codecs:
+    - name: "opus"
+      priority: 100
+      parameters:
+        minptime: 10
+        useinbandfec: 1
+        stereo: 1
+    - name: "PCMU"
+      priority: 50
+    - name: "PCMA"
+      priority: 40
+  
+  # Sample rate
+  sample_rate:
+    min: 8000
+    max: 48000
+    preferred: 48000
+  
+  # Channels
+  channels:
+    min: 1
+    max: 2
+    preferred: 2
+  
+  # Bitrate (bps)
+  bitrate:
+    min: 6000
+    max: 510000
+    initial: 128000
+  
+  # Processing
+  processing:
+    echo_cancellation: true
+    noise_suppression: true
+    auto_gain_control: true
+    voice_activity_detection: true
+
+data_channel:
+  enabled: true
+  ordered: true
+  max_packet_life_time: null
+  max_retransmits: null
+  protocol: ""
+  negotiated: false
+  
+  # Buffer sizes
+  buffer_threshold: 65536
+  max_buffer_size: 16777216
+  
+  # Use cases
+  use_cases:
+    - chat
+    - file_transfer
+    - whiteboard
+    - control_messages
+
+transcoding:
+  enabled: false
+  
+  # Transcoding profiles
+  profiles:
+    - name: "mobile"
+      video_codec: "H264"
+      video_bitrate: 500000
+      video_resolution: "640x480"
+      audio_codec: "opus"
+      audio_bitrate: 64000
+      
+    - name: "desktop"
+      video_codec: "VP8"
+      video_bitrate: 2000000
+      video_resolution: "1280x720"
+      audio_codec: "opus"
+      audio_bitrate: 128000
+
+recording_profiles:
+  - name: "standard"
+    container: "webm"
+    video_codec: "vp8"
+    video_bitrate: 2000000
+    video_resolution: "1280x720"
+    video_framerate: 30
+    audio_codec: "opus"
+    audio_bitrate: 128000
+    audio_sample_rate: 48000
+    
+  - name: "high_quality"
+    container: "mp4"
+    video_codec: "h264"
+    video_bitrate: 5000000
+    video_resolution: "1920x1080"
+    video_framerate: 30
+    audio_codec: "aac"
+    audio_bitrate: 192000
+    audio_sample_rate: 48000
+    
+  - name: "low_bandwidth"
+    container: "webm"
+    video_codec: "vp9"
+    video_bitrate: 500000
+    video_resolution: "640x480"
+    video_framerate: 15
+    audio_codec: "opus"
+    audio_bitrate: 64000
+    audio_sample_rate: 24000
+
+streaming:
+  # HLS streaming
+  hls:
+    enabled: false
+    segment_duration: 4
+    playlist_size: 5
+    path: "streams/hls"
+    
+  # DASH streaming
+  dash:
+    enabled: false
+    segment_duration: 4
+    path: "streams/dash"
+    
+  # RTMP streaming
+  rtmp:
+    enabled: false
+    url: "rtmp://localhost/live"
+
+post_processing:
+  # Video filters
+  video_filters:
+    - name: "blur_background"
+      enabled: false
+      strength: 0.8
+      
+    - name: "virtual_background"
+      enabled: false
+      image_path: null
+      
+    - name: "beautify"
+      enabled: false
+      smoothing: 0.5
+      
+  # Audio filters
+  audio_filters:
+    - name: "noise_gate"
+      enabled: true
+      threshold: -40
+      
+    - name: "compressor"
+      enabled: true
+      ratio: 4
+      threshold: -20
+      
+    - name: "equalizer"
+      enabled: false
+      bands:
+        - freq: 100
+          gain: 0
+        - freq: 1000
+          gain: 0
+        - freq: 10000
+          gain: 0

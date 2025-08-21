@@ -1,0 +1,271 @@
+# Req2Run Problem: ML Pipeline with Model Serving
+# Advanced-level machine learning pipeline with time series prediction, hyperparameter optimization, and A/B testing
+
+id: ML-001
+title: "End-to-End ML Pipeline for Time Series Prediction"
+difficulty: advanced
+category: machine_learning
+estimated_time_minutes: 45
+languages: 
+  - python
+  - javascript
+  - typescript
+  - go
+  - java
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST implement time series data preprocessing including missing value imputation, normalization, and window function features"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: data_preprocessing
+    
+    - id: FR-002
+      description: "The system MUST support training and comparison of multiple algorithms: ARIMA, LSTM, and XGBoost for time series prediction"
+      priority: MUST
+      validation:
+        type: unit_test
+        check: multi_algorithm_support
+    
+    - id: FR-003
+      description: "The system MUST implement hyperparameter optimization using Optuna or equivalent optimization framework"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: hyperparameter_optimization
+    
+    - id: FR-004
+      description: "The system MUST provide REST API endpoints for model serving with prediction capabilities"
+      priority: MUST
+      validation:
+        type: api_test
+        endpoint: "/predict"
+        method: POST
+        expected_response:
+          status: 200
+          body:
+            predictions: "array"
+            confidence_intervals: "array"
+            model_version: "string"
+    
+    - id: FR-005
+      description: "The system MUST implement A/B testing functionality with traffic splitting and metrics collection"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: ab_testing_framework
+    
+    - id: FR-006
+      description: "The system SHOULD implement model drift detection and alerting mechanisms"
+      priority: SHOULD
+      validation:
+        type: integration_test
+        check: drift_detection
+    
+    - id: FR-007
+      description: "The system MUST support model versioning and rollback capabilities"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: model_versioning
+    
+    - id: FR-008
+      description: "The system MUST implement automated model retraining pipeline triggered by performance degradation"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: automated_retraining
+    
+    - id: FR-009
+      description: "The system MUST provide comprehensive metrics and monitoring for model performance"
+      priority: MUST
+      validation:
+        type: integration_test
+        check: metrics_monitoring
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 100  # MUST complete predictions within 100ms for batch size 100
+      p99_latency_ms: 200
+      throughput_rps: 1000  # MUST handle 1000 prediction requests per second
+      concurrent_users: 500
+      cpu_limit: "4000m"  # 4 CPU cores max
+      memory_limit: "2Gi"  # 2GB RAM limit
+    
+    security:
+      network_egress: ALLOW  # Need external data sources and model registries
+      secrets_in_code: FORBIDDEN
+      authentication: REQUIRED  # API key authentication
+      authorization: true
+      encryption: TLS_REQUIRED
+    
+    quality:
+      max_cyclomatic_complexity: 12
+      min_test_coverage: 80
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    # Python ML packages
+    - numpy
+    - pandas
+    - scikit-learn
+    - tensorflow
+    - torch
+    - xgboost
+    - optuna
+    - mlflow
+    - fastapi
+    - uvicorn
+    - pydantic
+    - pytest
+    - statsmodels
+    - plotly
+    - prometheus-client
+    
+    # JavaScript/TypeScript packages
+    - "@tensorflow/tfjs"
+    - "express"
+    - "@types/node"
+    - "jest"
+    - "typescript"
+    
+    # Go packages
+    - "gorgonia.org/gorgonia"
+    - "github.com/gin-gonic/gin"
+    - "github.com/prometheus/client_golang"
+    
+    # Java packages
+    - "weka"
+    - "springframework"
+    - "junit"
+  
+  disallowed_packages:
+    - proprietary-ml-platforms  # Must use open source tools
+  
+  disallowed_syscalls:
+    - mount
+    - setuid
+    - setgid
+    - chroot
+  
+  resource_limits:
+    max_cpu_cores: 4
+    max_memory_gb: 2
+    max_disk_gb: 20  # Need space for datasets and models
+    max_network_bandwidth_mbps: 100  # For model downloads
+  
+  time_limits:
+    generation_minutes: 45  # Advanced complexity
+    execution_minutes: 15   # Include model training time
+
+artifacts:
+  entrypoint: "main:app"
+  dockerfile: "templates/ml-pipeline.dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/ml_config.yaml"
+    - "requirements.txt"
+    - "models/model_registry.json"
+
+tests:
+  unit: "tests/ml_001_unit.py"
+  integration: "tests/ml_001_integration.py"
+  performance: "tests/ml_001_performance.py"
+  security: "tests/ml_001_security.py"
+  property: "tests/ml_001_property.py"
+  test_data:
+    input_files:
+      - "test_data/time_series_train.csv"
+      - "test_data/time_series_test.csv"
+      - "test_data/model_config.json"
+    expected_outputs:
+      - "test_data/expected_predictions.json"
+      - "test_data/expected_metrics.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35  # ML functionality coverage
+    test_pass_rate: 0.25       # Test reliability
+    performance: 0.20          # Prediction latency and throughput
+    code_quality: 0.15         # Code maintainability
+    security: 0.05             # API security
+  
+  thresholds:
+    min_functional_coverage: 100  # All MUST requirements
+    min_pass_rate: 85
+    min_performance_score: 80
+
+pass_criteria:
+  min_total_score: 0.75  # Advanced-level threshold
+  mandatory_requirements:
+    - FR-001  # Data preprocessing
+    - FR-002  # Multi-algorithm support
+    - FR-003  # Hyperparameter optimization
+    - FR-004  # REST API serving
+    - FR-005  # A/B testing
+    - FR-007  # Model versioning
+    - FR-008  # Automated retraining
+    - FR-009  # Metrics monitoring
+  forbidden_violations:
+    - runtime_failure
+    - sandbox_escape
+    - critical_security
+
+reference_solution:
+  available: true
+  path: "baselines/ML-001/"
+  expected_score: 0.82
+  performance_baseline:
+    p95_latency_ms: 80    # Reference should be faster than threshold
+    throughput_rps: 1200
+    memory_mb: 1024
+    model_accuracy_mape: 4.5  # Mean Absolute Percentage Error <5%
+
+metadata:
+  author: "ITdo Inc. Japan"
+  created_date: "2024-08-20"
+  last_modified: "2024-08-20T11:00:00Z"
+  version: "1.0.0"
+  tags:
+    - machine-learning
+    - time-series
+    - prediction
+    - pipeline
+    - serving
+    - a-b-testing
+    - hyperparameter-optimization
+    - advanced
+    - mlops
+  references:
+    - title: "MLOps: Machine Learning Operations"
+      url: "https://ml-ops.org/"
+    - title: "Time Series Analysis in Python"
+      url: "https://machinelearningmastery.com/time-series-analysis-python/"
+    - title: "Optuna: Hyperparameter Optimization Framework"
+      url: "https://optuna.org/"
+    - title: "MLflow: ML Lifecycle Management"
+      url: "https://mlflow.org/"
+    - title: "A/B Testing in ML Systems"
+      url: "https://netflixtechblog.com/its-all-a-bout-testing-the-netflix-experimentation-platform-4e1ca458c15"
+  notes: |
+    This advanced-level problem tests the ability to implement a complete ML pipeline with:
+    - Time series data preprocessing and feature engineering
+    - Multiple ML algorithm implementation and comparison
+    - Automated hyperparameter optimization
+    - Production-ready model serving with REST API
+    - A/B testing framework for model comparison
+    - Model drift detection and automated retraining
+    - Comprehensive monitoring and metrics collection
+    
+    The implementation must achieve high prediction accuracy (MAPE <5%) while maintaining 
+    low latency (<100ms) and high throughput (1000 RPS) for production serving.
+    
+    Key ML Operations (MLOps) practices are required:
+    - Model versioning and artifact management
+    - Automated CI/CD for model deployment
+    - Performance monitoring and alerting
+    - Rollback capabilities for failed deployments

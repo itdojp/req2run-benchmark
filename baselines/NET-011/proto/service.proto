@@ -1,0 +1,233 @@
+syntax = "proto3";
+
+package mesh.v1;
+
+option go_package = "github.com/example/mesh/api/v1;meshv1";
+option java_package = "com.example.mesh.api.v1";
+option python_package = "mesh.api.v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/any.proto";
+
+// Service definition for the mesh service
+service MeshService {
+  // Unary RPC
+  rpc Process(ProcessRequest) returns (ProcessResponse);
+  
+  // Server streaming RPC
+  rpc StreamEvents(StreamRequest) returns (stream Event);
+  
+  // Client streaming RPC
+  rpc CollectMetrics(stream Metric) returns (MetricsResponse);
+  
+  // Bidirectional streaming RPC
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+  
+  // Versioned endpoint
+  rpc ProcessV2(ProcessRequestV2) returns (ProcessResponseV2);
+}
+
+// Health service following grpc.health.v1 standard
+service Health {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
+}
+
+// Load balancer service for service discovery
+service LoadBalancer {
+  rpc RegisterService(ServiceRegistration) returns (RegistrationResponse);
+  rpc DeregisterService(ServiceDeregistration) returns (DeregistrationResponse);
+  rpc DiscoverServices(DiscoveryRequest) returns (DiscoveryResponse);
+  rpc GetServiceHealth(ServiceHealthRequest) returns (ServiceHealthResponse);
+}
+
+// Messages for main service
+message ProcessRequest {
+  string request_id = 1;
+  string data = 2;
+  map<string, string> metadata = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  RetryPolicy retry_policy = 5;
+}
+
+message ProcessResponse {
+  string request_id = 1;
+  string result = 2;
+  Status status = 3;
+  google.protobuf.Duration processing_time = 4;
+  string server_id = 5;
+}
+
+message ProcessRequestV2 {
+  string request_id = 1;
+  bytes data = 2;  // Changed from string to bytes
+  map<string, string> metadata = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  RetryPolicy retry_policy = 5;
+  string version = 6;  // Added version field
+}
+
+message ProcessResponseV2 {
+  string request_id = 1;
+  bytes result = 2;  // Changed from string to bytes
+  Status status = 3;
+  google.protobuf.Duration processing_time = 4;
+  string server_id = 5;
+  string version = 6;  // Added version field
+}
+
+message StreamRequest {
+  string stream_id = 1;
+  repeated string event_types = 2;
+  google.protobuf.Timestamp since = 3;
+}
+
+message Event {
+  string event_id = 1;
+  string event_type = 2;
+  google.protobuf.Any payload = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  string source = 5;
+}
+
+message Metric {
+  string metric_name = 1;
+  double value = 2;
+  map<string, string> labels = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}
+
+message MetricsResponse {
+  int32 metrics_received = 1;
+  repeated string warnings = 2;
+  google.protobuf.Timestamp last_timestamp = 3;
+}
+
+message ChatMessage {
+  string user_id = 1;
+  string message = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  MessageType type = 4;
+  
+  enum MessageType {
+    TEXT = 0;
+    SYSTEM = 1;
+    CONTROL = 2;
+  }
+}
+
+// Health check messages
+message HealthCheckRequest {
+  string service = 1;
+}
+
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+    SERVICE_UNKNOWN = 3;
+  }
+  ServingStatus status = 1;
+  string message = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+// Load balancer messages
+message ServiceRegistration {
+  string service_name = 1;
+  string service_id = 2;
+  string address = 3;
+  int32 port = 4;
+  map<string, string> metadata = 5;
+  repeated string tags = 6;
+}
+
+message RegistrationResponse {
+  bool success = 1;
+  string message = 2;
+  google.protobuf.Timestamp registered_at = 3;
+}
+
+message ServiceDeregistration {
+  string service_id = 1;
+}
+
+message DeregistrationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message DiscoveryRequest {
+  string service_name = 1;
+  repeated string tags = 2;
+  bool healthy_only = 3;
+}
+
+message DiscoveryResponse {
+  repeated ServiceInstance instances = 1;
+  LoadBalancerConfig config = 2;
+}
+
+message ServiceInstance {
+  string service_id = 1;
+  string address = 2;
+  int32 port = 3;
+  map<string, string> metadata = 4;
+  HealthStatus health = 5;
+  int32 weight = 6;
+  string version = 7;
+}
+
+message HealthStatus {
+  bool healthy = 1;
+  google.protobuf.Timestamp last_check = 2;
+  int32 consecutive_failures = 3;
+}
+
+message ServiceHealthRequest {
+  string service_name = 1;
+}
+
+message ServiceHealthResponse {
+  map<string, HealthStatus> instances = 1;
+  double overall_health_percentage = 2;
+}
+
+message LoadBalancerConfig {
+  enum Algorithm {
+    ROUND_ROBIN = 0;
+    LEAST_CONNECTIONS = 1;
+    WEIGHTED_ROUND_ROBIN = 2;
+    RANDOM = 3;
+    CONSISTENT_HASH = 4;
+  }
+  Algorithm algorithm = 1;
+  bool sticky_sessions = 2;
+  google.protobuf.Duration session_timeout = 3;
+}
+
+// Common messages
+message Status {
+  int32 code = 1;
+  string message = 2;
+  repeated string details = 3;
+}
+
+message RetryPolicy {
+  int32 max_attempts = 1;
+  google.protobuf.Duration initial_backoff = 2;
+  google.protobuf.Duration max_backoff = 3;
+  double backoff_multiplier = 4;
+  repeated int32 retryable_status_codes = 5;
+  google.protobuf.Duration timeout = 6;
+}
+
+// Tracing context for distributed tracing
+message TraceContext {
+  string trace_id = 1;
+  string span_id = 2;
+  string parent_span_id = 3;
+  map<string, string> baggage = 4;
+}

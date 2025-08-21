@@ -1,0 +1,88 @@
+site_name: Req2Run Benchmark
+site_description: A comprehensive benchmark suite for evaluating AI code generation capabilities
+site_url: https://github.com/itdojp/req2run-benchmark
+repo_url: https://github.com/itdojp/req2run-benchmark
+repo_name: itdojp/req2run-benchmark
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Architecture: getting-started/architecture.md
+  - Problems:
+    - Overview: problems/overview.md
+    - Problem Catalog: PROBLEM_CATALOG.md
+    - Problem Schema: problems/schema.md
+    - Difficulty Levels: problems/difficulty.md
+  - Development:
+    - Contributing: development/contributing.md
+    - Adding Problems: development/adding-problems.md
+    - Testing: development/testing.md
+    - CI/CD: development/cicd.md
+  - API Reference:
+    - Core API: api/core.md
+    - Evaluation: api/evaluation.md
+    - Metrics: api/metrics.md
+  - About:
+    - License: about/license.md
+    - Contributors: about/contributors.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.mark
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/itdojp/req2run-benchmark
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
+
+copyright: |
+  &copy; 2024 <a href="https://github.com/itdojp"  target="_blank" rel="noopener">Req2Run Team</a>

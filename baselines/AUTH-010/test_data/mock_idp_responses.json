@@ -1,0 +1,45 @@
+{
+  "valid_auth_response": {
+    "code": "test_auth_code_123",
+    "state": "test_state_456"
+  },
+  "valid_token_response": {
+    "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im9hdXRoLWtleS0xIn0...",
+    "token_type": "Bearer",
+    "expires_in": 900,
+    "refresh_token": "test_refresh_token_789",
+    "id_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "scope": "openid profile email"
+  },
+  "valid_introspection_response": {
+    "active": true,
+    "scope": "openid profile email",
+    "client_id": "test-client-id",
+    "username": "test_user",
+    "token_type": "Bearer",
+    "exp": 1642000000,
+    "iat": 1641999100,
+    "sub": "test_user",
+    "aud": ["http://localhost:8000"],
+    "iss": "http://localhost:8000"
+  },
+  "valid_jwks": {
+    "keys": [
+      {
+        "kty": "RSA",
+        "use": "sig",
+        "kid": "oauth-key-1",
+        "alg": "RS256",
+        "n": "xjNrLpwR...",
+        "e": "AQAB"
+      }
+    ]
+  },
+  "valid_userinfo": {
+    "sub": "test_user",
+    "name": "Test User",
+    "email": "test@example.com",
+    "email_verified": true,
+    "picture": "https://example.com/avatar.jpg"
+  }
+}

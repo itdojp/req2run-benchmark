@@ -1,0 +1,141 @@
+# Sample workflow for the job orchestrator
+name: "Sample CI/CD Pipeline"
+version: "1.0.0"
+description: "Example workflow demonstrating parallel job execution with dependencies"
+
+global_config:
+  max_retries: 3
+  timeout: 3600
+  environment:
+    NODE_ENV: "production"
+    CI: "true"
+
+jobs:
+  - id: "setup"
+    name: "Environment Setup"
+    job_type: "command"
+    command: "echo 'Setting up build environment' && sleep 2"
+    dependencies: []
+    timeout: 60
+    retry_config:
+      max_attempts: 2
+      initial_delay: 1.0
+      backoff_factor: 2.0
+    resource_limits:
+      max_memory_mb: 512
+      max_execution_time: 120
+    tags: ["setup", "infrastructure"]
+
+  - id: "install_deps"
+    name: "Install Dependencies"
+    job_type: "command"
+    command: "echo 'Installing dependencies...' && sleep 3"
+    dependencies: ["setup"]
+    timeout: 300
+    environment:
+      NPM_CONFIG_CACHE: "/tmp/.npm"
+    retry_config:
+      max_attempts: 3
+      initial_delay: 2.0
+      backoff_factor: 2.0
+
+  - id: "lint"
+    name: "Code Linting"
+    job_type: "command"
+    command: "echo 'Running linter...' && sleep 2"
+    dependencies: ["install_deps"]
+    timeout: 180
+
+  - id: "build_frontend"
+    name: "Build Frontend"
+    job_type: "command"
+    command: "echo 'Building frontend application...' && sleep 5"
+    dependencies: ["install_deps"]
+    timeout: 600
+    resource_limits:
+      max_memory_mb: 2048
+      max_execution_time: 900
+
+  - id: "build_backend"
+    name: "Build Backend"
+    job_type: "command"
+    command: "echo 'Building backend services...' && sleep 4"
+    dependencies: ["install_deps"]
+    timeout: 600
+    resource_limits:
+      max_memory_mb: 1024
+      max_execution_time: 900
+
+  - id: "test_unit_frontend"
+    name: "Frontend Unit Tests"
+    job_type: "command"
+    command: "echo 'Running frontend unit tests...' && sleep 3"
+    dependencies: ["build_frontend", "lint"]
+    timeout: 300
+
+  - id: "test_unit_backend"
+    name: "Backend Unit Tests"
+    job_type: "command"
+    command: "echo 'Running backend unit tests...' && sleep 4"
+    dependencies: ["build_backend", "lint"]
+    timeout: 300
+
+  - id: "test_integration"
+    name: "Integration Tests"
+    job_type: "command"
+    command: "echo 'Running integration tests...' && sleep 6"
+    dependencies: ["test_unit_frontend", "test_unit_backend"]
+    timeout: 900
+    resource_limits:
+      max_memory_mb: 1536
+
+  - id: "test_e2e"
+    name: "End-to-End Tests"
+    job_type: "command"
+    command: "echo 'Running E2E tests...' && sleep 8"
+    dependencies: ["test_integration"]
+    timeout: 1200
+    resource_limits:
+      max_memory_mb: 2048
+
+  - id: "security_scan"
+    name: "Security Scanning"
+    job_type: "command"
+    command: "echo 'Running security scans...' && sleep 3"
+    dependencies: ["build_frontend", "build_backend"]
+    timeout: 600
+
+  - id: "package"
+    name: "Package Application"
+    job_type: "command"
+    command: "echo 'Packaging application...' && sleep 3"
+    dependencies: ["test_e2e", "security_scan"]
+    timeout: 300
+
+  - id: "deploy_staging"
+    name: "Deploy to Staging"
+    job_type: "command"
+    command: "echo 'Deploying to staging environment...' && sleep 4"
+    dependencies: ["package"]
+    timeout: 600
+    environment:
+      DEPLOY_ENV: "staging"
+
+  - id: "smoke_test"
+    name: "Smoke Tests"
+    job_type: "command"
+    command: "echo 'Running smoke tests...' && sleep 2"
+    dependencies: ["deploy_staging"]
+    timeout: 180
+
+  - id: "deploy_production"
+    name: "Deploy to Production"
+    job_type: "command"
+    command: "echo 'Deploying to production...' && sleep 5"
+    dependencies: ["smoke_test"]
+    timeout: 900
+    environment:
+      DEPLOY_ENV: "production"
+    retry_config:
+      max_attempts: 2
+      initial_delay: 5.0

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Req2Run Problem: WebRTC Video Conferencing Server
 # Expert-level real-time communication system with SFU, recording, and screen sharing
 
@@ -11,12 +12,23 @@ languages:
   - typescript
   - go
   - java
+=======
+id: RTC-001
+title: "WebRTC Video Conferencing Server with SFU"
+difficulty: expert
+category: real_time_communication
+languages:
+  - javascript
+  - typescript
+  - go
+>>>>>>> ef75dde41220546dad892d7a1917f23f4e8a0425
   - rust
   - python
 
 requirements:
   functional:
     - id: FR-001
+<<<<<<< HEAD
       description: "The system MUST implement WebRTC Selective Forwarding Unit (SFU) supporting up to 50 participants per room"
       priority: MUST
       validation:
@@ -97,11 +109,95 @@ requirements:
     quality:
       max_cyclomatic_complexity: 15  # Real-time systems complexity
       min_test_coverage: 85
+=======
+      description: "The server MUST implement Selective Forwarding Unit (SFU) architecture"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The server MUST handle WebRTC signaling (offer/answer/ICE)"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The server MUST support multiple concurrent rooms"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The server MUST implement adaptive bitrate streaming"
+      priority: MUST
+      validation:
+        type: performance_test
+    
+    - id: FR-005
+      description: "The server MUST support simulcast for quality adaptation"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-006
+      description: "The server MUST handle participant join/leave gracefully"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The server MUST support screen sharing alongside video"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The server MUST implement recording capabilities"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The server SHOULD support end-to-end encryption (E2EE)"
+      priority: SHOULD
+      validation:
+        type: security_test
+    
+    - id: FR-010
+      description: "The server MAY implement virtual backgrounds"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 150
+      p99_latency_ms: 300
+      throughput_rps: 1000
+      cpu_limit: "8000m"
+      memory_limit: "8Gi"
+      max_concurrent_rooms: 1000
+      max_participants_per_room: 100
+      video_bitrate_kbps: 2500
+      audio_bitrate_kbps: 128
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_REQUIRED"
+      media_encryption: "DTLS-SRTP"
+    
+    quality:
+      max_cyclomatic_complexity: 20
+      min_test_coverage: 80
+>>>>>>> ef75dde41220546dad892d7a1917f23f4e8a0425
       documentation_required: true
       type_hints_required: true
 
 constraints:
   allowed_packages:
+<<<<<<< HEAD
     # JavaScript/TypeScript WebRTC
     - "socket.io"
     - "mediasoup"
@@ -267,3 +363,106 @@ metadata:
     - Graceful degradation under network stress
     - High availability and fault tolerance
     - Comprehensive monitoring and alerting
+=======
+    - "mediasoup"
+    - "pion"
+    - "janus"
+    - "kurento"
+    - "aiortc"
+    - "webrtc"
+    - "socket.io"
+    - "websocket"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 16
+    max_memory_gb: 16
+    max_disk_gb: 100
+    max_network_bandwidth_mbps: 1000
+  
+  time_limits:
+    generation_minutes: 60
+    execution_minutes: 30
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/webrtc.yaml"
+    - "config/media.yaml"
+    - "config/rooms.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  performance: "tests/performance/"
+  test_data:
+    input_files:
+      - "test_data/sdp_offers.json"
+      - "test_data/ice_candidates.json"
+      - "test_data/media_streams.webm"
+    expected_outputs:
+      - "test_data/expected/sdp_answers.json"
+      - "test_data/expected/room_states.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35
+    pass_rate: 0.25
+    performance: 0.25
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 90
+    min_pass_rate: 95
+    min_performance_score: 85
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "media_corruption"
+    - "room_state_inconsistency"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T12:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "webrtc"
+    - "video-conferencing"
+    - "sfu"
+    - "real-time"
+    - "streaming"
+    - "simulcast"
+  references:
+    - title: "WebRTC Specification"
+      url: "https://www.w3.org/TR/webrtc/"
+    - title: "SFU Architecture"
+      url: "https://webrtcglossary.com/sfu/"
+    - title: "Simulcast"
+      url: "https://webrtcglossary.com/simulcast/"
+    - title: "MediaSoup"
+      url: "https://mediasoup.org/"
+  notes: |
+    This problem tests the ability to implement a production-grade WebRTC
+    video conferencing server with SFU architecture, supporting multiple
+    rooms, adaptive bitrate, simulcast, and recording capabilities.
+>>>>>>> ef75dde41220546dad892d7a1917f23f4e8a0425

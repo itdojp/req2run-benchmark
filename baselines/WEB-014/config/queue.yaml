@@ -1,0 +1,152 @@
+# Queue Configuration for Webhook System
+
+# Queue Backend Settings
+queue:
+  # Backend type: memory, redis, rabbitmq, sqs
+  backend: "memory"
+  
+  # Queue name prefix
+  queue_prefix: "webhooks"
+  
+  # Maximum queue size (0 = unlimited)
+  max_size: 10000
+  
+  # Enable persistent queues
+  persistent: false
+
+# Memory Queue Settings (for development/testing)
+memory:
+  # Enable queue persistence to disk
+  persist_to_disk: false
+  
+  # Persistence file path
+  persistence_file: "data/webhook_queue.json"
+  
+  # Persistence interval (seconds)
+  persistence_interval: 60
+
+# Redis Queue Settings
+redis:
+  # Redis connection URL
+  url: "redis://localhost:6379/0"
+  
+  # Connection pool settings
+  max_connections: 20
+  retry_on_timeout: true
+  
+  # Queue-specific settings
+  queue_name: "webhook_deliveries"
+  dlq_name: "webhook_dlq"
+  
+  # Key expiration (seconds)
+  key_expiration: 86400  # 24 hours
+  
+  # Connection timeout (seconds)
+  socket_connect_timeout: 5
+  socket_timeout: 5
+
+# RabbitMQ Queue Settings
+rabbitmq:
+  # Connection URL
+  url: "amqp://guest:guest@localhost:5672/"
+  
+  # Exchange settings
+  exchange:
+    name: "webhook_events"
+    type: "topic"
+    durable: true
+  
+  # Queue settings
+  queue:
+    name: "webhook_deliveries"
+    durable: true
+    auto_delete: false
+    
+  # DLQ settings
+  dlq:
+    name: "webhook_dlq"
+    durable: true
+    ttl: 604800000  # 7 days in milliseconds
+  
+  # Consumer settings
+  prefetch_count: 10
+  
+  # Connection settings
+  connection_attempts: 3
+  retry_delay: 5
+
+# AWS SQS Settings
+sqs:
+  # AWS region
+  region: "us-east-1"
+  
+  # Queue URL
+  queue_url: ""
+  
+  # DLQ URL  
+  dlq_url: ""
+  
+  # Message settings
+  visibility_timeout: 300  # 5 minutes
+  message_retention_period: 1209600  # 14 days
+  
+  # Polling settings
+  wait_time_seconds: 10
+  max_number_of_messages: 10
+
+# Queue Processing Settings
+processing:
+  # Number of worker processes
+  worker_processes: 4
+  
+  # Number of worker threads per process
+  worker_threads_per_process: 2
+  
+  # Batch processing settings
+  batch_processing:
+    enabled: true
+    batch_size: 10
+    batch_timeout: 5  # seconds
+  
+  # Message acknowledgment settings
+  ack_mode: "auto"  # auto, manual
+  
+  # Retry settings for queue operations
+  queue_retry:
+    max_attempts: 3
+    delay: 1.0
+    backoff_factor: 2.0
+
+# Queue Monitoring
+monitoring:
+  # Enable queue metrics
+  metrics_enabled: true
+  
+  # Metrics collection interval (seconds)
+  metrics_interval: 30
+  
+  # Queue health check
+  health_check:
+    enabled: true
+    interval: 60  # seconds
+    timeout: 10   # seconds
+  
+  # Alert thresholds
+  alerts:
+    queue_size_threshold: 1000
+    processing_delay_threshold: 300  # seconds
+    error_rate_threshold: 0.05      # 5%
+
+# Queue Cleanup
+cleanup:
+  # Enable automatic cleanup
+  enabled: true
+  
+  # Cleanup interval (seconds)
+  interval: 3600  # 1 hour
+  
+  # Retention settings
+  retention:
+    processed_messages: 86400    # 24 hours
+    failed_messages: 604800      # 7 days
+    dlq_messages: 2592000       # 30 days
