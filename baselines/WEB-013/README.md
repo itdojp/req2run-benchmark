@@ -1,5 +1,11 @@
 # WEB-013: GraphQL API with N+1 Query Prevention
 
+**Language:** [English](#english) | [日本語](#japanese)
+
+---
+
+## English
+
 ## Overview
 
 A production-grade GraphQL API implementation featuring DataLoader pattern for N+1 query prevention, query depth limiting, complexity analysis, field-level authorization, and real-time subscriptions. The system ensures optimal database performance through intelligent batching and caching strategies.
@@ -467,5 +473,458 @@ spec:
 - Enable query result caching
 
 ## License
+
+MIT
+
+---
+
+## Japanese
+
+# WEB-013: N+1クエリ防止機能付きGraphQL API
+
+## 概要
+
+N+1クエリ防止のDataLoaderパターン、クエリ深度制限、複雑度分析、フィールドレベル認可、リアルタイムサブスクリプションを特徴とする本格的なGraphQL API実装。システムはインテリジェントなバッチ処理とキャッシュ戦略で最適なデータベースパフォーマンスを保証します。
+
+## 主要機能
+
+### N+1クエリ防止
+- **DataLoaderパターン**: データベースクエリの自動バッチ処理とキャッシュ
+- **スマートプリフェッチ**: インテリジェントなデータロード戦略
+- **クエリ最適化**: データベースラウンドトリップの最小化
+- **キャッシュ管理**: TTLベースキャッシュ無効化
+
+### クエリ保護
+- **深度制限**: 深くネストされたクエリの防止（設定可能な最大深度）
+- **複雑度分析**: クエリ複雑度の計算と制限
+- **クエリホワイトリスト**: 本畫環境でのオプションクエリホワイトリスト
+- **レート制限**: クライアント別リクエストスロットリング
+
+### GraphQL機能
+- **スキーマファースト設計**: 型安全なスキーマ定義
+- **サブスクリプション**: WebSocket経由のリアルタイム更新
+- **バッチクエリ**: バッチ化されたGraphQLリクエストのサポート
+- **永続化クエリ**: クエリ永続化で帯域幅減少
+- **フィールド認可**: 細かいアクセス制御
+
+### パフォーマンス最適化
+- **接続プール**: 効率的なデータベース接続
+- **非同期実行**: ノンブロッキングI/O操作
+- **並列解決**: 同時フィールド解決
+- **レスポンスキャッシュ**: スマートキャッシュ戦略
+
+## アーキテクチャ
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  GraphQL APIレイヤー                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                          │
+│  ┌──────────────┐         ┌──────────────┐            │
+│  │              │         │              │            │
+│  │   スキーマ     │◄────────│  リゾルバー   │            │
+│  │              │         │              │            │
+│  └──────────────┘         └──────────────┘            │
+│         ▲                        │                     │
+│         │                        ▼                     │
+│  ┌──────────────┐         ┌──────────────┐            │
+│  │   クエリ      │         │              │            │
+│  │  分析    │◄────────│ DataLoaders  │            │
+│  │              │         │              │            │
+│  └──────────────┘         └──────────────┘            │
+│         ▲                        │                     │
+│         │                        ▼                     │
+│  ┌──────────────┐         ┌──────────────┐            │
+│  │    Auth &    │         │              │            │
+│  │ Rate Limit   │◄────────│   Database   │            │
+│  │              │         │              │            │
+│  └──────────────┘         └──────────────┘            │
+│                                                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## クイックスタート
+
+### Dockerの使用
+
+```bash
+# イメージビルド
+docker build -t graphql-api .
+
+# PostgreSQLで実行
+docker run -p 8000:8000 \
+  -e DATABASE_URL=postgresql://user:pass@postgres/graphql_db \
+  -e JWT_SECRET=your-secret-key \
+  graphql-api
+
+# GraphQL Playgroundへアクセス
+open http://localhost:8000/graphql/playground
+```
+
+### 手動セットアップ
+
+1. **依存関係インストール:**
+```bash
+pip install -r requirements.txt
+```
+
+2. **PostgreSQLセットアップ:**
+```bash
+# データベース作成
+createdb graphql_db
+
+# マイグレーション実行（alembic使用時）
+alembic upgrade head
+```
+
+3. **環境設定:**
+```bash
+export DATABASE_URL=postgresql://user:pass@localhost/graphql_db
+export JWT_SECRET=your-secret-key
+```
+
+4. **アプリケーション実行:**
+```bash
+python src/main.py
+```
+
+## GraphQLスキーマ
+
+### クエリ
+```graphql
+query GetUserWithPosts($userId: ID!) {
+  user(id: $userId) {
+    id
+    username
+    posts {  # DataLoaderがN+1を防止
+      id
+      title
+      comments {  # ネストされたDataLoader
+        id
+        content
+        author {  # さらなるバッチ処理レベル
+          username
+        }
+      }
+    }
+  }
+}
+```
+
+### ミューテーション
+```graphql
+mutation CreatePost($input: CreatePostInput!) {
+  createPost(input: $input) {
+    id
+    title
+    content
+    author {
+      username
+    }
+  }
+}
+```
+
+### サブスクリプション
+```graphql
+subscription OnPostAdded($authorId: ID) {
+  postAdded(authorId: $authorId) {
+    id
+    title
+    author {
+      username
+    }
+  }
+}
+```
+
+## DataLoader使用法
+
+### 基本例
+```python
+# DataLoaderなし（N+1問題）
+users = await db.fetch_all("SELECT * FROM users")
+for user in users:
+    posts = await db.fetch_all(
+        "SELECT * FROM posts WHERE author_id = ?", 
+        user['id']
+    )
+    # NユーザーにNクエリ！
+
+# DataLoaderあり（バッチ化）
+user_loader = UserLoader(db)
+users = await user_loader.load_many([1, 2, 3, 4, 5])
+# 単一のバッチクエリ！
+```
+
+### カスタムDataLoader
+```python
+class PostsByUserLoader(DataLoader):
+    async def batch_load(self, user_ids):
+        query = """
+            SELECT * FROM posts 
+            WHERE author_id = ANY($1)
+            ORDER BY created_at DESC
+        """
+        posts = await db.fetch_all(query, user_ids)
+        
+        # user_idでグループ化
+        posts_by_user = defaultdict(list)
+        for post in posts:
+            posts_by_user[post['author_id']].append(post)
+        
+        # リクエストされた順序で返却
+        return [posts_by_user[uid] for uid in user_ids]
+```
+
+## クエリ深度制限
+
+### 設定
+```yaml
+graphql:
+  max_query_depth: 10
+```
+
+### 保護例
+```graphql
+# このクエリは拒否される（深度 > 10）
+query DeeplyNested {
+  user {
+    posts {
+      comments {
+        author {
+          posts {
+            comments {
+              author {
+                posts {
+                  comments {
+                    author {
+                      posts {  # 深度11 - 拒否！
+                        title
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+## クエリ複雑度分析
+
+### 複雑度計算
+```python
+# シンプルフィールド：0ポイント
+id, name, email
+
+# エンティティ検索：1ポイント
+user(id: "1")
+
+# リストクエリ：ベース + (制限 * ネスト)
+posts(limit: 100)  # 10 + (100 * nested_complexity)
+```
+
+### 複雑度例
+```graphql
+query ComplexQuery {
+  users(limit: 100) {         # 10ベース
+    id                         # 0
+    posts(limit: 10) {        # 10 * 100 = 1000
+      id                       # 0
+      comments(limit: 5) {     # 5 * 10 * 100 = 5000
+        content                # 0
+      }
+    }
+  }
+}
+# 総複雑度：6010 （最大1000の場合拒否される）
+```
+
+## フィールドレベル認可
+
+### スキーマディレクティブ
+```graphql
+type User {
+  id: ID!
+  username: String!
+  email: String! @auth  # 認証が必要
+  posts: [Post!]!
+  profile: UserProfile @hasRole(role: "premium")
+}
+
+type Query {
+  statistics: Statistics! @hasRole(role: "admin")
+}
+```
+
+### 実装
+```python
+@auth_directive
+async def resolve_email(parent, info):
+    # 認証済みユーザーのみメール表示可能
+    return parent['email']
+
+@has_role_directive("admin")
+async def resolve_statistics(parent, info):
+    # 管理者のみ統計情報アクセス可能
+    return await get_statistics()
+```
+
+## レート制限
+
+### 設定
+```yaml
+rate_limiting:
+  requests_per_minute: 100
+  burst: 20
+  complexity_per_minute: 10000
+```
+
+### フィールド別レート制限
+```graphql
+type Query {
+  searchPosts(query: String!): [Post!]! 
+    @rateLimit(limit: 10, duration: 60)
+}
+```
+
+## パフォーマンスメトリクス
+
+### 主要メトリクス
+- **クエリ実行時間**: P95 < 100ms
+- **リクエスト当たりデータベースクエリ数**: バッチ処理で最小化
+- **キャッシュヒット率**: >80%（繰り返しクエリ）
+- **スループット**: 2000+リクエスト/秒
+
+### 監視
+```bash
+# Prometheusメトリクス
+curl http://localhost:9090/metrics
+
+# 監視すべき主要メトリクス
+graphql_query_duration_seconds
+graphql_query_complexity
+graphql_dataloader_batch_size
+graphql_cache_hit_rate
+```
+
+## テスト
+
+### ユニットテスト
+```bash
+pytest tests/unit/
+```
+
+### 統合テスト
+```bash
+pytest tests/integration/
+```
+
+### パフォーマンステスト
+```bash
+# N+1防止テスト
+pytest tests/performance/test_dataloader.py
+
+# クエリ複雑度テスト
+pytest tests/performance/test_complexity.py
+```
+
+### 負荷テスト
+```bash
+# k6の使用
+k6 run tests/load/graphql_load_test.js
+```
+
+## 設定
+
+### 環境変数
+```bash
+DATABASE_URL=postgresql://user:pass@localhost/graphql_db
+JWT_SECRET=your-secret-key
+REDIS_URL=redis://localhost:6379
+LOG_LEVEL=INFO
+MAX_QUERY_DEPTH=10
+MAX_QUERY_COMPLEXITY=1000
+```
+
+### 設定ファイル
+```yaml
+# config/graphql.yaml
+graphql:
+  max_query_depth: 10
+  max_query_complexity: 1000
+  introspection: true
+  playground: true
+  
+dataloader:
+  cache_ttl: 60
+  max_batch_size: 100
+  
+rate_limiting:
+  requests_per_minute: 100
+  burst: 20
+```
+
+## 本畫デプロイメント
+
+### Docker Compose
+```yaml
+version: '3.8'
+services:
+  api:
+    image: graphql-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@db/graphql
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+      
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=graphql
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      
+  redis:
+    image: redis:7
+```
+
+## ベストプラクティス
+
+1. **常にDataLoaderを使用** 関連データフェッチ用
+2. **適切なクエリ制限を設定** ユースケースに基づいて
+3. **フィールドレベルキャッシュを実装** 高コスト計算用
+4. **本畫環境で永続化クエリを使用**
+5. **クエリパフォーマンスを監視** し、遅いクエリを最適化
+6. **パブリックAPIでクエリホワイトリストを実装**
+7. **サブスクリプションは慎重に使用** 接続オーバーヘッドのため
+
+## トラブルシューティング
+
+### N+1クエリがまだ発生
+- DataLoader登録を確認
+- リゾルバー実装を検証
+- クエリログを有効化して問題を特定
+
+### 高クエリ複雑度
+- ネストされたフィールド制限を確認
+- ページネーションを実装
+- クエリ分割を検討
+
+### パフォーマンス問題
+- データベースインデックスを確認
+- DataLoaderバッチサイズを確認
+- クエリ結果キャッシュを有効化
+
+## ライセンス
 
 MIT

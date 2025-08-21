@@ -1,5 +1,12 @@
 # NET-001: Binary Message Protocol Server Baseline Implementation
 
+[English](#english) | [日本語](#japanese)
+
+---
+
+<a id="english"></a>
+## English
+
 ## Overview
 
 This is a reference implementation for the NET-001 problem: Custom Binary Message Protocol Server over TCP.
@@ -237,3 +244,246 @@ Expected scores for this baseline:
 - [TCP/IP Protocol Design](https://tools.ietf.org/html/rfc793)
 - [Binary Protocol Best Practices](https://developers.google.com/protocol-buffers)
 - [asyncio Documentation](https://docs.python.org/3/library/asyncio.html)
+
+---
+
+<a id="japanese"></a>
+## 日本語
+
+## 概要
+
+NET-001問題のリファレンス実装：TCP上のカスタムバイナリメッセージプロトコルサーバー。
+
+## 問題要件
+
+### 機能要件 (MUST)
+- **MUST** TCP上でカスタムバイナリプロトコルを実装
+- **MUST** 複数のメッセージタイプをサポート（PING、ECHO、BROADCAST、AUTH、DATA）
+- **MUST** 同時クライアント接続を処理
+- **MUST** ヘッダーとペイロードを持つメッセージフレーミングを実装
+- **MUST** CRC32チェックサムでメッセージを検証
+
+### 非機能要件
+- **SHOULD** 1000以上の同時接続をサポート
+- **SHOULD** PING/PONGで<10msのレイテンシを達成
+- **SHOULD** 毎秒10,000以上のメッセージを処理
+- **MAY** TLS暗号化をサポート
+
+## 実装詳細
+
+### 技術スタック
+- **言語**: Python 3.11
+- **非同期フレームワーク**: asyncio
+- **シリアライゼーション**: struct（バイナリパッキング）
+- **テスト**: pytest with pytest-asyncio
+- **パフォーマンス**: uvloop（オプション）
+
+### プロトコル仕様
+
+#### フレーム形式
+```
++----------------+----------+--------------+----------------+
+| Magic (4バイト) | Ver (1B) | Type (1B)    | Length (2B)    |
++----------------+----------+--------------+----------------+
+| ペイロード（可変長、最大65535バイト）                          |
++-------------------------------------------------------------+
+| CRC32チェックサム（4バイト）                                  |
++----------------+
+```
+
+- **マジックバイト**: 0xDEADBEEF（4バイト） - フレーム開始マーカー
+- **バージョン**: プロトコルバージョン（現在0x01）
+- **メッセージタイプ**: 下記のメッセージタイプを参照
+- **ペイロード長**: ビッグエンディアンuint16（最大65535）
+- **ペイロード**: メッセージ固有のデータ
+- **CRC32**: CRCフィールドを除くフレーム全体のチェックサム
+
+#### メッセージタイプ
+
+| タイプ | 値 | 説明 | ペイロード形式 |
+|------|-------|-------------|----------------|
+| PING | 0x01 | ハートビート要求 | 8バイトタイムスタンプ |
+| PONG | 0x02 | ハートビート応答 | 8バイト元タイムスタンプ |
+| ECHO | 0x03 | エコー要求 | 可変データ |
+| ECHO_REPLY | 0x04 | エコー応答 | 元データ |
+| BROADCAST | 0x05 | 全員にブロードキャスト | 可変メッセージ |
+| AUTH | 0x06 | 認証 | ユーザー名+トークン |
+| AUTH_REPLY | 0x07 | 認証応答 | 成功バイト+セッションID |
+| DATA | 0x08 | データ転送 | 可変データ |
+| ERROR | 0xFF | エラーメッセージ | エラーコード+メッセージ |
+
+### プロジェクト構造
+```
+NET-001/
+├── src/
+│   ├── __init__.py
+│   ├── server.py           # メインTCPサーバー
+│   ├── client.py           # テストクライアント実装
+│   ├── protocol/
+│   │   ├── __init__.py
+│   │   ├── frame.py        # フレームエンコード/デコード
+│   │   ├── messages.py     # メッセージタイプとハンドラー
+│   │   └── constants.py    # プロトコル定数
+│   └── server/
+│       ├── __init__.py
+│       ├── connection.py   # 接続管理
+│       ├── handler.py      # メッセージハンドラー
+│       └── pool.py         # 接続プール
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── performance/
+├── Dockerfile
+├── requirements.txt
+└── README.md
+```
+
+## 使用例
+
+### サーバーの起動
+```bash
+# デフォルトポート（5000）でサーバーを起動
+python -m src.server
+
+# カスタム設定で起動
+python -m src.server --host 0.0.0.0 --port 8080 --max-connections 2000
+
+# デバッグログを有効化
+python -m src.server --debug
+
+# TLSサポート付き
+python -m src.server --tls --cert server.crt --key server.key
+```
+
+### クライアントの使用
+```python
+import asyncio
+from src.client import BinaryProtocolClient
+
+async def main():
+    client = BinaryProtocolClient('localhost', 5000)
+    await client.connect()
+    
+    # PINGを送信
+    pong = await client.ping()
+    print(f"レイテンシ: {pong.latency_ms}ms")
+    
+    # ECHOを送信
+    response = await client.echo(b"Hello, Server!")
+    assert response == b"Hello, Server!"
+    
+    # メッセージをブロードキャスト
+    await client.broadcast(b"全クライアントへのメッセージ")
+    
+    # データを送信
+    await client.send_data(b"大きなデータペイロード...")
+    
+    await client.close()
+
+asyncio.run(main())
+```
+
+## パフォーマンス特性
+
+- **同時接続**: 1000-5000（設定可能）
+- **メッセージスループット**: 10,000-50,000 msg/秒
+- **レイテンシ**: PING/PONGで<5ms（ローカル）、<10ms（ネットワーク）
+- **メモリ使用量**: 接続あたり約100KB
+- **CPU使用率**: シングルコアで約1000接続を処理可能
+
+## 接続管理
+
+### ハートビート機構
+- クライアントは30秒ごとにPINGを送信する必要がある
+- サーバーは即座にPONGで応答
+- 60秒間の非アクティブ後に接続を閉じる
+
+### レート制限
+- クライアントごと: 1000メッセージ/秒
+- グローバル: 50,000メッセージ/秒
+- 環境変数で設定可能
+
+### 接続プール
+- 事前割り当てされた接続スロット
+- 効率的なメモリ管理
+- 高速接続受け入れ
+
+## テスト
+
+```bash
+# ユニットテストの実行
+pytest tests/unit/
+
+# 統合テストの実行
+pytest tests/integration/
+
+# パフォーマンステストの実行
+pytest tests/performance/
+
+# カバレッジ付きで実行
+pytest --cov=src --cov-report=html
+
+# 負荷テスト
+locust -f tests/performance/locustfile.py --host tcp://localhost:5000
+```
+
+## Dockerデプロイメント
+
+```bash
+# イメージのビルド
+docker build -t net-001-baseline .
+
+# サーバーの実行
+docker run -p 5000:5000 net-001-baseline
+
+# 環境変数付きで実行
+docker run -p 5000:5000 \
+  -e MAX_CONNECTIONS=2000 \
+  -e RATE_LIMIT=5000 \
+  net-001-baseline
+```
+
+## 監視とメトリクス
+
+サーバーは`/metrics`（ポート+1000のHTTPエンドポイント）でメトリクスを公開：
+
+- アクティブ接続数
+- 毎秒のメッセージ数
+- 平均レイテンシ
+- エラー率
+- メモリ使用量
+
+## セキュリティ考慮事項
+
+1. **入力検証**: すべてのメッセージを処理前に検証
+2. **バッファオーバーフロー防止**: 固定最大メッセージサイズ
+3. **レート制限**: DoS攻撃を防止
+4. **認証**: クライアント検証用のオプションAUTHメッセージ
+5. **TLSサポート**: 機密データ用のオプション暗号化
+
+## 評価指標
+
+このベースラインの期待スコア：
+- 機能カバレッジ: 100%
+- テスト合格率: 95%
+- パフォーマンス: 90%
+- コード品質: 85%
+- セキュリティ: 85%
+- **総合スコア: 91%** (Gold)
+
+## トラブルシューティング
+
+### 一般的な問題
+
+| 問題 | 解決策 |
+|-------|----------|
+| "Too many open files" | ulimitを増やす: `ulimit -n 4096` |
+| 高レイテンシ | uvloopを有効化: `pip install uvloop` |
+| メモリ増加 | 接続リークを確認、GCを有効化 |
+| CRCエラー | ネットワーク安定性を確認、MTUを確認 |
+
+## 参考文献
+
+- [TCP/IPプロトコル設計](https://tools.ietf.org/html/rfc793)
+- [バイナリプロトコルベストプラクティス](https://developers.google.com/protocol-buffers)
+- [asyncioドキュメント](https://docs.python.org/3/library/asyncio.html)
