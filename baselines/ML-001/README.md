@@ -1,5 +1,12 @@
 # ML-001: End-to-End ML Pipeline for Time Series Prediction
 
+[English](#english) | [日本語](#japanese)
+
+---
+
+<a id="english"></a>
+## English
+
 ## Overview
 
 This is a reference implementation for the ML-001 problem: End-to-End ML Pipeline for Time Series Prediction with automated hyperparameter optimization, A/B testing, and model drift detection.
@@ -183,3 +190,194 @@ predictions = response.json()["predictions"]
 - [Optuna Documentation](https://optuna.org/)
 - [MLflow Documentation](https://mlflow.org/)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
+
+---
+
+<a id="japanese"></a>
+## 日本語
+
+# ML-001: 時系列予測のためのエンドツーエンドMLパイプライン
+
+## 概要
+
+ML-001問題のリファレンス実装です：自動ハイパーパラメーター最適化、A/Bテスト、モデルドリフト検出を備えた時系列予測のためのエンドツーエンドMLパイプラインです。
+
+## 問題要件
+
+### 機能要件（必須）
+- **必須** 時系列前処理の実装（欠損値補間、正規化、ウィンドウ化）
+- **必須** 複数アルゴリズムのサポート: ARIMA、LSTM、XGBoost
+- **必須** Optunaを使用したハイパーパラメーター最適化の実装
+- **必須** モデルサービングと予測のためのREST APIの提供
+- **必須** トラフィック分割を伴うA/Bテストの実装
+- **必須** モデルバージョニングとロールバックのサポート
+- **必須** 自動再トレーニングパイプラインの実装
+- **必須** 包括的なメトリクスと監視の提供
+
+### 非機能要件
+- **必須** バッチサイズ100で100ms未満の予測レイテンシの達成
+- **必須** 1秒あたり1000予測リクエストの処理
+- **必須** 500同時ユーザーのサポート
+- **必須** 5%未満のMAPE（平均絶対パーセントエラー）の達成
+
+## 実装詳細
+
+### 技術スタック
+- **言語**: Python 3.11
+- **MLフレームワーク**: scikit-learn、TensorFlow/Keras、XGBoost
+- **最適化**: ハイパーパラメーターチューニングのためのOptuna
+- **サービング**: Uvicornを使用したFastAPI
+- **監視**: MLflow + Prometheusメトリクス
+- **テスト**: ML固有のテストケースを含むpytest
+
+### プロジェクト構造
+```
+ML-001/
+├── src/
+│   ├── __init__.py
+│   ├── main.py              # FastAPIアプリケーションエントリポイント
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── preprocessing.py # データ前処理パイプライン
+│   │   ├── feature_engineering.py # 時系列特徴
+│   │   └── validation.py    # データ検証
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── arima_model.py   # ARIMA実装
+│   │   ├── lstm_model.py    # LSTMニューラルネットワーク
+│   │   ├── xgboost_model.py # XGBoost回帰
+│   │   ├── base_model.py    # 抽象ベースモデル
+│   │   └── ensemble.py      # モデルアンサンブル手法
+│   ├── serving/
+│   │   ├── __init__.py
+│   │   ├── api.py           # REST APIエンドポイント
+│   │   ├── predictor.py     # 予測サービス
+│   │   └── ab_testing.py    # A/Bテストフレームワーク
+│   ├── monitoring/
+│   │   ├── __init__.py
+│   │   ├── metrics.py       # パフォーマンスメトリクス
+│   │   ├── drift_detection.py # モデルドリフト検出
+│   │   └── alerts.py        # アラート管理
+│   └── training/
+│       ├── __init__.py
+│       ├── trainer.py       # モデルトレーニングオーケストレーション
+│       ├── hyperopt.py      # ハイパーパラメーター最適化
+│       └── pipeline.py      # トレーニングパイプライン
+├── tests/
+│   ├── unit/
+│   │   ├── test_preprocessing.py
+│   │   ├── test_models.py
+│   │   └── test_serving.py
+│   ├── integration/
+│   │   ├── test_pipeline.py
+│   │   └── test_api.py
+│   └── performance/
+│       └── test_latency.py
+├── test_data/
+│   ├── time_series_train.csv
+│   ├── time_series_test.csv
+│   └── model_config.json
+├── config/
+│   └── ml_config.yaml
+├── models/
+│   └── model_registry.json
+├── Dockerfile
+├── requirements.txt
+└── README.md
+```
+
+## 期待パフォーマンス指標
+
+このベースラインの期待スコア:
+- **機能カバレッジ**: 100%（全ての必須要件）
+- **テスト合格率**: 90%（網羅的MLテストスイート）
+- **パフォーマンス**: 85%（レイテンシとスループット要件を満たす）
+- **コード品質**: 80%（クリーンで保守性の高いMLコード）
+- **セキュリティ**: 75%（APIセキュリティと入力検証）
+- **総合スコア: 86%** （ゴールド）
+
+## APIエンドポイント
+
+### 予測API
+```bash
+POST /predict
+Content-Type: application/json
+
+{
+  "data": [[timestamp, value, feature1, feature2], ...],
+  "model_version": "v1.2",
+  "forecast_horizon": 10
+}
+
+Response:
+{
+  "predictions": [101.2, 102.8, 99.5, ...],
+  "confidence_intervals": [[98.1, 104.3], ...],
+  "model_version": "v1.2",
+  "execution_time_ms": 45
+}
+```
+
+### A/BテストAPI
+```bash
+POST /ab-test/start
+{
+  "name": "lstm_vs_xgboost",
+  "models": ["lstm_v1.2", "xgboost_v2.1"],
+  "traffic_split": [0.5, 0.5],
+  "duration_hours": 24
+}
+```
+
+### モデル管理
+```bash
+GET /models                    # 利用可能モデル一覧
+POST /models/deploy           # 新モデルバージョンデプロイ
+POST /models/rollback         # 前バージョンへのロールバック
+```
+
+## 使用例
+
+### トレーニングパイプライン
+```python
+# ハイパーパラメーター最適化で複数モデルをトレーニング
+from src.training.trainer import ModelTrainer
+from src.training.hyperopt import HyperparameterOptimizer
+
+trainer = ModelTrainer(config_path="config/ml_config.yaml")
+optimizer = HyperparameterOptimizer()
+
+# LSTMモデルを最適化
+best_params = optimizer.optimize("lstm", train_data, n_trials=100)
+lstm_model = trainer.train_model("lstm", best_params)
+
+# モデル比較
+results = trainer.compare_models(["arima", "lstm", "xgboost"], test_data)
+```
+
+### 予測サービング
+```python
+# FastAPIサーバー起動
+from src.main import app
+import uvicorn
+
+uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# 予測実行
+import requests
+
+response = requests.post("http://localhost:8000/predict", json={
+    "data": time_series_data,
+    "forecast_horizon": 24
+})
+
+predictions = response.json()["predictions"]
+```
+
+## 参考資料
+
+- [MLOps: Machine Learning Operations](https://ml-ops.org/)
+- [Pythonによる時系列分析](https://machinelearningmastery.com/time-series-analysis-python/)
+- [Optunaドキュメント](https://optuna.org/)
+- [MLflowドキュメント](https://mlflow.org/)
+- [FastAPIドキュメント](https://fastapi.tiangolo.com/)
