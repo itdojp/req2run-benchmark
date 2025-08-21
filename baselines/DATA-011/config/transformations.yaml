@@ -1,0 +1,76 @@
+# Transformation Rules Configuration
+rules:
+  - rule_id: mask_pii
+    name: Mask PII Data
+    rule_type: map
+    source_fields:
+      - email
+      - phone
+    target_field: masked_data
+    expression: |
+      {
+        "email": "{{ email.split('@')[0][:3] }}***@{{ email.split('@')[1] if '@' in email else 'unknown' }}",
+        "phone": "***-***-{{ phone[-4:] if phone else '0000' }}"
+      }
+    
+  - rule_id: calculate_age
+    name: Calculate Age from Birthdate
+    rule_type: map
+    source_fields:
+      - birthdate
+    target_field: age
+    expression: |
+      {{ (2024 - int(birthdate.split('-')[0])) if birthdate else 0 }}
+    
+  - rule_id: filter_active
+    name: Filter Active Records
+    rule_type: filter
+    source_fields:
+      - status
+    expression: |
+      {{ status == 'active' }}
+    
+  - rule_id: aggregate_amounts
+    name: Aggregate Transaction Amounts
+    rule_type: aggregate
+    source_fields:
+      - amount
+      - tax
+      - discount
+    target_field: total_amount
+    parameters:
+      type: sum
+    
+  - rule_id: standardize_country
+    name: Standardize Country Codes
+    rule_type: map
+    source_fields:
+      - country
+    target_field: country_code
+    expression: |
+      {% if country in ['USA', 'United States', 'US'] %}US
+      {% elif country in ['UK', 'United Kingdom', 'GB'] %}GB
+      {% elif country in ['Canada', 'CA'] %}CA
+      {% else %}{{ country[:2].upper() }}{% endif %}
+    
+  - rule_id: enrich_customer
+    name: Enrich Customer Data
+    rule_type: map
+    source_fields:
+      - customer_id
+      - purchase_count
+    target_field: customer_segment
+    expression: |
+      {% if purchase_count > 10 %}premium
+      {% elif purchase_count > 5 %}regular
+      {% else %}new{% endif %}
+
+custom_functions:
+  - name: hash_field
+    description: Hash sensitive fields
+    
+  - name: validate_email
+    description: Validate email format
+    
+  - name: geocode_address
+    description: Add coordinates to address

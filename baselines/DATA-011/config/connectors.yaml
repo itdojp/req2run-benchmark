@@ -1,0 +1,39 @@
+# Connectors Configuration
+sources:
+  - id: kafka_source
+    type: kafka
+    bootstrap_servers: localhost:9092
+    topic: cdc-events
+    group_id: etl-pipeline
+    
+  - id: file_source
+    type: file
+    path: /data/input/events.jsonl
+    format: jsonl
+
+sinks:
+  - id: kafka_sink
+    type: kafka
+    bootstrap_servers: localhost:9092
+    topic: transformed-data
+    
+  - id: file_sink
+    type: file
+    path: /data/output/transformed.jsonl
+    format: jsonl
+    
+  - id: postgres_sink
+    type: postgresql
+    connection_string: postgresql://user:password@localhost/target_db
+    table: transformed_data
+    batch_size: 100
+    
+  - id: s3_sink
+    type: s3
+    bucket: data-lake
+    prefix: transformed/
+    format: parquet
+    partition_by:
+      - year
+      - month
+      - day
