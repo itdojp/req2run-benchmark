@@ -48,9 +48,9 @@ The Req2Run benchmark suite provides a comprehensive evaluation framework for AI
 - All problems have complete YAML specifications following the standard schema
 
 ### Baseline Implementations
-- **Complete**: 23/35 (65.7%)
+- **Complete**: 24/35 (68.6%)
 - **In Progress**: 0
-- **Missing**: 12/35 (34.3%)
+- **Missing**: 11/35 (31.4%)
 
 #### Baselines Available
 1. AUTH-010 ✓
@@ -70,12 +70,13 @@ The Req2Run benchmark suite provides a comprehensive evaluation framework for AI
 15. ML-001 ✓
 16. NET-001 ✓
 17. NET-010 ✓
-18. ORCH-001 ✓
-19. SYS-001 ✓
-20. TS-001 ✓
-21. WEB-001 ✓
-22. WEB-010 ✓
-23. WEB-011 ✓ (newly added)
+18. OBS-010 ✓ (newly added)
+19. ORCH-001 ✓
+20. SYS-001 ✓
+21. TS-001 ✓
+22. WEB-001 ✓
+23. WEB-010 ✓
+24. WEB-011 ✓
 
 ## Evaluation Metrics
 
