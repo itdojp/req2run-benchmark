@@ -48,16 +48,16 @@ The Req2Run benchmark suite provides a comprehensive evaluation framework for AI
 - All problems have complete YAML specifications following the standard schema
 
 ### Baseline Implementations
-- **Complete**: 22/35 (62.9%)
+- **Complete**: 23/35 (65.7%)
 - **In Progress**: 0
-- **Missing**: 13/35 (37.1%)
+- **Missing**: 12/35 (34.3%)
 
 #### Baselines Available
 1. AUTH-010 ✓
 2. CHAIN-001 ✓
 3. CLI-001 ✓
 4. CLI-010 ✓
-5. CLI-011 ✓ (newly added)
+5. CLI-011 ✓
 6. CRYPTO-001 ✓
 7. DATA-001 ✓
 8. DATA-010 ✓
@@ -75,6 +75,7 @@ The Req2Run benchmark suite provides a comprehensive evaluation framework for AI
 20. TS-001 ✓
 21. WEB-001 ✓
 22. WEB-010 ✓
+23. WEB-011 ✓ (newly added)
 
 ## Evaluation Metrics
 
