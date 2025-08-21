@@ -1,0 +1,36 @@
+# WEB-010 Baseline Implementation Dependencies
+
+# Web Framework
+fastapi==0.111.0
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# Database
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9
+asyncpg==0.29.0
+
+# Search
+elasticsearch==8.11.0
+redis==5.0.1
+
+# Validation
+email-validator==2.1.0
+python-multipart==0.0.6
+
+# Utilities
+python-dotenv==1.0.0
+pyyaml==6.0.1
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+faker==20.1.0
+
+# Performance Testing
+locust==2.20.0
+
+# Monitoring
+prometheus-client==0.19.0
