@@ -1,0 +1,52 @@
+# Cryptographic parameters configuration
+schnorr:
+  curve: secp256k1
+  security_bits: 256
+  challenge_bits: 128
+  rounds_default: 3
+  rounds_max: 10
+  session_timeout: 300  # seconds
+
+commitments:
+  pedersen:
+    modulus: "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F"
+    generator_g: 3
+    generator_h: 5
+  
+  hash:
+    algorithm: sha256
+    nonce_size: 32  # bytes
+  
+  merkle:
+    hash_algorithm: sha256
+    max_tree_size: 1048576  # 2^20 leaves
+
+range_proofs:
+  bulletproof:
+    bit_length: 32
+    base: 2
+    aggregation_enabled: true
+  
+  sigma:
+    base: 4
+    max_value: 4294967295  # 2^32 - 1
+
+snark:
+  type: groth16_simplified
+  curve: bn254
+  trusted_setup_required: true
+  max_constraints: 1000000
+  proving_time_limit: 60  # seconds
+  verification_time_limit: 1  # seconds
+
+threshold:
+  min_shares: 2
+  max_shares: 100
+  default_threshold: 3
+
+performance:
+  cache_enabled: true
+  cache_ttl: 3600  # seconds
+  max_concurrent_proofs: 100
+  proof_generation_timeout: 60  # seconds
+  verification_timeout: 5  # seconds

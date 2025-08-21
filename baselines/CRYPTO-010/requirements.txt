@@ -1,0 +1,31 @@
+# CRYPTO-010: Zero-Knowledge Proof Authentication System
+# Core cryptography libraries
+cryptography==41.0.7
+pycryptodome==3.20.0
+py_ecc==6.0.0
+
+# Elliptic curve operations
+ecdsa==0.18.0
+
+# Zero-knowledge proof libraries
+petlib==0.4.4
+zksk==0.1.0
+
+# Web framework
+fastapi==0.111.0
+uvicorn[standard]==0.30.0
+
+# Security and validation
+pydantic==2.7.1
+python-jose[cryptography]==3.3.0
+
+# Utilities
+pyyaml==6.0.1
+python-decouple==3.8
+structlog==24.1.0
+
+# Testing
+pytest==8.1.1
+pytest-asyncio==0.23.6
+pytest-benchmark==4.0.0
+httpx==0.27.0
