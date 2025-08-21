@@ -1,0 +1,47 @@
+# Identity Provider Configuration
+idp:
+  # Provider details
+  issuer: "http://localhost:8000"
+  name: "Test OAuth Provider"
+  
+  # Endpoints
+  authorization_endpoint: "/authorize"
+  token_endpoint: "/token"
+  userinfo_endpoint: "/userinfo"
+  jwks_endpoint: "/.well-known/jwks.json"
+  introspection_endpoint: "/introspect"
+  revocation_endpoint: "/revoke"
+  
+  # Supported features
+  features:
+    pkce: true
+    introspection: true
+    revocation: true
+    token_rotation: true
+    
+  # Test clients
+  test_clients:
+    - client_id: "test-client-id"
+      client_secret: "test-client-secret"
+      client_name: "Test Application"
+      redirect_uris:
+        - "http://localhost:3000/callback"
+        - "http://localhost:8080/callback"
+      grant_types:
+        - "authorization_code"
+        - "refresh_token"
+      scopes:
+        - "openid"
+        - "profile"
+        - "email"
+        
+    - client_id: "test-spa-client"
+      client_secret: "test-spa-secret"
+      client_name: "Test SPA"
+      redirect_uris:
+        - "http://localhost:3000/auth/callback"
+      grant_types:
+        - "authorization_code"
+      scopes:
+        - "openid"
+        - "profile"

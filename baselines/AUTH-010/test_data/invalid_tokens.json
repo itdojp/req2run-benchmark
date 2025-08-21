@@ -1,0 +1,34 @@
+{
+  "tokens": [
+    {
+      "description": "Token with alg=none",
+      "token": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJleHAiOjE2NDIwMDAwMDB9.",
+      "expected_error": "Invalid algorithm"
+    },
+    {
+      "description": "Expired token",
+      "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJleHAiOjE2MDAwMDAwMDB9.signature",
+      "expected_error": "Token expired"
+    },
+    {
+      "description": "Invalid signature",
+      "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIifQ.invalid_signature",
+      "expected_error": "Invalid signature"
+    },
+    {
+      "description": "Wrong audience",
+      "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJhdWQiOiJ3cm9uZ19hdWRpZW5jZSJ9.signature",
+      "expected_error": "Invalid audience"
+    },
+    {
+      "description": "Wrong issuer",
+      "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJpc3MiOiJ3cm9uZ19pc3N1ZXIifQ.signature",
+      "expected_error": "Invalid issuer"
+    },
+    {
+      "description": "Token not yet valid (nbf)",
+      "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJuYmYiOjk5OTk5OTk5OTl9.signature",
+      "expected_error": "Token not yet valid"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+# AUTH-010 Baseline Implementation Dependencies
+
+# Web Framework
+fastapi==0.111.0
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# OAuth/OIDC Libraries
+authlib==1.3.0
+python-jose[cryptography]==3.3.0
+cryptography==41.0.7
+PyJWT==2.8.0
+
+# HTTP Client
+httpx==0.25.2
+aiohttp==3.9.1
+
+# Security
+passlib[bcrypt]==1.7.4
+python-dotenv==1.0.0
+itsdangerous==2.1.2
+
+# Database
+sqlalchemy==2.0.23
+aiosqlite==0.19.0
+
+# Redis for session/state management
+redis==5.0.1
+aioredis==2.0.1
+
+# Validation
+email-validator==2.1.0
+pydantic-settings==2.1.0
+
+# Utilities
+pyyaml==6.0.1
+python-json-logger==2.0.7
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-mock==3.12.0
+pytest-timeout==2.2.0
+faker==20.1.0
+
+# Performance Testing
+locust==2.20.0
+
+# Monitoring
+prometheus-client==0.19.0
+opentelemetry-api==1.22.0
+opentelemetry-sdk==1.22.0
