@@ -1,0 +1,200 @@
+id: SYS-001
+title: "Distributed Lock Coordinator Service"
+difficulty: expert
+category: system_utility
+languages:
+  - go
+  - rust
+  - java
+  - python
+  - cpp
+
+requirements:
+  functional:
+    - id: FR-001
+      description: "The system MUST implement distributed mutual exclusion locks"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-002
+      description: "The system MUST support lock acquisition with timeout"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-003
+      description: "The system MUST implement leader election using consensus"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-004
+      description: "The system MUST handle network partitions gracefully"
+      priority: MUST
+      validation:
+        type: chaos_test
+    
+    - id: FR-005
+      description: "The system MUST provide linearizable consistency guarantees"
+      priority: MUST
+      validation:
+        type: consistency_test
+    
+    - id: FR-006
+      description: "The system MUST support distributed semaphores"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-007
+      description: "The system MUST implement automatic lock release on client failure"
+      priority: MUST
+      validation:
+        type: integration_test
+    
+    - id: FR-008
+      description: "The system MUST support read-write locks"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-009
+      description: "The system SHOULD provide lock wait queue visibility"
+      priority: SHOULD
+      validation:
+        type: integration_test
+    
+    - id: FR-010
+      description: "The system MAY implement distributed barriers"
+      priority: MAY
+      validation:
+        type: integration_test
+  
+  non_functional:
+    performance:
+      p95_latency_ms: 10
+      p99_latency_ms: 50
+      throughput_rps: 10000
+      cpu_limit: "4000m"
+      memory_limit: "4Gi"
+      lock_acquisition_time_ms: 5
+      leader_election_time_ms: 1000
+    
+    security:
+      network_egress: "ALLOW"
+      secrets_in_code: "FORBIDDEN"
+      authentication: "REQUIRED"
+      encryption: "TLS_REQUIRED"
+      access_control: "REQUIRED"
+    
+    quality:
+      max_cyclomatic_complexity: 15
+      min_test_coverage: 85
+      documentation_required: true
+      type_hints_required: true
+
+constraints:
+  allowed_packages:
+    - "etcd"
+    - "zookeeper"
+    - "consul"
+    - "raft"
+    - "paxos"
+    - "redlock"
+    - "hazelcast"
+    - "redis"
+  
+  disallowed_packages: []
+  
+  disallowed_syscalls:
+    - "fork"
+    - "exec"
+  
+  resource_limits:
+    max_cpu_cores: 8
+    max_memory_gb: 8
+    max_disk_gb: 20
+    max_network_bandwidth_mbps: 500
+  
+  time_limits:
+    generation_minutes: 60
+    execution_minutes: 30
+
+artifacts:
+  entrypoint: "src/main"
+  dockerfile: "Dockerfile"
+  healthcheck: "/health"
+  config_files:
+    - "config/cluster.yaml"
+    - "config/consensus.yaml"
+    - "config/locks.yaml"
+
+tests:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  chaos: "tests/chaos/"
+  test_data:
+    input_files:
+      - "test_data/lock_requests.json"
+      - "test_data/network_scenarios.yaml"
+      - "test_data/failure_scenarios.yaml"
+    expected_outputs:
+      - "test_data/expected/lock_states.json"
+      - "test_data/expected/leader_elections.json"
+
+metrics:
+  weights:
+    functional_coverage: 0.35
+    pass_rate: 0.25
+    performance: 0.25
+    code_quality: 0.10
+    security: 0.05
+  
+  thresholds:
+    min_functional_coverage: 90
+    min_pass_rate: 95
+    min_performance_score: 90
+
+pass_criteria:
+  min_total_score: 0.85
+  mandatory_requirements:
+    - "FR-001"
+    - "FR-002"
+    - "FR-003"
+    - "FR-004"
+    - "FR-005"
+    - "FR-006"
+    - "FR-007"
+  forbidden_violations:
+    - "critical_security"
+    - "runtime_failure"
+    - "data_race"
+    - "consensus_violation"
+    - "deadlock"
+
+metadata:
+  author: "Req2Run Team"
+  created_date: "2024-01-21"
+  last_modified: "2024-01-21T14:00:00Z"
+  version: "1.0.0"
+  tags:
+    - "distributed-systems"
+    - "consensus"
+    - "locks"
+    - "coordination"
+    - "leader-election"
+    - "linearizability"
+  references:
+    - title: "The Chubby Lock Service"
+      url: "https://research.google/pubs/pub27897/"
+    - title: "ZooKeeper: Distributed Coordination"
+      url: "https://zookeeper.apache.org/"
+    - title: "Raft Consensus Algorithm"
+      url: "https://raft.github.io/"
+    - title: "etcd Documentation"
+      url: "https://etcd.io/docs/"
+  notes: |
+    This problem tests the ability to implement a distributed lock coordination
+    service similar to ZooKeeper or etcd, with consensus-based leader election,
+    distributed locks, and linearizable consistency guarantees.
