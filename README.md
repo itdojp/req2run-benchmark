@@ -24,6 +24,7 @@ Req2Run (Requirements to Running Code) is a benchmark framework for quantitative
 - 📊 **Quantitative Metrics**: Measures functional coverage, performance, security, and code quality
 - 🔧 **Standardized Environment**: Unified execution environment on Docker/Kubernetes
 - 📈 **Difficulty Levels**: Four levels - Basic (1), Intermediate (8), Advanced (17), Expert (9)
+- 🌐 **Full Internationalization**: Complete documentation available in English and Japanese
 
 ### Quick Start
 
@@ -237,6 +238,7 @@ Req2Run（Requirements to Running Code）は、AI/LLMシステムの実装能力
 - 📊 **定量的メトリクス**: 機能充足率、性能、セキュリティ、コード品質を測定
 - 🔧 **標準化された環境**: Docker/Kubernetes上での統一実行環境
 - 📈 **難易度レベル**: Basic (1)、Intermediate (8)、Advanced (17)、Expert (9)の4段階
+- 🌐 **完全な国際化対応**: 全ドキュメントが英語と日本語で利用可能
 
 ### クイックスタート
 
