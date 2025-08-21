@@ -1,5 +1,12 @@
 # CRYPTO-001: AES-256-GCM File Encryption Tool Baseline Implementation
 
+[English](#english) | [日本語](#japanese)
+
+---
+
+<a id="english"></a>
+## English
+
 ## Overview
 
 This is a reference implementation for the CRYPTO-001 problem: AES-256-GCM File Encryption Tool.
@@ -165,3 +172,174 @@ Expected scores for this baseline:
 - [NIST SP 800-38D](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf) - GCM Specification
 - [RFC 8018](https://tools.ietf.org/html/rfc8018) - PBKDF2 Specification
 - [cryptography.io](https://cryptography.io/) - Python Cryptography Library
+
+---
+
+<a id="japanese"></a>
+## 日本語
+
+## 概要
+
+CRYPTO-001問題のリファレンス実装：AES-256-GCMファイル暗号化ツール。
+
+## 問題要件
+
+### 機能要件 (MUST)
+- **MUST** AES-256-GCM暗号化/復号化を実装
+- **MUST** パスワードからの鍵導出にPBKDF2を使用
+- **MUST** 暗号学的に安全なランダムソルトとnonceを生成
+- **MUST** ファイルメタデータ（タイムスタンプ、権限）を保持
+- **MUST** 整合性保証のため認証タグを検証
+
+### 非機能要件
+- **SHOULD** メモリ効率のためストリーミングモードでファイルを処理
+- **SHOULD** 大きなファイルの進行状況を表示
+- **SHOULD** >50 MB/sの暗号化速度を達成
+- **MAY** 複数ファイルのバッチ暗号化をサポート
+
+## 実装詳細
+
+### 技術スタック
+- **言語**: Python 3.11
+- **暗号ライブラリ**: cryptography
+- **CLIフレームワーク**: Click
+- **進行状況**: tqdm
+- **テスト**: pytest
+
+### プロジェクト構造
+```
+CRYPTO-001/
+├── src/
+│   ├── __init__.py
+│   ├── main.py              # CLIエントリーポイント
+│   ├── crypto/
+│   │   ├── __init__.py
+│   │   ├── aes_gcm.py       # AES-GCM実装
+│   │   ├── key_derivation.py # PBKDF2鍵導出
+│   │   └── utils.py         # 暗号ユーティリティ
+│   ├── cli/
+│   │   ├── __init__.py
+│   │   └── commands.py      # CLIコマンド
+│   └── file_handler.py      # ファイル操作
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── fixtures/
+├── Dockerfile
+├── requirements.txt
+└── README.md
+```
+
+### 暗号化フォーマット
+
+```
+[ファイルヘッダー]
+├── マジックバイト (4バイト): 0x43525950 ('CRYP')
+├── バージョン (1バイト): 0x01
+├── ソルト (32バイト): PBKDF2用
+├── Nonce (12バイト): AES-GCM用
+├── 認証タグ (16バイト): GCM認証
+└── 暗号化データ (可変長)
+```
+
+## 使用例
+
+### 暗号化
+```bash
+# パスワードでファイルを暗号化
+crypto-tool encrypt input.txt -o output.enc -p "my-secure-password"
+
+# 鍵ファイルで暗号化
+crypto-tool encrypt input.txt -o output.enc -k keyfile.key
+
+# ディレクトリを再帰的に暗号化
+crypto-tool encrypt-dir /path/to/dir -o encrypted_dir.tar.enc
+```
+
+### 復号化
+```bash
+# ファイルを復号化
+crypto-tool decrypt output.enc -o decrypted.txt -p "my-secure-password"
+
+# 鍵ファイルで復号化
+crypto-tool decrypt output.enc -o decrypted.txt -k keyfile.key
+
+# 復号化せずに検証
+crypto-tool verify output.enc -p "my-secure-password"
+```
+
+### 鍵管理
+```bash
+# 安全な鍵を生成
+crypto-tool keygen -o mykey.key
+
+# パスワードから鍵を導出（テスト用）
+crypto-tool derive-key -p "password" --salt "salt-value"
+```
+
+## セキュリティ考慮事項
+
+1. **鍵導出**: PBKDF2-HMAC-SHA256で100,000回反復
+2. **ランダム生成**: 暗号学的に安全なランダム性のため`os.urandom()`を使用
+3. **メモリ安全性**: メモリから機密データをクリアする試行
+4. **ファイル権限**: 暗号化ファイルは制限された権限(0600)で作成
+5. **認証**: GCMモードが認証付き暗号化を提供
+
+## パフォーマンス特性
+
+- **暗号化速度**: 現代ハードウェアで~60-80 MB/s
+- **メモリ使用量**: O(1) - 64KBチャンクでデータをストリーム
+- **最大ファイルサイズ**: ディスク容量による制限のみ
+- **同時操作**: 複数ファイルの並列暗号化をサポート
+
+## テスト
+
+```bash
+# ユニットテストの実行
+pytest tests/unit/
+
+# 統合テストの実行
+pytest tests/integration/
+
+# カバレッジ付きで実行
+pytest --cov=src --cov-report=html
+
+# セキュリティテストの実行
+pytest tests/security/
+```
+
+## Dockerデプロイメント
+
+```bash
+# イメージのビルド
+docker build -t crypto-001-baseline .
+
+# コンテナの実行
+docker run -v $(pwd)/data:/data crypto-001-baseline \
+  encrypt /data/input.txt -o /data/output.enc -p "password"
+```
+
+## 評価指標
+
+このベースラインの期待スコア:
+- 機能カバレッジ: 100%
+- テスト合格率: 95%
+- パフォーマンス: 90%
+- コード品質: 85%
+- セキュリティ: 95%
+- **総合スコア: 93%** (Gold)
+
+## セキュリティ警告
+
+⚠️ **本畫使用**: これはベンチマーク用のリファレンス実装です。本畫使用の場合:
+- 鍵ストレージにハードウェアセキュリティモジュール(HSM)を使用
+- 適切な鍵ローテーションポリシーを実装
+- 監査ログを追加
+- 大きなファイルにはエンベロープ暗号化を検討
+- 安全な鍵交換プロトコルを実装
+
+## 参考文献
+
+- [NIST SP 800-38D](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf) - GCM仕様
+- [RFC 8018](https://tools.ietf.org/html/rfc8018) - PBKDF2仕様
+- [cryptography.io](https://cryptography.io/) - Python暗号ライブラリ
