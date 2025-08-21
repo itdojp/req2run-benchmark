@@ -1,0 +1,37 @@
+# Transaction configuration
+transaction:
+  # Timeout settings
+  timeout_seconds: 30
+  prepare_timeout_seconds: 10
+  commit_timeout_seconds: 10
+  
+  # Retry settings
+  max_retry_attempts: 3
+  retry_delay:
+    base_ms: 100
+    max_ms: 5000
+    multiplier: 2
+  
+  # Limits
+  limits:
+    max_amount: 1000000.00
+    min_amount: 0.01
+    max_concurrent: 20
+  
+  # Idempotency
+  idempotency:
+    enabled: true
+    ttl_seconds: 86400  # 24 hours
+    cleanup_interval_seconds: 3600  # 1 hour
+  
+  # Audit logging
+  audit:
+    enabled: true
+    retention_days: 90
+    batch_size: 100
+  
+  # Two-phase commit settings
+  two_phase_commit:
+    enabled: true
+    prepare_timeout_ms: 5000
+    commit_timeout_ms: 5000

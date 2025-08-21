@@ -1,0 +1,27 @@
+# Database configuration
+database:
+  host: localhost
+  port: 5432
+  name: transactions
+  user: postgres
+  password: postgres
+  
+  # Connection pool settings
+  pool:
+    min_size: 10
+    max_size: 20
+    max_queries: 50000
+    max_inactive_connection_lifetime: 300
+  
+  # Query settings
+  query:
+    timeout_seconds: 10
+    statement_cache_size: 100
+  
+  # Transaction settings
+  transaction:
+    isolation_level: SERIALIZABLE
+    deferrable: false
+    read_only: false
+    max_retries: 3
+    retry_delay_ms: 100
