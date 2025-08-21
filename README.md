@@ -19,11 +19,11 @@ Req2Run (Requirements to Running Code) is a benchmark framework for quantitative
 
 ### Features
 
-- 🎯 **Comprehensive Problem Set**: 34 problems across 15+ categories including Web APIs, cryptography, network protocols, data processing
+- 🎯 **Comprehensive Problem Set**: 35 problems across 16+ categories including Web APIs, cryptography, network protocols, data processing
 - 🤖 **Fully Automated Evaluation**: Execution from generation to evaluation without human intervention
 - 📊 **Quantitative Metrics**: Measures functional coverage, performance, security, and code quality
 - 🔧 **Standardized Environment**: Unified execution environment on Docker/Kubernetes
-- 📈 **Difficulty Levels**: Four levels - Basic (1), Intermediate (8), Advanced (17), Expert (8)
+- 📈 **Difficulty Levels**: Four levels - Basic (1), Intermediate (8), Advanced (17), Expert (9)
 
 ### Quick Start
 
@@ -232,11 +232,11 @@ Req2Run（Requirements to Running Code）は、AI/LLMシステムの実装能力
 
 ### 特徴
 
-- 🎯 **包括的な問題セット**: 34問題、Web API、暗号化、ネットワークプロトコル、データ処理など15以上のカテゴリ
+- 🎯 **包括的な問題セット**: 35問題、Web API、暗号化、ネットワークプロトコル、データ処理など16以上のカテゴリ
 - 🤖 **完全自動評価**: 人間の介入なしで生成から評価まで実行
 - 📊 **定量的メトリクス**: 機能充足率、性能、セキュリティ、コード品質を測定
 - 🔧 **標準化された環境**: Docker/Kubernetes上での統一実行環境
-- 📈 **難易度レベル**: Basic (1)、Intermediate (8)、Advanced (17)、Expert (8)の4段階
+- 📈 **難易度レベル**: Basic (1)、Intermediate (8)、Advanced (17)、Expert (9)の4段階
 
 ### クイックスタート
 
