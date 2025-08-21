@@ -1,0 +1,134 @@
+/* TUI Dashboard CSS Styles */
+
+/* Main container layout */
+#main-container {
+    layout: vertical;
+    height: 100%;
+}
+
+#top-row {
+    layout: horizontal;
+    height: 40%;
+    margin: 1;
+}
+
+#middle-row {
+    layout: horizontal;
+    height: 30%;
+    margin: 1;
+}
+
+/* Widget styling */
+MetricsWidget {
+    width: 50%;
+    border: rounded $primary;
+    padding: 1;
+    margin: 0 1;
+}
+
+ChartWidget {
+    width: 50%;
+    border: rounded $primary;
+    padding: 1;
+    margin: 0 1;
+}
+
+SystemMonitorWidget {
+    width: 50%;
+    border: rounded $secondary;
+    padding: 1;
+    margin: 0 1;
+}
+
+DataTable {
+    width: 50%;
+    border: rounded $secondary;
+    margin: 0 1;
+}
+
+LogsWidget {
+    height: 30%;
+    border: rounded $border;
+    padding: 1;
+    margin: 1;
+}
+
+/* Command palette */
+CommandPalette {
+    align: center middle;
+    width: 60;
+    height: 20;
+    border: heavy $primary;
+    background: $surface;
+}
+
+#command-input {
+    width: 100%;
+    margin: 1;
+}
+
+#command-list {
+    height: 100%;
+    margin: 1;
+}
+
+/* Notification widget */
+NotificationWidget {
+    dock: bottom;
+    height: 3;
+    background: transparent;
+    padding: 0 2;
+}
+
+/* Help screen */
+#help-content {
+    padding: 2;
+    background: $surface;
+}
+
+/* Scrollbars */
+ScrollBar {
+    background: $surface;
+}
+
+ScrollBar:hover {
+    background: $primary 20%;
+}
+
+/* Focus indicators */
+*:focus {
+    border: heavy $primary;
+}
+
+/* Button styles */
+Button {
+    width: auto;
+    min-width: 16;
+    margin: 1;
+}
+
+Button:hover {
+    background: $primary;
+    color: $text;
+}
+
+/* Header and Footer */
+Header {
+    background: $primary;
+    color: $text;
+}
+
+Footer {
+    background: $surface;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 80) {
+    #top-row, #middle-row {
+        layout: vertical;
+    }
+    
+    MetricsWidget, ChartWidget, SystemMonitorWidget, DataTable {
+        width: 100%;
+    }
+}
