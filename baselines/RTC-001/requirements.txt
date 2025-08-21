@@ -1,0 +1,41 @@
+# WebRTC Video Conferencing Server Requirements
+
+# WebRTC
+aiortc==1.6.0
+aioice==0.9.0
+pyee==11.1.0
+
+# Web framework
+aiohttp==3.9.1
+aiohttp-cors==0.7.0
+
+# Media processing
+av==11.0.0
+opencv-python==4.9.0.80
+numpy==1.26.3
+Pillow==10.2.0
+
+# WebSocket
+websockets==12.0
+python-socketio==5.10.0
+
+# Configuration
+pyyaml==6.0.1
+python-dotenv==1.0.0
+
+# Utilities
+cryptography==41.0.7
+python-jose==3.3.0
+
+# Monitoring
+prometheus-client==0.19.0
+
+# Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-aiohttp==1.0.5
+
+# Development
+black==23.12.1
+pylint==3.0.3
+mypy==1.8.0
