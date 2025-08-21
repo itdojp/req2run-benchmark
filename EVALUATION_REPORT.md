@@ -48,9 +48,9 @@ The Req2Run benchmark suite provides a comprehensive evaluation framework for AI
 - All problems have complete YAML specifications following the standard schema
 
 ### Baseline Implementations
-- **Complete**: 15/35 (42.9%)
+- **Complete**: 16/35 (45.7%)
 - **In Progress**: 0
-- **Missing**: 20/35 (57.1%)
+- **Missing**: 19/35 (54.3%)
 
 #### Baselines Available
 1. CHAIN-001 ✓

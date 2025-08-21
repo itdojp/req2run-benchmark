@@ -18,7 +18,7 @@ This baseline implementation provides a comprehensive REST API with advanced sea
 ### Additional Features (SHOULD/MAY)
 - ✅ Bulk operations
 - ✅ Search result highlighting
-- ⚠️ Saved searches (partial)
+- ⚠️ Saved searches (partial - API endpoints defined, persistence layer not implemented)
 
 ## API Endpoints
 
