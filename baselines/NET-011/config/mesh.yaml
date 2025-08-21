@@ -1,0 +1,146 @@
+# Service Mesh Configuration
+
+services:
+  - name: mesh-service-1
+    port: 50051
+    replicas: 3
+    use_tls: true
+    resources:
+      cpu: "1000m"
+      memory: "512Mi"
+    
+  - name: mesh-service-2
+    port: 50060
+    replicas: 2
+    use_tls: true
+    resources:
+      cpu: "1000m"
+      memory: "512Mi"
+    
+  - name: mesh-service-3
+    port: 50070
+    replicas: 2
+    use_tls: true
+    resources:
+      cpu: "1000m"
+      memory: "512Mi"
+
+load_balancer:
+  algorithm: round_robin  # round_robin, least_connections, weighted_round_robin, random, consistent_hash
+  health_check_interval: 30
+  unhealthy_threshold: 3
+  healthy_threshold: 2
+  
+  # Sticky sessions configuration
+  sticky_sessions:
+    enabled: false
+    cookie_name: mesh_session
+    ttl: 3600
+
+retry_policy:
+  max_attempts: 3
+  initial_backoff: 1.0
+  max_backoff: 60.0
+  backoff_multiplier: 2.0
+  timeout: 30.0
+  retryable_status_codes:
+    - 14  # UNAVAILABLE
+    - 4   # DEADLINE_EXCEEDED
+    - 8   # RESOURCE_EXHAUSTED
+
+request_hedging:
+  enabled: true
+  hedge_delay: 0.1
+  max_hedges: 2
+  
+circuit_breaker:
+  enabled: true
+  failure_threshold: 5
+  success_threshold: 2
+  timeout: 60
+  half_open_max_requests: 10
+
+rate_limiting:
+  enabled: true
+  requests_per_second: 1000
+  burst_size: 100
+  
+timeouts:
+  connect: 5.0
+  request: 30.0
+  stream: 300.0
+  
+tracing:
+  enabled: true
+  sample_rate: 1.0
+  exporter: jaeger
+  jaeger:
+    agent_host: localhost
+    agent_port: 6831
+    collector_endpoint: http://localhost:14268/api/traces
+    
+metrics:
+  enabled: true
+  port: 9090
+  path: /metrics
+  exporters:
+    - prometheus
+    - statsd
+    
+mtls:
+  enabled: true
+  cert_dir: certs
+  ca_cert: ca.crt
+  server_cert: server.crt
+  server_key: server.key
+  client_cert: client.crt
+  client_key: client.key
+  verify_client: true
+  
+service_discovery:
+  type: static  # static, consul, etcd, kubernetes
+  refresh_interval: 30
+  
+  static:
+    endpoints:
+      - address: localhost
+        port: 50051
+        weight: 100
+      - address: localhost
+        port: 50052
+        weight: 100
+      - address: localhost
+        port: 50053
+        weight: 100
+        
+  consul:
+    address: localhost:8500
+    datacenter: dc1
+    service_name: mesh-service
+    
+  etcd:
+    endpoints:
+      - localhost:2379
+    prefix: /services/mesh
+    
+  kubernetes:
+    namespace: default
+    service_name: mesh-service
+    port_name: grpc
+
+logging:
+  level: INFO
+  format: json
+  output: stdout
+  
+monitoring:
+  health_check:
+    enabled: true
+    path: /grpc.health.v1.Health/Check
+    interval: 10
+    timeout: 5
+    
+  dashboard:
+    enabled: true
+    port: 8080
+    path: /dashboard

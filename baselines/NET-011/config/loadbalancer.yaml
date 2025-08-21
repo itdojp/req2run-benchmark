@@ -1,0 +1,190 @@
+# Load Balancer Configuration
+
+algorithms:
+  round_robin:
+    description: "Distributes requests evenly across all healthy endpoints"
+    sticky_sessions: false
+    
+  least_connections:
+    description: "Routes to the endpoint with fewest active connections"
+    sticky_sessions: false
+    connection_tracking: true
+    
+  weighted_round_robin:
+    description: "Distributes based on endpoint weights"
+    sticky_sessions: false
+    default_weight: 100
+    
+  random:
+    description: "Randomly selects a healthy endpoint"
+    sticky_sessions: false
+    
+  consistent_hash:
+    description: "Routes based on request hash for consistency"
+    sticky_sessions: true
+    virtual_nodes: 100
+    hash_function: md5
+
+endpoint_selection:
+  # Health checking
+  health_check:
+    enabled: true
+    interval: 30
+    timeout: 5
+    unhealthy_threshold: 3
+    healthy_threshold: 2
+    
+  # Endpoint weights
+  weighting:
+    enabled: true
+    default_weight: 100
+    cpu_factor: 0.3
+    memory_factor: 0.3
+    latency_factor: 0.4
+    
+  # Outlier detection
+  outlier_detection:
+    enabled: true
+    consecutive_errors: 5
+    interval: 30
+    base_ejection_time: 30
+    max_ejection_percentage: 50
+    
+session_affinity:
+  enabled: false
+  type: cookie  # cookie, header, source_ip
+  
+  cookie:
+    name: lb_session
+    path: /
+    max_age: 3600
+    http_only: true
+    secure: true
+    
+  header:
+    name: X-Session-ID
+    
+  source_ip:
+    subnet_mask: 24
+
+connection_pool:
+  max_connections: 1000
+  max_connections_per_endpoint: 100
+  connection_timeout: 5
+  idle_timeout: 300
+  max_lifetime: 3600
+  
+request_routing:
+  # Request hedging
+  hedging:
+    enabled: true
+    hedge_on_percentile: 95
+    hedge_delay_percentile: 50
+    max_hedges: 2
+    non_fatal_status_codes:
+      - 4  # DEADLINE_EXCEEDED
+      
+  # Request mirroring
+  mirroring:
+    enabled: false
+    percentage: 10
+    mirror_endpoint: localhost:50099
+    
+  # Retry policy
+  retry:
+    enabled: true
+    max_attempts: 3
+    retry_on:
+      - 5xx
+      - reset
+      - refused
+      - timeout
+    backoff:
+      base_interval: 1.0
+      max_interval: 60.0
+      multiplier: 2.0
+      
+  # Circuit breaker per endpoint
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 5
+    success_threshold: 2
+    timeout: 60
+    half_open_requests: 10
+    
+load_distribution:
+  # Traffic shaping
+  traffic_shaping:
+    enabled: false
+    max_rps: 10000
+    burst_size: 1000
+    
+  # Canary deployments
+  canary:
+    enabled: false
+    canary_weight: 10
+    canary_endpoints:
+      - localhost:50099
+      
+  # Blue-green deployments
+  blue_green:
+    enabled: false
+    active: blue
+    blue_endpoints:
+      - localhost:50051
+      - localhost:50052
+    green_endpoints:
+      - localhost:50061
+      - localhost:50062
+      
+  # A/B testing
+  ab_testing:
+    enabled: false
+    experiments:
+      - name: new_feature
+        percentage: 20
+        endpoints:
+          - localhost:50099
+        headers:
+          X-Feature: new
+          
+metrics:
+  # Metrics collection
+  collection:
+    enabled: true
+    interval: 10
+    
+  # Metrics to track
+  tracked_metrics:
+    - request_count
+    - error_rate
+    - latency_p50
+    - latency_p95
+    - latency_p99
+    - active_connections
+    - endpoint_health
+    
+  # Alerting thresholds
+  alerts:
+    error_rate_threshold: 0.05
+    latency_p99_threshold: 1000
+    unhealthy_endpoints_threshold: 0.5
+    
+observability:
+  # Distributed tracing
+  tracing:
+    enabled: true
+    sample_rate: 1.0
+    propagation: b3  # b3, w3c, jaeger
+    
+  # Logging
+  logging:
+    enabled: true
+    level: INFO
+    slow_request_threshold: 1000
+    
+  # Monitoring dashboard
+  dashboard:
+    enabled: true
+    refresh_interval: 5
+    retention_period: 86400
