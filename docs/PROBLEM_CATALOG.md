@@ -6,11 +6,11 @@ This document provides a comprehensive catalog of all problems currently availab
 
 ## Problem Statistics
 
-- **Total Problems**: 34
+- **Total Problems**: 36
 - **Basic**: 1
-- **Intermediate**: 8
+- **Intermediate**: 9
 - **Advanced**: 17
-- **Expert**: 8
+- **Expert**: 9
 
 ## Problem Categories
 
@@ -305,7 +305,7 @@ This document provides a comprehensive catalog of all problems currently availab
 
 ---
 
-### Expert Level (8 problems)
+### Expert Level (9 problems)
 
 #### LANG-001: SQL Query Language Interpreter
 - **Category**: `language_processor`
@@ -392,6 +392,17 @@ This document provides a comprehensive catalog of all problems currently availab
   - Support for 1000 concurrent rooms
   - Screen sharing and recording capabilities
 - **Location**: `problems/expert/RTC-001.yaml`
+
+#### SYS-001: Distributed Task Queue System
+- **Category**: `system_utility`
+- **Languages**: Go, Python, Rust
+- **Time Limit**: 60 minutes generation, 30 minutes execution
+- **Key Requirements**:
+  - Reliable task distribution and execution
+  - Fault tolerance with automatic retries
+  - Priority-based task scheduling
+  - Horizontal scalability
+- **Location**: `problems/expert/SYS-001.yaml`
 
 ---
 

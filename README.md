@@ -52,7 +52,7 @@ cd req2run-benchmark
 scripts\setup-env.bat
 ```
 
-For detailed setup instructions, see [Environment Setup Guide](docs/ENVIRONMENT_SETUP.md).
+For detailed setup instructions, see [Setup and Troubleshooting Guide](docs/SETUP_AND_TROUBLESHOOTING.md).
 
 #### Using Docker (Recommended)
 
@@ -82,7 +82,7 @@ venv\Scripts\activate.bat  # Windows
 pip install -r requirements.txt
 ```
 
-If you encounter dependency issues, see [Dependency Troubleshooting Guide](docs/DEPENDENCY_TROUBLESHOOTING.md).
+If you encounter any issues, see [Setup and Troubleshooting Guide](docs/SETUP_AND_TROUBLESHOOTING.md).
 
 #### Basic Usage
 
@@ -301,7 +301,7 @@ cd req2run-benchmark
 scripts\setup-env.bat
 ```
 
-詳細なセットアップ手順は[環境セットアップガイド](docs/ENVIRONMENT_SETUP.md)を参照してください。
+詳細なセットアップ手順は[セットアップとトラブルシューティングガイド](docs/SETUP_AND_TROUBLESHOOTING.md)を参照してください。
 
 #### Dockerの使用（推奨）
 
@@ -331,7 +331,7 @@ venv\Scripts\activate.bat  # Windows
 pip install -r requirements.txt
 ```
 
-依存関係の問題が発生した場合は、[依存関係トラブルシューティングガイド](docs/DEPENDENCY_TROUBLESHOOTING.md)を参照してください。
+問題が発生した場合は、[セットアップとトラブルシューティングガイド](docs/SETUP_AND_TROUBLESHOOTING.md)を参照してください。
 
 #### 基本的な使用方法
 
