@@ -18,7 +18,7 @@ Req2Runは、詳細な要件仕様を動作する本番対応コードに変換�
 
 ### Key Features (主要機能)
 
-- ✍️ **15+ Standardized Problems** across various domains
+- ✍️ **36 Standardized Problems** across various domains
 - 🔒 **Secure Execution** with sandboxed environments
 - 📊 **Multi-dimensional Scoring** (functional, performance, security, quality)
 - 🌐 **Multi-language Support** (Python, JavaScript, Go, Java, Rust)
@@ -33,20 +33,38 @@ Req2Runは、詳細な要件仕様を動作する本番対応コードに変換�
 | Category | Problem ID | Description | Difficulty |
 |----------|------------|-------------|------------|
 | Web API | WEB-001 | RESTful API with JWT Authentication | Intermediate |
-| CLI Tool | CLI-001 | File Processing Tool | Beginner |
-| Network Protocol | NET-001 | Custom TCP Protocol Server | Advanced |
+| CLI Tool | CLI-001 | File Processing Tool | Basic |
+| Network Protocol | NET-001 | Custom TCP Protocol Server | Intermediate |
 | Cryptography | CRYPTO-001 | File Encryption Utility | Intermediate |
 | Data Processing | DATA-001 | Stream Processing Pipeline | Advanced |
 
-### Additional Expert Problems (追加エキスパート問題)
+### Additional Problems (追加問題)
 
-| Category | Problem ID | Description | Difficulty |
-|----------|------------|-------------|------------|
-| System Utility | SYS-001 | Distributed Task Queue | Expert |
-| Language Processor | LANG-001 | DSL Interpreter | Expert |
-| Machine Learning | ML-001 | ML Pipeline with AutoML | Expert |
-| Real-time Comm | RTC-001 | WebRTC Video Conference | Expert |
-| Blockchain | CHAIN-001 | Smart Contract Platform | Expert |
+#### Advanced Level (17 problems)
+| Category | Problem ID | Description |
+|----------|------------|-------------|
+| Machine Learning | ML-001 | ML Pipeline with Model Serving |
+| API Gateway | GQL-001 | GraphQL Federation Gateway |
+| Runtime Platform | FN-001 | Serverless Function Runtime |
+| Database | TS-001 | Time-Series Database |
+| Web API | WEB-012, WEB-013, WEB-014 | Advanced Web API Features |
+| Authentication | AUTH-010, AUTH-011 | OAuth 2.1/OIDC, RBAC/ABAC |
+| Database | DB-010, DB-011 | Money Transfer, Event Sourcing |
+| Data Processing | DATA-010, DATA-011 | Stream Processing, CDC |
+| Network Protocol | NET-010, NET-011 | Reverse Proxy, gRPC Service Mesh |
+| CLI Tool | CLI-011 | Job Orchestrator with DAG |
+
+#### Expert Level (9 problems)
+| Category | Problem ID | Description |
+|----------|------------|-------------|
+| System Utility | SYS-001 | Distributed Task Queue |
+| Language Processor | LANG-001 | SQL Query Interpreter |
+| Blockchain | CHAIN-001 | Smart Contract Platform |
+| Database | DB-001 | In-Memory Database Engine |
+| Orchestration | ORCH-001 | Container Orchestration Controller |
+| Service Mesh | MESH-001 | Service Mesh Control Plane |
+| Cryptography | CRYPTO-010, CRYPTO-011 | Zero-Knowledge Proofs, Homomorphic Encryption |
+| Real-time Comm | RTC-001 | WebRTC Video Conference with SFU |
 
 ## Evaluation Process / 評価プロセス
 
