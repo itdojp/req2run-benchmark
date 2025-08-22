@@ -30,24 +30,59 @@ Req2Run (Requirements to Running Code) is a benchmark framework for quantitative
 
 #### Prerequisites
 
-- Docker 24.0+
-- Kubernetes 1.28+ (optional)
-- Python 3.11+
+- Python 3.9+ (3.11 recommended)
+- Docker 24.0+ (optional but recommended)
 - Git
 
-#### Installation
+#### Environment Setup
 
 ```bash
 # Clone the repository
 git clone https://github.com/itdojp/req2run-benchmark.git
 cd req2run-benchmark
 
+# Quick setup with helper script
+# Linux/Mac:
+./scripts/setup-env.sh
+
+# Windows PowerShell:
+.\scripts\setup-env.ps1
+
+# Windows CMD:
+scripts\setup-env.bat
+```
+
+For detailed setup instructions, see [Environment Setup Guide](docs/ENVIRONMENT_SETUP.md).
+
+#### Using Docker (Recommended)
+
+```bash
+# Build Docker image with all dependencies
+docker build -t req2run-benchmark .
+
+# Run in Docker container
+docker run -it -v $(pwd):/workspace req2run-benchmark bash
+
+# Or use docker-compose for development
+docker-compose -f docker-compose.dev.yml up
+```
+
+#### Manual Installation
+
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate  # Linux/Mac
+# or
+venv\Scripts\activate.bat  # Windows
+
 # Install dependencies
 pip install -r requirements.txt
-
-# Setup environment
-./scripts/setup/init.sh
 ```
+
+If you encounter dependency issues, see [Dependency Troubleshooting Guide](docs/DEPENDENCY_TROUBLESHOOTING.md).
 
 #### Basic Usage
 
@@ -244,24 +279,59 @@ Req2Run（Requirements to Running Code）は、AI/LLMシステムの実装能力
 
 #### 前提条件
 
-- Docker 24.0+
-- Kubernetes 1.28+ (オプション)
-- Python 3.11+
+- Python 3.9+ (3.11推奨)
+- Docker 24.0+ (オプション、推奨)
 - Git
 
-#### インストール
+#### 環境セットアップ
 
 ```bash
 # リポジトリのクローン
 git clone https://github.com/itdojp/req2run-benchmark.git
 cd req2run-benchmark
 
-# 依存関係のインストール
-pip install -r requirements.txt
+# ヘルパースクリプトでクイックセットアップ
+# Linux/Mac:
+./scripts/setup-env.sh
 
-# 環境セットアップ
-./scripts/setup/init.sh
+# Windows PowerShell:
+.\scripts\setup-env.ps1
+
+# Windows CMD:
+scripts\setup-env.bat
 ```
+
+詳細なセットアップ手順は[環境セットアップガイド](docs/ENVIRONMENT_SETUP.md)を参照してください。
+
+#### Dockerの使用（推奨）
+
+```bash
+# すべての依存関係を含むDockerイメージをビルド
+docker build -t req2run-benchmark .
+
+# Dockerコンテナで実行
+docker run -it -v $(pwd):/workspace req2run-benchmark bash
+
+# または開発用にdocker-composeを使用
+docker-compose -f docker-compose.dev.yml up
+```
+
+#### 手動インストール
+
+```bash
+# 仮想環境を作成
+python -m venv venv
+
+# 仮想環境をアクティベート
+source venv/bin/activate  # Linux/Mac
+# または
+venv\Scripts\activate.bat  # Windows
+
+# 依存関係をインストール
+pip install -r requirements.txt
+```
+
+依存関係の問題が発生した場合は、[依存関係トラブルシューティングガイド](docs/DEPENDENCY_TROUBLESHOOTING.md)を参照してください。
 
 #### 基本的な使用方法
 
