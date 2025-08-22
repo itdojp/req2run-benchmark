@@ -70,8 +70,7 @@ req2run-benchmark/
 │
 ├── docs/                          # Documentation
 │   ├── README.md                 # Main documentation
-│   ├── ENVIRONMENT_SETUP.md      # Environment setup guide
-│   ├── DEPENDENCY_TROUBLESHOOTING.md # Dependency troubleshooting
+│   ├── SETUP_AND_TROUBLESHOOTING.md # Complete setup and troubleshooting guide
 │   ├── AE_FRAMEWORK_INTEGRATION.md   # AE Framework integration
 │   ├── API_REFERENCE.md          # API documentation
 │   ├── REPOSITORY_STRUCTURE.md   # This file
@@ -205,7 +204,7 @@ Sample code and integration examples.
 
 #### Documentation
 - Uppercase for main docs: `README.md`, `LICENSE`
-- Title case with underscores: `ENVIRONMENT_SETUP.md`
+- Title case with underscores: `SETUP_AND_TROUBLESHOOTING.md`
 - Bilingual docs include both languages in same file
 
 #### Configuration
@@ -337,8 +336,7 @@ req2run-benchmark/
 │
 ├── docs/                          # ドキュメント
 │   ├── README.md                 # メインドキュメント
-│   ├── ENVIRONMENT_SETUP.md      # 環境セットアップガイド
-│   ├── DEPENDENCY_TROUBLESHOOTING.md # 依存関係トラブルシューティング
+│   ├── SETUP_AND_TROUBLESHOOTING.md # 完全なセットアップとトラブルシューティングガイド
 │   ├── AE_FRAMEWORK_INTEGRATION.md   # AE Framework統合
 │   ├── API_REFERENCE.md          # APIドキュメント
 │   ├── REPOSITORY_STRUCTURE.md   # このファイル
@@ -472,7 +470,7 @@ YAML形式のすべてのベンチマーク問題定義を含みます。
 
 #### ドキュメント
 - メインドキュメントは大文字: `README.md`、`LICENSE`
-- アンダースコア付きタイトルケース: `ENVIRONMENT_SETUP.md`
+- アンダースコア付きタイトルケース: `SETUP_AND_TROUBLESHOOTING.md`
 - バイリンガルドキュメントは同じファイルに両言語を含む
 
 #### 設定
