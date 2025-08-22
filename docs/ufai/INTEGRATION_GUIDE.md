@@ -566,8 +566,7 @@ bench all --dry-run
 - **Examples**: https://github.com/req2run/examples
 
 ### Community
-- **Discord**: https://discord.gg/req2run
-- **Forum**: https://forum.req2run.io
+- **GitHub Discussions**: https://github.com/itdojp/req2run-benchmark/discussions
 - **Stack Overflow**: Tag with `ufai-benchmark`
 
 ### Getting Help

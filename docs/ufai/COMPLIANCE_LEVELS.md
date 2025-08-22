@@ -393,5 +393,5 @@ For L4 and L5 compliance:
 
 - **Documentation**: https://bench.req2run.io/docs
 - **Examples**: https://github.com/req2run/examples
-- **Community**: https://discord.gg/req2run
+- **Community**: GitHub Discussions
 - **Email**: support@req2run.io

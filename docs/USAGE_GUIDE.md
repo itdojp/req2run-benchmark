@@ -568,7 +568,6 @@ req2run doctor
 
 ### Community
 - [GitHub Discussions](https://github.com/itdojp/req2run-benchmark/discussions)
-- [Discord Server](https://discord.gg/req2run)
 - [Stack Overflow Tag](https://stackoverflow.com/questions/tagged/req2run)
 
 ### Contact

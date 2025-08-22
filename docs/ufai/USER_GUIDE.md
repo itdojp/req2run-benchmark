@@ -796,7 +796,7 @@ commands:
 - **Documentation**: https://github.com/itdojp/req2run-benchmark/docs/ufai
 - **Examples**: https://github.com/itdojp/req2run-benchmark/adapters/examples
 - **Issues**: https://github.com/itdojp/req2run-benchmark/issues
-- **Community**: Discord (coming soon)
+- **Community**: GitHub Discussions
 
 ---
 
