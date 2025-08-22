@@ -406,7 +406,6 @@ graph TB
 ### Resources (リソース)
 - 📖 [Documentation](https://docs.req2run.io)
 - 💙 [GitHub Repository](https://github.com/itdojp/req2run-benchmark)
-- 💬 [Discord Community](https://discord.gg/req2run)
 - 📧 [Email Support](mailto:contact@itdo.jp)
 
 ### Contributing (貢献)

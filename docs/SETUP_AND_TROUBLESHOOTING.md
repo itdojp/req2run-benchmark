@@ -376,8 +376,7 @@ pytest tests/
 If you continue to experience issues:
 
 1. Check the [GitHub Issues](https://github.com/itdojp/req2run-benchmark/issues)
-2. Join our [Discord Community](https://discord.gg/req2run)
-3. Contact support: contact@itdo.jp
+2. Contact support: contact@itdo.jp
 
 ---
 
@@ -518,5 +517,4 @@ pytest tests/
 問題が続く場合：
 
 1. [GitHubイシュー](https://github.com/itdojp/req2run-benchmark/issues)を確認
-2. [Discordコミュニティ](https://discord.gg/req2run)に参加
-3. サポートに連絡: contact@itdo.jp
+2. サポートに連絡: contact@itdo.jp

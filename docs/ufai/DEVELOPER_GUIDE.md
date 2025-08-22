@@ -1122,7 +1122,7 @@ mypy adapters/universal/
 - **GitHub Issues**: https://github.com/itdojp/req2run-benchmark/issues
 - **Documentation**: https://github.com/itdojp/req2run-benchmark/tree/main/docs/ufai
 - **Examples**: https://github.com/itdojp/req2run-benchmark/tree/main/adapters/examples
-- **Community Discord**: (Coming soon)
+- **Community**: GitHub Discussions
 
 ---
 

@@ -488,7 +488,7 @@ Now that you have your first benchmark running:
 - **Full Documentation**: [Developer Guide](DEVELOPER_GUIDE.md) | [User Guide](USER_GUIDE.md)
 - **Examples**: [/adapters/examples](../../adapters/examples)
 - **Support**: [GitHub Issues](https://github.com/itdojp/req2run-benchmark/issues)
-- **Community**: Discord (Coming Soon)
+- **Community**: GitHub Discussions
 
 ---
 
