@@ -1,0 +1,5 @@
+# Minimal smoke problem set for CI
+problems:
+  - CLI-001
+  - WEB-001
+  - NET-001
