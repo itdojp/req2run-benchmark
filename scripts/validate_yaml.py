@@ -6,11 +6,11 @@ except ImportError:
     print('Missing PyYAML. Install with: pip install pyyaml', file=sys.stderr)
     sys.exit(2)
 
+<<<<<<< HEAD
 try:
     import jsonschema
 except Exception:
     jsonschema = None
-
 root = os.path.join(os.getcwd(), 'problems')
 parse_errors = []
 warnings = []
@@ -53,6 +53,7 @@ for dirpath, _, files in os.walk(root):
                     warnings.append({'file': path, 'warning': f'schema: {ve.message}'})
                 except Exception as e:
                     warnings.append({'file': path, 'warning': f'schema-load: {e}'})
+            # end schema validation
         except Exception as e:
             parse_errors.append({'file': path, 'error': f'parse error: {e}'})
 
